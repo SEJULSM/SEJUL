@@ -74,7 +74,8 @@
   C.pushOn = async () => { const p = await Notification.requestPermission(); if (p !== 'granted') throw new Error(p === 'denied' ? 'denied' : 'dismissed');
     const reg = await navigator.serviceWorker.ready, { key } = await C.fn({ op: 'vapid' });
     let sub = await reg.pushManager.getSubscription(); if (sub && sub.options && sub.options.applicationServerKey) { const a = new Uint8Array(sub.options.applicationServerKey), b = u8(key); if (a.length !== b.length || a.some((x, i) => x !== b[i])) { await sub.unsubscribe(); sub = null; } }
-    if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: u8(key) });
+    if (!sub) { const opt = { userVisibleOnly: true, applicationServerKey: u8(key) };   /* 휴대폰 알림 서비스(구글 FCM 등)가 잠깐 거절하면 2번 더 시도 */
+      for (let i = 0; ; i++) { try { sub = await reg.pushManager.subscribe(opt); break; } catch (e) { if (i >= 2 || !/push service|AbortError|Registration failed/i.test(String(e && (e.message || e.name)))) throw e; await new Promise(r => setTimeout(r, 1500 * (i + 1))); } } }
     await C.rpc('sj_push_sub', { p_sub: sub.toJSON(), p_tz: -new Date().getTimezoneOffset(), p_prefs: C.prefs() }); LSS('sejul_push_on', '1'); return true; };
   C.pushOff = async () => { const reg = await navigator.serviceWorker.getRegistration(), sub = reg && await reg.pushManager.getSubscription(); if (sub) { try { await C.rpc('sj_push_unsub', { p_endpoint: sub.endpoint }); } catch (e) { } await sub.unsubscribe(); } LSS('sejul_push_on', ''); };
   C.pushTest = () => C.fn({ op: 'test', key: C.devKey() });
