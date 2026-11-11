@@ -1,137 +1,308 @@
 <!DOCTYPE html>
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>SEJUL 선박관리 앱</title>
-<meta name="theme-color" content="#1F3864"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="favicon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png">
-<script>window.SJAPP = { isHub: true, swPath: 'sw.js' };</script><script src="common.js"></script><script src="cloud.js"></script>
+<meta name="theme-color" content="#14244A"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="favicon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png">
+<script>window.SJAPP = { isHub: true, swPath: 'sw.js' };</script><script src="common.js"></script><script src="ui.js"></script><script src="cloud.js"></script>
 <style>
-:root{--navy:#1F3864;--navy2:#2b4c86;--gold:#F5B800;--bg:#f2f4f8;--line:#dfe6f0;--mut:#5b6577}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:'Noto Sans KR','Malgun Gothic',system-ui,sans-serif;color:#1d2533}
-header{background:var(--navy);color:#fff;padding:14px 20px calc(14px);display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-header img{width:40px;height:40px;border-radius:10px}header h1{margin:0;font-size:20px}header small{display:block;opacity:.75;font-size:12px;font-weight:400}
-header .sp{flex:1}.pill{border:1px solid #ffffff44;border-radius:16px;padding:4px 10px;font-size:12.5px}.pill.on{background:#2E7D32;border-color:#2E7D32}.pill.off{background:#C62828;border-color:#C62828}
-.lang{display:flex;border:1px solid #ffffff55;border-radius:8px;overflow:hidden}.lang button{background:none;border:0;color:#fff;padding:6px 10px;font:inherit;font-size:13px;cursor:pointer}.lang button.on{background:var(--gold);color:var(--navy);font-weight:700}
-main{max-width:1100px;margin:0 auto;padding:20px 16px 60px}
-h2{font-size:16px;margin:22px 0 10px;color:var(--navy)}
-.tools{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
-.tool{display:flex;flex-direction:column;gap:6px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px;text-decoration:none;color:inherit;box-shadow:0 2px 8px #1f386410;transition:.15s}
-.tool:hover{transform:translateY(-2px);box-shadow:0 6px 18px #1f386422;border-color:var(--navy2)}
-.tool .ic{font-size:36px}.tool b{font-size:18px}.tool .en{color:var(--mut);font-size:13px}.tool p{margin:4px 0 0;color:#3a4558;font-size:13.5px;line-height:1.5}.tool .v{margin-top:auto;font-size:12px;color:var(--mut)}
-.tool.soon{opacity:.55;pointer-events:none;border-style:dashed}
-.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px 18px}
-.row{display:grid;grid-template-columns:160px 1fr;gap:10px 16px;align-items:center;padding:10px 0;border-bottom:1px dashed var(--line)}.row:last-child{border:0}
-.row>label{font-weight:700;font-size:14px}.row .h{grid-column:2;color:var(--mut);font-size:12.5px;margin-top:-4px}
-select,input{font:inherit;font-size:14px;padding:8px 10px;border:1px solid #c6d1e2;border-radius:8px;background:#fff;max-width:100%}
-.chips{display:flex;gap:6px;flex-wrap:wrap}.chips button{border:1px solid #c6d1e2;background:#fff;border-radius:16px;padding:5px 11px;font:inherit;font-size:13px;cursor:pointer}.chips button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
-.btn{border:1px solid var(--navy);background:#fff;color:var(--navy);border-radius:8px;padding:8px 14px;font:inherit;font-size:14px;font-weight:600;cursor:pointer}.btn.p{background:var(--navy);color:#fff}.btn.g{background:var(--gold);border-color:var(--gold);color:var(--navy)}
-.st{font-size:13px}.ok{color:#2E7D32;font-weight:700}.warn{color:#B54708;font-weight:700}
-.note{background:#eef3fa;border-radius:10px;padding:10px 14px;font-size:13px;color:#3a4558;line-height:1.6;margin-top:10px}
-footer{text-align:center;color:var(--mut);font-size:12px;padding:20px}
-@media (max-width:640px){.row{grid-template-columns:1fr}.row .h{grid-column:1}header h1{font-size:17px}}
-.cl .tb{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}.cl .tb th,.cl .tb td{border-bottom:1px solid var(--line);padding:6px 6px;text-align:left}.cl .tb th{color:var(--mut);font-weight:600}
-.cl .tag{display:inline-block;border-radius:10px;padding:1px 8px;font-size:12px;font-weight:700}.tag.pending{background:#FFF4E5;color:#B54708}.tag.approved{background:#E8F5E9;color:#2E7D32}.tag.revoked{background:#FDECEA;color:#C62828}
-.cl .bs{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.cl .btn.s{padding:4px 10px;font-size:12.5px}.cl .err{color:#C62828;font-size:13px;margin-top:6px}
-@media (max-width:640px){.cl .tb .hm{display:none}}
+:root{--bg:#F3F4F6;--card:#fff;--ink:#0F172A;--ink2:#3B4352;--mut:#5B6474;--line:#E3E6EB;--line2:#F1F3F6;--navy:#1B2F5B;--navyD:#14244A;--navyL:#E8EDF7;--gold:#F2B705;--goldL:#FEF3D7;--goldD:#8A5A00;--red:#B42318;--redL:#FDECEA;--org:#C2410C;--orgL:#FFF1E7;--grn:#027A48;--grnL:#E7F5EE;--r:16px}
+*{box-sizing:border-box}[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Pretendard','Noto Sans KR','Malgun Gothic','Apple SD Gothic Neo',system-ui,sans-serif;font-size:14.5px;line-height:1.5}
+button,input,select{font:inherit;color:inherit}a{color:var(--navy)}
+#app{min-height:100vh}
+@media (min-width:900px){#app.rl{padding-left:248px}}
+.top{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:16px 32px;background:#fff;border-bottom:1px solid var(--line);min-height:72px}
+.top .tt{flex:1;min-width:200px}.top .tt small{display:block;font-size:12.5px;color:var(--mut)}.top h1{margin:2px 0 0;font-size:22px;letter-spacing:-.3px}
+.wrap{padding:24px 32px 100px;max-width:1240px;display:flex;flex-direction:column;gap:20px}
+.upd{display:flex;align-items:center;gap:12px;background:var(--goldL);border-bottom:1px solid #F2C35B;padding:10px 32px;font-size:14px;color:#6B4600}.upd b{flex:1}
+.btn{height:42px;padding:0 16px;border-radius:10px;border:1px solid #CBD2DC;background:#fff;font-weight:600;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;text-decoration:none;color:var(--ink);white-space:nowrap}
+.btn:hover{border-color:#9AA6B8}.btn.p{background:var(--navy);border-color:var(--navy);color:#fff}.btn.p:hover{background:#24396B}.btn.g{background:var(--gold);border-color:var(--gold);color:var(--navyD)}.btn.ok{background:var(--grn);border-color:var(--grn);color:#fff}
+.btn.s{height:34px;padding:0 12px;font-size:13px}.btn.lg{height:50px;padding:0 24px;font-size:15.5px;border-radius:12px}.btn:disabled{opacity:.5;cursor:default}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r)}
+.qa{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.qa a{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;text-decoration:none;display:flex;gap:12px;align-items:center;color:var(--ink);min-height:72px}.qa a:hover{border-color:#AEB8C8;box-shadow:0 4px 14px #0f172a0d}
+.qa .ic{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex:none}.qa b{display:block;font-size:15px}.qa small{font-size:12.5px;color:var(--mut)}
+.cols{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start}.cols>.mainc{flex:999 1 520px;min-width:0}.cols>.side{flex:1 1 300px;min-width:280px;display:flex;flex-direction:column;gap:16px}
+.lh{display:flex;align-items:center;gap:10px;padding:14px 20px;border-bottom:1px solid #EEF0F3;flex-wrap:wrap}.lh h2{margin:0;font-size:16.5px;flex:1}.lh h2 span{color:var(--mut);font-weight:500;font-size:13.5px}
+.seg{display:flex;gap:3px;background:#F1F3F6;border-radius:10px;padding:3px}.seg button{border:0;background:transparent;border-radius:8px;padding:6px 12px;font-size:13px;color:var(--ink2);cursor:pointer}.seg button.on{background:#fff;font-weight:700;box-shadow:0 1px 2px #0f172a1f;color:var(--ink)}
+.td{display:flex;align-items:center;gap:14px;padding:13px 20px;border-bottom:1px solid var(--line2)}.td:last-child{border-bottom:0}
+.td .bar{width:4px;align-self:stretch;border-radius:2px;background:#CBD2DC}.td .bar.r{background:#D92D20}.td .bar.y{background:var(--gold)}
+.td .tx{flex:1;min-width:0}.td .tx b{font-size:15px}.td .tx small{display:block;font-size:13px;color:var(--mut);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tag{font-size:11.5px;font-weight:700;border-radius:6px;padding:1px 7px;margin-right:6px;white-space:nowrap}.tag.p{background:var(--navyL);color:var(--navy)}.tag.r{background:var(--orgL);color:var(--org)}.tag.c{background:#F1F3F6;color:var(--ink2)}
+.td .due{font-size:13px;font-weight:700;white-space:nowrap}.due.r{color:var(--red)}.due.y{color:var(--goldD)}.due.g{color:var(--mut)}
+.empty{padding:28px 20px;text-align:center;color:var(--mut);font-size:14px}
+.sc{padding:18px 20px}.sc h3{margin:0 0 12px;font-size:15px;display:flex;align-items:center;gap:8px}.sc h3 i{width:8px;height:8px;border-radius:50%}
+.g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.kt{border-radius:12px;padding:12px;background:#F1F3F6;text-decoration:none;color:var(--ink);display:block}.kt b{display:block;font-size:26px;font-weight:800;line-height:1.2}.kt span{font-size:12.5px;color:var(--mut)}
+.kt.r{background:var(--redL)}.kt.r b{color:var(--red)}.kt.y{background:var(--goldL)}.kt.y b{color:var(--goldD)}
+.kv{display:flex;justify-content:space-between;font-size:14px;padding:4px 0}.kv span{color:var(--ink2)}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.kpi{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px}.kpi small{display:block;font-size:12.5px;color:var(--mut);font-weight:700}.kpi b{display:block;font-size:28px;font-weight:800;margin-top:2px}.kpi span{font-size:12.5px;color:var(--mut)}
+.tw{overflow-x:auto}table.t{width:100%;border-collapse:collapse;font-size:14px;min-width:760px}table.t th{background:#F8F9FB;color:var(--mut);font-size:12.5px;text-align:left;padding:10px 12px;font-weight:700}table.t th:first-child,table.t td:first-child{padding-left:20px}table.t td{padding:12px;border-top:1px solid var(--line2)}
+table.t tr.cl{cursor:pointer}table.t tr.cl:hover td{background:#FAFBFC}.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;background:#CBD2DC}.dot.ok{background:#12B76A}.dot.y{background:var(--gold)}
+.pill{font-size:12px;font-weight:700;border-radius:8px;padding:2px 9px;white-space:nowrap}.pill.pending{background:var(--goldL);color:var(--goldD)}.pill.approved{background:var(--grnL);color:var(--grn)}.pill.revoked{background:var(--redL);color:var(--red)}.pill.s{background:var(--navyL);color:var(--navy)}.pill.o{background:var(--goldL);color:var(--goldD)}
+.mono{font-family:ui-monospace,'Cascadia Mono',Consolas,monospace;font-weight:700}
+/* 설정 */
+.sec{padding:6px 22px 8px}.sec>h2{margin:16px 0 2px;font-size:16.5px}.sec>p{margin:0 0 6px;color:var(--mut);font-size:13px}
+.row{display:grid;grid-template-columns:170px 1fr;gap:6px 18px;padding:14px 0;border-top:1px solid var(--line2);align-items:start}.row>label{font-weight:700;font-size:14px;padding-top:9px}.row .h{color:var(--mut);font-size:12.5px;margin-top:6px}
+input.i,select.i{height:44px;border:1.5px solid #CBD2DC;border-radius:10px;padding:0 12px;font-size:15px;background:#fff;max-width:100%}input.i:focus,select.i:focus{outline:2px solid #1b2f5b40;border-color:var(--navy)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}.chips button{height:42px;padding:0 16px;border-radius:21px;border:1.5px solid #CBD2DC;background:#fff;font-size:14.5px;cursor:pointer}.chips button.on{background:var(--navy);border-color:var(--navy);color:#fff;font-weight:700}
+.gr2{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px}.gr2 label{display:block;font-size:12.5px;color:var(--mut);font-weight:700;margin-bottom:4px}.gr2 input{width:100%}
+.tl{display:grid;grid-template-columns:1fr 1fr;gap:12px}.tl a{display:flex;gap:12px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:12px 14px;text-decoration:none;color:var(--ink)}.tl a:hover{border-color:#9AA6B8}.tl .ic{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;color:#fff;flex:none}.tl small{display:block;font-size:12.5px;color:var(--mut)}
+.err{color:var(--red);font-size:13.5px;margin-top:8px;font-weight:600}.note{background:#EEF1F6;border-radius:12px;padding:12px 16px;font-size:13.5px;color:#3c4656;line-height:1.65}
+/* 처음 설정 */
+.su{display:flex;min-height:100vh}.su .l{width:420px;flex:none;background:var(--navyD);color:#fff;padding:52px 44px;display:flex;flex-direction:column;gap:24px}
+.su .lg{display:flex;align-items:center;gap:12px}.su .lg i{width:44px;height:44px;border-radius:12px;background:var(--gold);color:var(--navyD);display:flex;align-items:center;justify-content:center;font:800 22px/1 inherit;font-style:normal}.su .lg b{display:block;font-size:19px}.su .lg small{font-size:12px;color:#B8C2D9;letter-spacing:.04em}
+.su .h{font-size:30px;font-weight:800;line-height:1.35;margin-top:30px}.su .d{font-size:15px;color:#C9D2E6;line-height:1.7}
+.su .st{display:flex;gap:12px;align-items:center;font-size:15px;font-weight:700}.su .st i{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;font-style:normal;background:#2B3D66;color:#B8C2D9}.su .st.on i{background:var(--gold);color:var(--navyD)}.su .st.dn i{background:#3E8E5E;color:#fff}
+.su .r{flex:1;padding:52px 60px;display:flex;flex-direction:column;gap:20px;max-width:900px}.su .r h1{margin:4px 0 0;font-size:28px}.su .r .k{font-size:13px;font-weight:700;color:var(--mut)}
+.pick{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.pick button{text-align:left;background:#fff;border:2px solid var(--line);border-radius:18px;padding:26px;display:flex;flex-direction:column;gap:10px;min-height:290px;cursor:pointer}.pick button:hover{border-color:var(--navy);box-shadow:0 8px 24px #0f172a14}
+.pick .ic{width:56px;height:56px;border-radius:16px;display:flex;align-items:center;justify-content:center}.pick b{font-size:22px}.pick .a{font-size:14.5px;color:var(--ink2);line-height:1.6}.pick .b{font-size:13.5px;color:var(--mut);line-height:1.7}.pick .go{margin-top:auto;font-weight:700;font-size:14.5px}
+.fld{display:flex;flex-direction:column;gap:6px;font-weight:700;font-size:14px;max-width:560px}
+/* 휴대폰 */
+.mnav{display:none}
+@media (max-width:899px){.qa a{flex-direction:column;align-items:flex-start;gap:8px}.qa b{font-size:14.5px}.lh h2 span{display:block}.top{padding:14px 16px}.wrap{padding:16px 14px 100px}.upd{padding:10px 16px}.qa{grid-template-columns:repeat(2,minmax(0,1fr))}.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.row{grid-template-columns:1fr}.row>label{padding-top:0}.gr2,.tl,.pick{grid-template-columns:1fr}
+ .su{flex-direction:column}.su .l{width:auto;padding:28px 22px;gap:14px}.su .h{margin-top:6px;font-size:24px}.su .l .x{display:none}.su .r{padding:24px 18px}
+ .mnav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));position:fixed;left:0;right:0;bottom:0;z-index:30;background:#fff;border-top:1px solid var(--line);padding:6px 0 calc(8px + env(safe-area-inset-bottom))}.mnav a{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11.5px;color:var(--mut);text-decoration:none;min-height:44px;justify-content:center}.mnav a.on{color:var(--navy);font-weight:700}}
+#toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);background:#0F172A;color:#fff;border-radius:10px;padding:10px 16px;font-size:13.5px;opacity:0;transition:.25s;pointer-events:none;z-index:999}#toast.on{opacity:1;transform:translateX(-50%)}
 </style></head><body>
-<header><img src="icon-192.png" alt=""><div><h1 data-t="SEJUL 선박관리 앱|SEJUL Fleet Apps"></h1><small>SEJUL SHIP MANAGEMENT CO., LTD.</small></div><span class="sp"></span>
-  <span class="pill" id="net"></span><span class="pill" id="ves"></span><div class="lang"><button data-lang="ko">한국어</button><button data-lang="en">English</button></div></header>
-<main>
-  <div class="note" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap" id="instTop"><span data-t="📥 이 앱을 PC에 설치하면 바탕화면 아이콘으로 열리고, 인터넷 없이도 씁니다.|📥 Install this app to open it from the desktop and use it offline."></span><button class="btn g" onclick="document.getElementById('cInst').click()" data-t="⬇ 이 PC에 설치|⬇ Install"></button></div><div id="inst" class="note" hidden></div>
-  <h2 data-t="도구|Tools"></h2>
-  <div class="tools">
-    <a class="tool" href="tools/pms.html"><span class="ic">🔧</span><b data-t="계획정비 (PMS)|Planned Maintenance"></b><span class="en" data-t="PMS · SFI · 점검표 · 결함 · 인벤토리 · 선급 검사|PMS · SFI · Checklists · Defects · Inventory · Class surveys"></span><p data-t="SFI 계통 장비·작업, 정기 점검표, 결함 보고·수리 신청, 예비품·청구, 검교정·선급 검사|SFI equipment & jobs, checklists, defects, spares & requisitions, calibration & class surveys"></p><span class="v">PMS 2.3.0 (v19)</span></a>
-    <a class="tool" href="tools/rsk.html"><span class="ic">⚠️</span><b data-t="위험성 관리 (RSK-P-01)|Risk Management"></b><span class="en">RA · JSA · TBM · PTW · MoC</span><p data-t="위험성 평가·TBM, 작업허가서, 변화관리, 위험성 식별 보고, 위험성 등록부|Risk assessment & TBM, permits to work, MoC, risk ID reports, risk register"></p><span class="v">RSK v1.23</span></a>
-    <div class="tool soon"><span class="ic">🧪</span><b data-t="화물 호환성 (Stowage)|Cargo compatibility"></b><span class="en">Stowage Plan</span><p data-t="검토·개선 후 추가 예정|Coming after review"></p></div>
-    <div class="tool soon"><span class="ic">📑</span><b data-t="SMS 서식|SMS forms"></b><span class="en">SMS Forms</span><p data-t="추가 예정|Planned"></p></div>
-  </div>
-  <h2 data-t="공통 설정 — 모든 도구에 적용|Common settings — applied to all tools"></h2>
-  <div class="card">
-    <div class="row"><label data-t="선박|Vessel"></label><select id="cVes"></select><div class="h" data-t="이 PC(기기)가 쓰는 선박. 사무실이면 '사무실'.|Vessel used on this device; choose Office for shore."></div></div>
-    <div class="row"><label data-t="이 PC 이름|This PC"></label><div><div class="chips" id="cPcP"></div><div style="display:flex;gap:6px;margin-top:6px"><input id="cPc" placeholder="예: 개인 PC - 1항사 홍길동" style="flex:1"><button class="btn" id="cPcS" data-t="저장|Save"></button></div></div><div class="h" data-t="같은 폴더·서버를 쓰는 여러 PC를 구분합니다.|Tells several PCs apart."></div></div>
-    <div class="row"><label data-t="데이터 폴더|Data folder"></label><div><span class="st" id="cDirSt"></span> <button class="btn p" id="cDir" data-t="📁 폴더 선택|📁 Choose folder"></button></div><div class="h" data-t="한 번 고르면 PMS·위험성 관리 모두 이 폴더에 저장합니다 (선교·CCR·ECR 공유 폴더 권장).|Both tools save to this folder (a shared folder is recommended)."></div></div>
-    <div class="row"><label data-t="서버 동기화|Server sync"></label><div id="cl"></div><div class="h" data-t="인터넷이 되면 선박↔사무실 자료를 회사 서버로 자동으로 주고받습니다 (2분마다·저장할 때). 새 기기는 사무실 승인 후에만 연결됩니다.|Ship↔office records sync through the company server when online (every 2 min and on save). New devices need office approval."></div></div>
-    <div class="row"><label data-t="앱|App"></label><div><span class="st">v2026.11.11.1321</span> <button class="btn" id="cUpd" data-t="업데이트 확인|Check for updates"></button> <button class="btn g" id="cInst" data-t="⬇ 이 PC에 설치|⬇ Install on this PC"></button> <span class="st" id="cUpdSt"></span></div></div>
-  </div>
-  <div class="note" data-t="📶 한 번 설치하면 인터넷 없이 선박에서 그대로 쓸 수 있습니다. 인터넷이 연결되면 새 버전을 자동으로 받습니다. 입력한 자료는 이 PC(와 고른 폴더)에 저장되고, 서버 동기화를 켠 기기는 승인된 회사 선대끼리만 회사 서버로 주고받습니다.|📶 Once installed, works offline on board. Updates download automatically when online. Records are kept on this PC (and the chosen folder); with server sync on, they are shared only among approved company devices."></div>
-</main>
-<footer>SEJUL SHIP MANAGEMENT · <span id="swst"></span></footer>
+<div id="rail"></div>
+<div id="app"></div>
+<nav class="mnav" id="mnav"></nav>
+<div id="toast"></div>
 <script>
-const VES = ['KTS GOLD','KTS SILVER','KTS RED','KTS WHITE','KTS GREEN','KTS BLUE','SKY ROYAL','SUNNY QUEEN'];
-let LANG = SJAPP.get('lang') || 'ko';
-const T = s => { const [k, e] = s.split('|'); return LANG === 'en' ? (e || k) : k; };
-function paint(){ document.documentElement.lang = LANG; document.querySelectorAll('[data-t]').forEach(x => x.textContent = T(x.dataset.t)); document.querySelectorAll('[data-lang]').forEach(b => b.classList.toggle('on', b.dataset.lang === LANG));
-  const v = SJAPP.get('vessel') || ''; const s = document.getElementById('cVes'); s.innerHTML = `<option value="">${T('— 선택 —|— select —')}</option>` + VES.map(n => `<option ${n === v ? 'selected' : ''}>${n}</option>`).join('') + `<option value="__office" ${v === '__office' ? 'selected' : ''}>🏢 ${T('사무실 (전 선대)|Office (all vessels)')}</option>`;
-  document.getElementById('ves').textContent = v === '__office' ? '🏢 ' + T('사무실|Office') : v ? '🚢 ' + v : T('선박 미설정|No vessel');
-  const pc = SJAPP.get('pcname') || ''; document.getElementById('cPc').value = pc; document.getElementById('cPcP').innerHTML = ['선교','CCR','ECR','선장실','기관장실','개인 PC - ','사무실 - '].map(x => `<button class="${pc === x ? 'on' : ''}" data-pcp="${x}">${x.replace(' - ', '')}</button>`).join('');
-  net(); dirSt(); }
-function net(){ const n = document.getElementById('net'); n.textContent = navigator.onLine ? T('● 온라인|● Online') : T('○ 오프라인|○ Offline'); n.className = 'pill ' + (navigator.onLine ? 'on' : 'off'); }
-async function dirSt(){ const h = await SJAPP.dirGet(), s = document.getElementById('cDirSt'); if (!h){ s.innerHTML = `<span class="warn">${T('미연결 — 이 브라우저에만 저장|Not connected — browser only')}</span>`; return; } let p = 'prompt'; try { p = await h.queryPermission({ mode: 'readwrite' }); } catch (e) {} s.innerHTML = `📁 <b>${h.name}</b> ${p === 'granted' ? `<span class="ok">✓</span>` : `<span class="warn">${T('(다음 사용 때 허용 필요)|(needs permission)')}</span>`}`; }
-document.addEventListener('click', async e => { const b = e.target.closest('button'); if (!b) return;
-  if (b.dataset.lang){ LANG = b.dataset.lang; SJAPP.set('lang', LANG); paint(); }
-  else if (b.dataset.pcp != null){ const i = document.getElementById('cPc'); i.value = b.dataset.pcp; i.focus(); if (!/ - $/.test(b.dataset.pcp)){ SJAPP.set('pcname', i.value); paint(); } }
-  else if (b.id === 'cPcS'){ const v = document.getElementById('cPc').value.trim(); if (v){ SJAPP.set('pcname', v); paint(); } }
-  else if (b.id === 'cDir'){ if (!window.showDirectoryPicker) return alert(T('이 브라우저는 폴더 저장을 지원하지 않습니다 — Chrome·Edge를 쓰세요.|Use Chrome or Edge for folder saving.')); try { const h = await showDirectoryPicker({ id: 'sejul', mode: 'readwrite' }); await h.requestPermission({ mode: 'readwrite' }); await SJAPP.dirSet(h); dirSt(); } catch (err) {} }
-  else if (b.id === 'cUpd'){ const s = document.getElementById('cUpdSt'); s.textContent = T('확인 중…|Checking…'); try { const r = await navigator.serviceWorker.getRegistration(); await r.update(); setTimeout(() => s.textContent = r.waiting || r.installing ? T('새 버전을 받는 중 — 곧 안내가 뜹니다|Downloading new version') : T('최신 버전입니다|Up to date'), 1500); } catch (err) { s.textContent = T('오프라인 — 나중에 다시|Offline — try later'); } }
-  else if (b.id === 'cInst'){ if (window.__bip){ __bip.prompt(); const r = await __bip.userChoice.catch(() => ({})); __bip = null; if (r.outcome === 'accepted') paintInst(); } else instHelp(); } });
-const standalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone;
-function paintInst(){ const b = document.getElementById('cInst'), n = document.getElementById('inst'); if (standalone()){ b.hidden = true; document.getElementById('instTop').hidden = true; n.hidden = false; n.innerHTML = '✅ ' + T('설치된 앱으로 실행 중입니다. 인터넷 없이도 열립니다.|Running as an installed app — works offline.'); } }
-function instHelp(){ const ua = navigator.userAgent, edge = /Edg\//.test(ua), chrome = /Chrome\//.test(ua) && !edge && !/OPR|Whale|SamsungBrowser/.test(ua), ios = /iPhone|iPad/.test(ua), n = document.getElementById('inst'); n.hidden = false;
-  n.innerHTML = '<b>⬇ ' + T('설치 방법|How to install') + '</b><br>' + (ios ? T('iPhone·iPad: Safari 아래쪽 [공유 ⬆] → [홈 화면에 추가]|iPhone/iPad: Safari Share → Add to Home Screen')
-   : edge ? T('Edge: 주소창 오른쪽 [앱 설치 ⊕] 아이콘 → [설치]. 아이콘이 없으면 오른쪽 위 [···] → [앱] → [이 사이트를 앱으로 설치]|Edge: address bar install icon, or ··· → Apps → Install this site as an app')
-   : chrome ? T('Chrome: 주소창 오른쪽 [설치 ⊕(모니터 모양)] 아이콘 → [설치]. 아이콘이 없으면 오른쪽 위 [⋮] → [전송, 저장, 공유] → [페이지를 앱으로 설치…]|Chrome: address bar install icon, or ⋮ → Cast, save and share → Install page as app')
-   : T('설치는 Chrome 또는 Edge에서 됩니다. 이 주소를 Chrome·Edge로 열어 주세요.|Please open this address in Chrome or Edge to install.'))
-   + '<br><span style="color:#5b6577">' + T('설치 아이콘은 페이지를 연 뒤 몇 초 지나야 나타날 수 있습니다. 이미 설치했다면 바탕화면·시작 메뉴의 SEJUL 아이콘으로 여세요.|The install icon may take a few seconds to appear. If already installed, open SEJUL from the desktop / Start menu.') + '</span>'; }
-addEventListener('appinstalled', () => { const n = document.getElementById('inst'); n.hidden = false; n.innerHTML = '✅ ' + T('설치되었습니다 — 바탕화면·시작 메뉴의 SEJUL 아이콘으로 여세요.|Installed — open SEJUL from the desktop / Start menu.'); document.getElementById('cInst').hidden = true; });
-document.getElementById('cVes').onchange = e => { SJAPP.set('vessel', e.target.value); paint(); };
-addEventListener('online', net); addEventListener('offline', net);
-addEventListener('beforeinstallprompt', e => { e.preventDefault(); window.__bip = e; });
+const C = SJAPP, U = SJUI, CL = SJCLOUD, T = U.T, esc = U.esc, $ = s => document.querySelector(s);
+const CO0 = { dpaName: 'Noh You Seok', dpaPhone: '+82-10-6588-7959', dpaEmail: 'nohys@sejulsm.com', sqEmail: 'sjsm@sejulsm.com' };
+const PCS = ['선교', 'CCR', 'ECR', '선장실', '기관장실'];
+let VIEW = 'home', SEC = '', UPD = false, SU = { s: 'choose', err: '', busy: false }, DEV = null, DEVERR = '', LST = null, TF = 'all', ERR = '';
+const toast = m => { const t = $('#toast'); t.textContent = m; t.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('on'), 2200); };
+const company = () => { let o = {}; try { o = JSON.parse(C.get('company') || '{}') || {}; } catch (e) {} Object.keys(CO0).forEach(k => { if (!o[k]) o[k] = CO0[k]; }); return o; };
+const goTool = (tool, o) => 'tools/' + tool + '.html' + (o ? '?go=' + encodeURIComponent(JSON.stringify(o)) : '');
+const clErr = e => { const s = String(e && e.message || e); return /office pin/.test(s) ? T('사무실 PIN이 맞지 않습니다', 'Wrong office PIN') : /not approved/.test(s) ? T('승인되지 않은 기기입니다', 'Device not approved') : /Failed to fetch|abort|NetworkError|Load failed/i.test(s) ? T('서버에 연결할 수 없습니다 — 인터넷을 확인하세요', 'Cannot reach the server — check the internet') : /does not exist|Could not find the function/i.test(s) ? T('서버 설정(SQL)이 아직 실행되지 않았습니다', 'Server setup (SQL) has not been run') : s; };
+/* 이전 버전에서 쓰던 기기: 종류 자동 지정 */
+if (!C.get('role')) { const m = CL.me(), v = C.get('vessel'); if (m && m.role && m.status !== 'none') C.set('role', m.role); else if (v === '__office') {} else if (v && C.get('pcname')) C.set('role', 'ship'); }
 
-/* ===== 서버 동기화 (등록 · 승인 · 백업) ===== */
-const CL = window.SJCLOUD, esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-let CLR = { role: '', err: '', devs: null, busy: false };
-const ago = t => { if (!t) return '—'; const m = (Date.now() - new Date(t)) / 60e3; return m < 2 ? T('방금|just now') : m < 60 ? Math.round(m) + T('분 전| min ago') : m < 1440 ? Math.round(m / 60) + T('시간 전| h ago') : Math.round(m / 1440) + T('일 전| d ago'); };
-function clPaint(){ const el = document.getElementById('cl'); if (!el) return; el.className = 'cl'; const m = CL.me(), v = SJAPP.get('vessel') || '', pc = SJAPP.get('pcname') || '';
-  if (!navigator.onLine && !m){ el.innerHTML = `<span class="st warn">${T('오프라인 — 인터넷 연결 후 등록|Offline — connect to register')}</span>`; return; }
-  if (!m || m.status === 'none'){ const role = CLR.role || (v === '__office' ? 'office' : 'ship');
-    el.innerHTML = `<div class="st">${T('이 기기는 아직 서버에 등록되지 않았습니다.|This device is not registered yet.')}</div>
-     <div class="chips" style="margin-top:8px"><button data-clrole="ship" class="${role === 'ship' ? 'on' : ''}">🚢 ${T('선박 기기|Ship device')}</button><button data-clrole="office" class="${role === 'office' ? 'on' : ''}">🏢 ${T('사무실 기기|Office device')}</button></div>
-     <div class="st" style="margin-top:8px">${role === 'ship' ? (v && v !== '__office' ? `${T('선박|Vessel')}: <b>${esc(v)}</b>` : `<span class="warn">${T('위 [선박]을 먼저 고르세요|Choose the vessel above first')}</span>`) : `${T('사무실 PIN|Office PIN')} <input id="clPin" type="password" inputmode="numeric" autocomplete="off" style="width:140px">`} · ${T('PC 이름|PC')}: ${pc ? `<b>${esc(pc)}</b>` : `<span class="warn">${T('위 [이 PC 이름]을 먼저 입력|Set the PC name above first')}</span>`}</div>
-     <div class="bs"><button class="btn p" id="clReg" ${CLR.busy ? 'disabled' : ''}>☁ ${T('서버에 등록|Register')}</button></div>
-     <div class="h" style="margin-top:6px;color:var(--mut);font-size:12.5px">${role === 'ship' ? T('등록 후 사무실에서 승인하면 동기화가 시작됩니다.|Sync starts after the office approves this device.') : T('PIN이 맞으면 바로 연결됩니다. 사무실 기기는 선박 기기를 승인·해제할 수 있습니다.|Connects at once with the right PIN. Office devices approve and revoke ship devices.')}</div>${CLR.err ? `<div class="err">⚠ ${esc(CLR.err)}</div>` : ''}`; return; }
-  const tag = `<span class="tag ${m.status}">${m.status === 'approved' ? T('✓ 연결됨|✓ Connected') : m.status === 'pending' ? T('⏳ 사무실 승인 대기|⏳ Waiting for office approval') : T('⛔ 해제됨|⛔ Revoked')}</span>`;
-  let o = `<div class="st">${tag} ${m.role === 'office' ? '🏢 ' + T('사무실|Office') : '🚢 ' + esc(m.ship)} · ${esc(m.pc)}</div>`;
-  if (m.status === 'approved') o += `<div class="st" style="margin-top:4px;color:var(--mut)">${T('자료는 각 도구(PMS·위험성 관리)를 열어 둔 동안 자동으로 주고받습니다. 도구 화면의 [⌂ 앱 홈] 단추 옆 표시: ☁✓ 정상 · ☁⚠ 오류 · ☁⏳ 승인 대기.|Records sync while each tool is open. The mark next to [⌂ App home] in each tool: ☁✓ OK · ☁⚠ error · ☁⏳ waiting.')}</div>`;
-  if (m.status === 'pending') o += `<div class="st" style="margin-top:4px;color:var(--mut)">${T('사무실 담당자에게 승인을 요청하세요 (사무실 앱 → 서버 동기화 → 기기 목록).|Ask the office to approve (office app → Server sync → Devices).')}</div>`;
-  if (m.status === 'revoked') o += `<div class="st" style="margin-top:4px;color:var(--mut)">${T('이 기기는 서버 동기화가 해제되었습니다. 다시 쓰려면 사무실에 문의하세요.|Server sync was revoked for this device. Contact the office.')}</div>`;
-  o += `<div class="bs"><button class="btn s" id="clRef">🔄 ${T('상태 새로 고침|Refresh')}</button>${m.status === 'approved' && m.role === 'office' ? `<button class="btn s" id="clDev">🖥 ${T('기기 목록·승인|Devices & approval')}</button><button class="btn s" id="clBak">💾 ${T('서버 자료 백업 받기|Download server backup')}</button>` : ''}<button class="btn s" id="clOut">${T('이 기기 연결 끊기|Disconnect this device')}</button></div>`;
-  if (CLR.devs){ const D = CLR.devs, np = D.filter(d => d.status === 'pending').length;
-    o += `<div class="st" style="margin-top:10px"><b>${T('등록된 기기|Devices')}</b> ${D.length}${np ? ` · <span class="warn">${T('승인 대기|pending')} ${np}</span>` : ''}</div><table class="tb"><tr><th>${T('구분|Role')}</th><th>${T('선박|Vessel')}</th><th>${T('PC 이름|PC')}</th><th>${T('상태|Status')}</th><th class="hm">${T('마지막 접속|Last seen')}</th><th></th></tr>`
-     + D.map(d => `<tr><td>${d.role === 'office' ? '🏢' : '🚢'}</td><td>${d.role === 'office' ? T('사무실|Office') : esc(d.ship)}</td><td>${esc(d.pc_name)}${d.id === m.id ? ` <span class="ok">(${T('이 기기|this')})</span>` : ''}</td><td><span class="tag ${d.status}">${{pending: T('대기|Pending'), approved: T('승인|Approved'), revoked: T('해제|Revoked')}[d.status]}</span></td><td class="hm">${ago(d.last_seen || d.created_at)}</td><td>${d.id === m.id ? '' : (d.status !== 'approved' ? `<button class="btn s p" data-cld="${d.id}" data-st="approved">${T('승인|Approve')}</button> ` : '') + (d.status === 'approved' ? `<button class="btn s" data-cld="${d.id}" data-st="revoked">${T('해제|Revoke')}</button> ` : '') + (d.status !== 'approved' ? `<button class="btn s" data-cld="${d.id}" data-st="delete">${T('삭제|Delete')}</button>` : '')}</td></tr>`).join('') + `</table><div class="h" style="color:var(--mut);font-size:12.5px;margin-top:6px">${T('하선·교체한 PC는 [해제]하세요. 해제된 기기는 서버 자료를 받거나 올릴 수 없습니다.|Revoke PCs that leave the ship; revoked devices cannot read or upload.')}</div>`; }
-  if (CLR.err) o += `<div class="err">⚠ ${esc(CLR.err)}</div>`;
-  el.innerHTML = o; }
-const clErr = e => { const s = String(e && e.message || e); return /office pin/.test(s) ? T('사무실 PIN이 맞지 않습니다|Wrong office PIN') : /not approved/.test(s) ? T('승인되지 않은 기기입니다|Device not approved') : /Failed to fetch|abort|NetworkError/i.test(s) ? T('서버에 연결할 수 없습니다 — 인터넷을 확인하세요|Cannot reach the server — check the internet') : /function .* does not exist|Could not find the function/i.test(s) ? T('서버 설정(SQL)이 아직 실행되지 않았습니다|Server setup (SQL) has not been run yet') : s; };
-async function clDo(fn){ CLR.busy = true; CLR.err = ''; clPaint(); try { await fn(); } catch (e) { CLR.err = clErr(e); } CLR.busy = false; clPaint(); }
-async function clDevs(){ CLR.devs = await CL.rpc('sj_devices_list'); }
+/* ================= 화면 고르기 ================= */
+function route(){ const h = location.hash.replace(/^#/, ''); const [v, s] = h.split('/'); VIEW = ['settings', 'devices'].includes(v) ? v : 'home'; SEC = s || ''; }
+function paint(){ route(); document.documentElement.lang = (C.get('lang') || 'ko');
+  const role = U.role(), app = $('#app');
+  if (!role || location.hash === '#setup' || SU.s === 'wait'){ $('#rail').innerHTML = ''; app.className = ''; $('#mnav').innerHTML = ''; app.innerHTML = setupHTML(); return; }
+  if (VIEW === 'devices' && role !== 'office') VIEW = 'home';
+  $('#rail').innerHTML = U.rail(VIEW === 'home' ? 'home' : VIEW, ''); U.syncPaint(); pendBadge(); app.className = 'rl';
+  const upd = UPD ? `<div class="upd"><b>⬆ ${T('새 버전이 준비되었습니다', 'A new version is ready')}</b><button class="btn s g" data-act="update">${T('지금 업데이트', 'Update now')}</button></div>` : '';
+  app.innerHTML = upd + (VIEW === 'settings' ? settingsHTML() : VIEW === 'devices' ? devicesHTML() : role === 'office' ? fleetHTML() : todayHTML());
+  const mn = (k, href, label, ic) => `<a class="${(VIEW === k || (k === 'home' && VIEW === 'home')) ? 'on' : ''}" href="${href}">${U.ic(ic, 22)}${label}</a>`;
+  $('#mnav').innerHTML = mn('home', '#', T('홈', 'Home'), 'home') + mn('pms', 'tools/pms.html', T('계획정비', 'PMS'), 'pms') + mn('rsk', 'tools/rsk.html', T('위험성', 'Risk'), 'rsk') + mn('settings', '#settings', T('설정', 'Settings'), 'set');
+  if (VIEW === 'settings') setTimeout(() => { pushPaint(); prefsPaint(); }, 0); appBadge();
+  if (SEC) setTimeout(() => { const el = document.getElementById('s-' + SEC); el && el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 40); }
+function pendBadge(){ const b = document.querySelector('[data-sjpend]'); if (!b || !DEV) return; const n = DEV.filter(d => d.status === 'pending').length; b.hidden = !n; b.textContent = n; }
+const today = () => new Date().toLocaleDateString(C.get('lang') === 'en' ? 'en-GB' : 'ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' });
+
+/* ================= 처음 설정 ================= */
+function setupHTML(){ const s = SU.s, off = s === 'office', lvl = s === 'choose' ? 1 : s === 'wait' ? 3 : 2, stc = n => n < lvl ? 'dn' : n === lvl ? 'on' : '';
+  const left = `<div class="l"><div class="lg"><i>S</i><span><b>${T('SEJUL 선박관리', 'SEJUL Fleet Apps')}</b><small>SEJUL SHIP MANAGEMENT</small></span></div>
+    <div class="h">${T('이 기기를<br>처음 설정합니다', 'Set up<br>this device')}</div><div class="d">${T('한 번만 하면 계획정비·위험성 관리 등 모든 도구에 똑같이 적용됩니다.', 'Once here, applied to every tool.')}</div>
+    <div class="st ${stc(1)}"><i>${lvl > 1 ? '✓' : 1}</i>${T('어디서 쓰는 기기인가요', 'Where is it used')}</div><div class="st ${stc(2)}"><i>${lvl > 2 ? '✓' : 2}</i>${off ? T('사무실 PIN 입력', 'Office PIN') : T('선박과 PC 이름', 'Vessel and PC name')}</div><div class="st ${stc(3)}"><i>3</i>${off ? T('바로 시작', 'Start') : T('사무실 승인', 'Office approval')}</div>
+    <div class="d x" style="margin-top:auto;font-size:12.5px;color:#8F9BB8">${T('기기 종류는 도구 안에서 바꿀 수 없습니다. 바꾸려면 [설정 › 기기 초기화] 후 다시 등록합니다.', 'Device type cannot be changed inside tools. Use Settings › Reset device.')}</div></div>`;
+  let r = '';
+  if (s === 'choose') r = `<div><div class="k">${T('1단계', 'Step 1')}</div><h1>${T('이 기기는 어디서 쓰나요?', 'Where is this device used?')}</h1></div><div class="pick">
+    <button data-su="ship"><span class="ic" style="background:var(--navyL);color:var(--navy)">${U.ic('ship', 30)}</span><b>${T('선박 기기', 'Ship device')}</b><span class="a">${T('선교·CCR·ECR PC, 선박 노트북, 승무원 개인 기기', 'Bridge/CCR/ECR PCs, ship laptops, crew devices')}</span><span class="b">${T('· 자기 선박 자료만 보고 입력합니다<br>· 등록하면 <b>사무실이 승인</b>한 뒤 동기화됩니다<br>· 승인 전에도 이 기기에서는 바로 쓸 수 있습니다', '· Own vessel only<br>· Syncs after the <b>office approves</b><br>· Usable right away on this device')}</span><span class="go" style="color:var(--navy)">${T('선박 기기로 설정 →', 'Set up as ship device →')}</span></button>
+    <button data-su="office"><span class="ic" style="background:var(--goldL);color:var(--goldD)">${U.ic('bld', 30)}</span><b>${T('사무실 기기', 'Office device')}</b><span class="a">${T('안전품질팀·공무감독·DPA PC', 'SQ team, superintendents, DPA')}</span><span class="b">${T('· <b>선대 전체</b> 자료를 선박별로 골라 봅니다<br>· 결함 확인·청구 처리·DPA 승인·기기 승인<br>· <b>사무실 PIN</b>으로 바로 등록됩니다', '· <b>Whole fleet</b>, pick a vessel to view<br>· Defects, requisitions, DPA, device approval<br>· Registers at once with the <b>office PIN</b>')}</span><span class="go" style="color:var(--goldD)">${T('사무실 기기로 설정 →', 'Set up as office device →')}</span></button></div>`;
+  else if (s === 'ship'){ const v = SU.vessel || C.get('vessel') || '', pc = SU.pc != null ? SU.pc : (C.get('pcname') || ''), other = pc && !PCS.includes(pc);
+    r = `<div><div class="k">${T('2단계 · 선박 기기', 'Step 2 · Ship device')}</div><h1>${T('어느 선박, 어느 PC인가요?', 'Which vessel and PC?')}</h1></div>
+    <label class="fld">${T('선박', 'Vessel')}<select class="i" id="suV"><option value="">${T('— 선박 선택 —', '— select —')}</option>${U.VES.map(n => `<option ${n === v ? 'selected' : ''}>${n}</option>`).join('')}</select></label>
+    <div class="fld">${T('이 PC는', 'This PC is')}<div class="chips">${PCS.map(x => `<button data-supc="${x}" class="${pc === x ? 'on' : ''}">${x}</button>`).join('')}<button data-supc="" class="${other ? 'on' : ''}">${T('개인 기기·기타…', 'Personal / other…')}</button></div>
+      <input class="i" id="suPc" placeholder="${T('예: 개인 PC - 1항사 홍길동', 'e.g. Personal - C/O')}" value="${esc(other ? pc : '')}" ${other || SU.pcOther ? '' : 'hidden'}><span style="font-weight:400;font-size:13px;color:var(--mut)">${T('같은 선박의 여러 PC 자료를 구분하는 이름입니다.', 'Tells PCs of the same vessel apart.')}</span></div>
+    ${SU.err ? `<div class="err">⚠ ${esc(SU.err)}</div>` : ''}<div style="display:flex;gap:10px"><button class="btn lg" data-su="choose">← ${T('이전', 'Back')}</button><button class="btn lg p" data-su="regShip" ${SU.busy ? 'disabled' : ''}>${T('등록하고 시작하기', 'Register and start')}</button></div>`; }
+  else if (s === 'wait'){ const m = CL.me(), ok = m && m.status === 'approved';
+    r = `<div><div class="k">${T('3단계 · 사무실 승인', 'Step 3 · Office approval')}</div><h1>${ok ? T('승인되었습니다', 'Approved') : T('등록되었습니다 — 바로 쓰셔도 됩니다', 'Registered — you can start now')}</h1></div>
+    <div class="card" style="padding:22px;display:flex;flex-direction:column;gap:10px;max-width:640px"><div style="display:flex;gap:10px;align-items:center"><span class="pill ${m && m.status || 'pending'}">${ok ? T('승인됨', 'Approved') : m ? T('승인 대기', 'Pending') : T('등록 대기 (오프라인)', 'Not yet sent (offline)')}</span><b style="font-size:16px">${esc(C.get('vessel'))} · ${esc(C.get('pcname'))}</b></div>
+      <div style="font-size:14px;color:var(--ink2);line-height:1.7">${m ? T('사무실 앱의 [기기 승인]에 이 기기가 보입니다. 승인되면 자동으로 동기화가 시작됩니다.<br>그전에 입력한 자료는 이 기기에 저장되어 있다가 승인 후 함께 올라갑니다.', 'The office sees this device under Devices. Sync starts once approved; records entered before then are uploaded afterwards.') : T('인터넷이 연결되면 자동으로 서버에 등록됩니다. 그전에도 이 기기에서 바로 쓸 수 있습니다.', 'Registers automatically when online. You can use it now.')}</div>
+      ${m ? `<div style="font-size:13.5px;color:var(--mut)">${T('사무실에 알려줄 기기 확인 번호', 'Device check code for the office')} <span class="mono" style="font-size:16px;color:var(--ink)">${U.code(m.id)}</span></div>` : ''}</div>
+    <div style="display:flex;gap:10px"><button class="btn lg p" data-su="done">${T('앱 시작하기 →', 'Start →')}</button></div>`; }
+  else if (off) r = `<div><div class="k">${T('2단계 · 사무실 기기', 'Step 2 · Office device')}</div><h1>${T('사무실 PIN을 입력하세요', 'Enter the office PIN')}</h1></div>
+    <label class="fld">${T('이 PC 이름', 'PC name')}<input class="i" id="suOpc" value="${esc(SU.opc || C.get('pcname') || '사무실 - ')}"></label>
+    <label class="fld">${T('사무실 PIN', 'Office PIN')}<input class="i" id="suPin" type="password" inputmode="numeric" autocomplete="off" style="height:56px;font-size:24px;letter-spacing:8px;max-width:260px"></label>
+    <div style="font-size:13.5px;color:var(--mut);line-height:1.65;max-width:600px">${T('PIN은 회사 서버를 처음 설정할 때 정한 번호입니다. 맞으면 바로 사무실 기기로 등록되고, 모든 도구가 선대 전체 보기로 열립니다. 인터넷 연결이 필요합니다.', 'Set when the company server was configured. Registers at once; tools open with the whole fleet. Needs internet.')}</div>
+    ${SU.err ? `<div class="err">⚠ ${esc(SU.err)}</div>` : ''}<div style="display:flex;gap:10px"><button class="btn lg" data-su="choose">← ${T('이전', 'Back')}</button><button class="btn lg p" data-su="regOffice" ${SU.busy ? 'disabled' : ''} style="background:var(--goldD);border-color:var(--goldD)">${T('등록하고 시작하기', 'Register and start')}</button></div>`;
+  return `<div class="su">${left}<div class="r">${r}</div></div>`; }
+
+/* ================= 선박 홈 — 오늘 할 일 ================= */
+function shipItems(){ const v = C.get('vessel') || '', sp = U.sum('pms'), sr = U.sum('rsk'), out = [];
+  const s = sp && sp.ships && sp.ships[v];
+  if (s){ if (s.od) out.push({ k: 'p', bar: 'r', due: ['r', T('초과', 'Overdue')], t: T(`기한 초과 작업 ${s.od}건`, `${s.od} overdue jobs`), sub: (s.cri ? T(`중요장비 ${s.cri}건 포함 · `, `${s.cri} critical · `) : '') + T(`장비 ${(s.E || {}).od || 0}대`, `${(s.E || {}).od || 0} equipment`), act: T('목록 보기', 'View'), href: goTool('pms', { attrs: { v9due: 'od' } }) });
+    if (s.d7) out.push({ k: 'p', bar: 'y', due: ['y', T('7일 이내', '≤ 7 days')], t: T(`7일 안에 할 작업 ${s.d7}건`, `${s.d7} jobs due in 7 days`), sub: T(`장비 ${(s.E || {}).d7 || 0}대`, `${(s.E || {}).d7 || 0} equipment`), act: T('목록 보기', 'View'), href: goTool('pms', { attrs: { v9due: 'd7' } }) });
+    (s.S || []).forEach(([k, id, what, tx]) => out.push({ k: k === 'cls' ? 'c' : 'p', bar: k === 'cls' ? 'y' : '', due: ['g', ''], t: what, sub: tx, act: T('열기', 'Open'), href: goTool('pms', { attrs: { opsk: k, opsid: id } }) }));
+    if (s.def) out.push({ k: 'p', bar: s.defA ? 'r' : '', due: ['g', ''], t: T(`미결 결함 ${s.def}건`, `${s.def} open defects`), sub: s.defA ? T(`A등급 ${s.defA}건`, `${s.defA} grade A`) : T('결함 보고 진행 중', 'In progress'), act: T('결함', 'Defects'), href: goTool('pms', { hash: '#/defects' }) });
+    if (s.low) out.push({ k: 'p', bar: '', due: ['g', '—'], t: T(`재고 부족 ${s.low}품목`, `${s.low} items below minimum`), sub: T('최소 재고 아래 — 청구서에 담기', 'Below minimum stock — add to a requisition'), act: T('청구서', 'Requisition'), href: goTool('pms', { hash: '#/spares' }) }); }
+  const r = sr && sr.v && sr.v[v];
+  if (r){ const lab = { draft: T('작성 중 위험성 평가', 'Draft RA'), wait: T('DPA 승인 대기', 'Awaiting DPA'), stop: T('작업 중지 — 보완 필요', 'Stopped — revise') };
+    (r.items || []).forEach(([k, id, tx]) => out.push({ k: 'r', bar: k === 'stop' ? 'r' : k === 'wait' ? 'y' : '', due: ['g', ''], t: lab[k] || k, sub: tx, act: T('열기', 'Open'), href: goTool('rsk', { attrs: { a: 'kpiGo', v: 'raList:' + k } }) }));
+    if (r.act) out.push({ k: 'r', bar: 'y', due: ['y', T('작업 중', 'Active')], t: T(`작업 중 PTW ${r.act}건`, `${r.act} active permits`), sub: T('작업 종료 후 허가서 마감', 'Close permits after work'), act: T('보기', 'View'), href: goTool('rsk', { attrs: { a: 'kpiGo', v: 'ptwList:act' } }) }); }
+  if (sr && sr.site !== 'office' && !sr.crew) out.push({ k: 'r', bar: '', due: ['g', T('설정', 'Setup')], t: T('승무원 명단이 없습니다', 'No crew list'), sub: T('Crew List를 불러오면 평가팀·TBM 참석자를 고를 수 있습니다', 'Import the crew list to pick RA team and TBM attendees'), act: T('불러오기', 'Import'), href: 'tools/rsk.html#settings' });
+  return out; }
+function todayHTML(){ const v = C.get('vessel') || '', sp = U.sum('pms'), sr = U.sum('rsk'), s = sp && sp.ships && sp.ships[v], r = (sr && sr.v && sr.v[v]) || { draft: 0, wait: 0, stop: 0, act: 0, moc: 0 };
+  const all = shipItems(), list = all.filter(x => TF === 'all' || x.k === TF || (TF === 'p' && x.k === 'c'));
+  const tagN = { p: ['p', T('계획정비', 'PMS')], r: ['r', T('위험성', 'Risk')], c: ['c', T('선급', 'Class')] };
+  const qa = (href, bg, fg, ic, t, sub) => `<a href="${href}"><span class="ic" style="background:${bg};color:${fg}">${U.ic(ic, 21)}</span><span><b>${t}</b><small>${sub}</small></span></a>`;
+  return `<header class="top"><div class="tt"><small>${esc(v)}${C.get('pcname') ? ' · ' + esc(C.get('pcname')) : ''} · ${today()}</small><h1>${T('오늘 할 일', 'Today')}</h1></div></header>
+  <div class="wrap">
+    <section class="qa">${qa(goTool('pms', { hash: '#/due' }), 'var(--navyL)', 'var(--navy)', 'M20 6 9 17l-5-5', T('작업 실시 입력', 'Record a job'), T('계획정비', 'Maintenance'))}${qa(goTool('pms', { hash: '#/defects', attrs: { act: 'defNew' } }), 'var(--redL)', 'var(--red)', 'M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z', T('결함 등록', 'Report a defect'), T('계획정비', 'Maintenance'))}${qa(goTool('rsk', { attrs: { a: 'newRA' } }), 'var(--orgL)', 'var(--org)', 'rsk', T('새 위험성 평가', 'New risk assessment'), 'RA · TBM · PTW')}${qa(goTool('pms', { hash: '#/spares', attrs: { act: 'reqNew' } }), 'var(--grnL)', 'var(--grn)', 'M3 7h18M6 7v13h12V7M9 11h6', T('청구서 작성', 'New requisition'), T('예비품 · IMPA', 'Spares · IMPA'))}</section>
+    <div class="cols"><section class="card mainc" style="overflow:hidden"><div class="lh"><h2>${T('처리할 일', 'To do')} <span>${T('모든 도구에서 모음', 'from all tools')}</span></h2><div class="seg">${[['all', T('전체', 'All')], ['p', T('계획정비', 'PMS')], ['r', T('위험성', 'Risk')]].map(([k, l]) => `<button data-tf="${k}" class="${TF === k ? 'on' : ''}">${l}</button>`).join('')}</div></div>
+      ${list.length ? list.map(x => `<div class="td"><span class="bar ${x.bar}"></span><span class="tx"><span><span class="tag ${tagN[x.k][0]}">${tagN[x.k][1]}</span><b>${esc(x.t)}</b></span><small>${esc(x.sub || '')}</small></span><span class="due ${x.due[0]}">${esc(x.due[1])}</span><a class="btn s" href="${x.href}">${esc(x.act)}</a></div>`).join('')
+        : `<div class="empty">${sp || sr ? '✅ ' + T('지금 처리할 일이 없습니다.', 'Nothing to do right now.') : T('계획정비·위험성 관리를 한 번 열면 여기에 할 일이 모입니다.', 'Open Maintenance and Risk once — their to-dos gather here.')}</div>`}</section>
+      <aside class="side">
+        <section class="card sc"><h3><i style="background:var(--navy)"></i>${T('계획정비', 'Maintenance')}</h3>${s ? `<div class="g2"><a class="kt r" href="${goTool('pms', { attrs: { v9due: 'od' } })}"><b>${s.od}</b><span>${T('기한 초과', 'Overdue')}</span></a><a class="kt y" href="${goTool('pms', { attrs: { v9due: 'd7' } })}"><b>${s.d7}</b><span>${T('7일 이내', '≤ 7 days')}</span></a><a class="kt" href="${goTool('pms', { hash: '#/defects' })}"><b>${s.def}</b><span>${T('미결 결함', 'Open defects')}</span></a><a class="kt" href="${goTool('pms', { hash: '#/spares' })}"><b>${s.low}</b><span>${T('재고 부족', 'Low stock')}</span></a></div><div style="font-size:12px;color:var(--mut);margin-top:10px">${T('기준', 'As of')} ${U.ago(sp.at)}</div>` : `<div style="font-size:13.5px;color:var(--mut)">${T('계획정비를 열면 표시됩니다.', 'Shown after opening Maintenance.')}</div>`}</section>
+        <section class="card sc"><h3><i style="background:var(--org)"></i>${T('위험성 관리', 'Risk')}</h3>${sr ? [[T('작성 중 위험성 평가', 'Draft RA'), r.draft], [T('DPA 승인 대기', 'Awaiting DPA'), r.wait], [T('작업 중지(불가)', 'Stopped'), r.stop], [T('작업 중 PTW', 'Active PTW'), r.act], [T('진행 중 MoC', 'Open MoC'), r.moc]].map(([a, b]) => `<div class="kv"><span>${a}</span><b>${b}</b></div>`).join('') : `<div style="font-size:13.5px;color:var(--mut)">${T('위험성 관리를 열면 표시됩니다.', 'Shown after opening Risk.')}</div>`}</section>
+        ${regCard()}
+      </aside></div>
+  </div>`; }
+function regCard(){ const m = CL.me(); if (m && m.status === 'approved') return '';
+  return `<section class="card sc" style="border-color:#F2C35B"><h3>${T('서버 동기화', 'Server sync')}</h3><div style="font-size:13.5px;color:var(--ink2);line-height:1.65">${!m ? T('아직 서버에 등록되지 않았습니다. 인터넷이 연결되면 자동으로 등록합니다.', 'Not registered yet — registers automatically when online.') : m.status === 'pending' ? T(`사무실 승인을 기다리는 중입니다. 확인 번호 <span class="mono">${U.code(m.id)}</span>`, `Waiting for office approval. Code <span class="mono">${U.code(m.id)}</span>`) : T('이 기기는 서버 동기화가 해제되었습니다. 사무실에 문의하세요.', 'Sync was revoked for this device.')}</div><div style="margin-top:10px"><button class="btn s" data-act="refresh">${T('상태 새로 고침', 'Refresh')}</button></div></section>`; }
+
+/* ================= 사무실 홈 — 선대 현황 ================= */
+function fleetHTML(){ const sp = U.sum('pms'), sr = U.sum('rsk'), S = (sp && sp.ships) || {}, R = (sr && sr.v) || {};
+  const last = {}; (LST || []).forEach(f => { if (f.ship && (!last[f.ship] || f.saved_at > last[f.ship])) last[f.ship] = f.saved_at; });
+  const tot = k => Object.values(S).reduce((a, s) => a + (s[k] || 0), 0), totO = Object.values(S).reduce((a, s) => a + (s.O || []).length, 0), totW = Object.values(R).reduce((a, s) => a + (s.wait || 0), 0);
+  const synced = U.VES.filter(v => last[v] || S[v]).length, pend = DEV ? DEV.filter(d => d.status === 'pending').length : 0;
+  const O = []; Object.entries(S).forEach(([n, s]) => (s.O || []).forEach(([k, id, what, tx]) => O.push({ n, k, id, what, tx })));
+  Object.entries(R).forEach(([n, s]) => (s.items || []).filter(x => x[0] === 'wait').forEach(([k, id, tx]) => O.push({ n, k: 'dpa', id, what: T('DPA 승인 대기', 'Awaiting DPA'), tx, rsk: 1 })));
+  return `<header class="top"><div class="tt"><small>${T('사무실', 'Office')} · ${esc(C.get('pcname') || '')}</small><h1>${T('선대 현황', 'Fleet overview')}</h1></div>${pend ? `<a class="btn" href="#devices" style="background:var(--goldL);border-color:#F2C35B;color:#6B4600">${T('기기 승인 대기', 'Devices pending')} ${pend}</a>` : ''}</header>
+  <div class="wrap">
+    <section class="kpis"><div class="kpi"><small>${T('사무실 처리 대기', 'Office to-do')}</small><b>${sp || sr ? totO + totW : '—'}</b><span>${T('결함·청구·DPA 승인', 'Defects · requisitions · DPA')}</span></div><div class="kpi"><small>${T('기한 초과 작업', 'Overdue jobs')}</small><b style="color:var(--red)">${sp ? tot('od') : '—'}</b><span>${T('받은 선박 합계', 'Sum of synced vessels')}</span></div><div class="kpi"><small>${T('미결 결함', 'Open defects')}</small><b>${sp ? tot('def') : '—'}</b><span>${T('A등급', 'Grade A')} ${sp ? tot('defA') : '—'}</span></div><div class="kpi"><small>${T('동기화된 선박', 'Synced vessels')}</small><b>${synced} <span style="font-size:16px;font-weight:500">/ ${U.VES.length}${T('척', '')}</span></b><span>${T('나머지는 기기 등록 전', 'Others not registered')}</span></div></section>
+    <section class="card" style="overflow:hidden"><div class="lh"><h2>${T('선박별', 'By vessel')} <span>${T('줄을 누르면 그 선박의 계획정비로 들어갑니다', 'Click a row to open its maintenance')}</span></h2></div><div class="tw"><table class="t">
+      <tr><th>${T('선박', 'Vessel')}</th><th>${T('마지막 동기화', 'Last sync')}</th><th>${T('기한 초과', 'Overdue')}</th><th>${T('7일 이내', '≤ 7 d')}</th><th>${T('미결 결함', 'Defects')}</th><th>${T('사무실 처리', 'Office to-do')}</th><th>${T('DPA 승인 대기', 'DPA')}</th><th>${T('작업 중 PTW', 'PTW')}</th></tr>
+      ${U.VES.map(v => { const s = S[v], r = R[v], l = last[v]; return `<tr class="cl" data-ship="${esc(v)}"><td><b>${esc(v)}</b></td><td><span class="dot ${l ? ((Date.now() - new Date(l)) < 864e5 ? 'ok' : 'y') : ''}"></span>${l ? U.ago(l) : (s ? T('받음', 'received') : T('자료 없음', 'No data'))}</td><td style="font-weight:700;color:${s && s.od ? 'var(--red)' : 'inherit'}">${s ? s.od : '—'}</td><td>${s ? s.d7 : '—'}</td><td>${s ? s.def : '—'}</td><td>${s ? (s.O || []).length : '—'}</td><td>${r ? r.wait : '—'}</td><td>${r ? r.act : '—'}</td></tr>`; }).join('')}
+    </table></div></section>
+    <section class="card" style="overflow:hidden"><div class="lh"><h2>${T('사무실 처리 대기', 'Office to-do')} <span>${T('전 선박', 'all vessels')}</span></h2></div>
+      ${O.length ? O.slice(0, 30).map(x => `<div class="td"><span class="bar y"></span><span class="tx"><span><span class="tag ${x.rsk ? 'r' : 'p'}">${esc(x.n)}</span><b>${esc(x.what)}</b></span><small>${esc(x.tx || '')}</small></span><a class="btn s" href="${x.rsk ? goTool('rsk', { attrs: { a: 'kpiGo', v: 'raList:wait' } }) : goTool('pms', { view: x.n, attrs: { opsk: x.k, opsid: x.id, opsship: x.n } })}">${T('열기', 'Open')}</a></div>`).join('') : `<div class="empty">${sp || sr ? '✅ ' + T('처리 대기 항목이 없습니다.', 'Nothing waiting.') : T('계획정비·위험성 관리를 한 번 열면 선박 자료가 모입니다.', 'Open Maintenance and Risk once to gather vessel data.')}</div>`}</section>
+  </div>`; }
+
+/* ================= 기기 승인 (사무실) ================= */
+function devicesHTML(){ const m = CL.me();
+  if (!DEV) return `<header class="top"><div class="tt"><small>${T('사무실 · 서버 동기화', 'Office · server sync')}</small><h1>${T('기기 승인', 'Devices')}</h1></div></header><div class="wrap"><div class="card empty">${DEVERR ? '⚠ ' + esc(DEVERR) : T('불러오는 중…', 'Loading…')}</div></div>`;
+  const P = DEV.filter(d => d.status === 'pending'), A = DEV.filter(d => d.status !== 'pending');
+  return `<header class="top"><div class="tt"><small>${T('사무실 · 서버 동기화', 'Office · server sync')}</small><h1>${T('기기 승인', 'Devices')}</h1></div><button class="btn" data-act="devload">${T('새로 고침', 'Refresh')}</button></header>
+  <div class="wrap">
+    <section class="card" style="overflow:hidden;${P.length ? 'border:1.5px solid #F2C35B' : ''}"><div class="lh" style="${P.length ? 'background:#FFFAEB' : ''}"><h2>${T('승인 대기', 'Pending')} ${P.length}${T('대', '')} <span>${T('선박에 전화·메일로 확인 번호를 맞춰 본 뒤 승인하세요', 'Check the code with the vessel before approving')}</span></h2></div>
+      ${P.length ? P.map(d => `<div class="td"><span class="ic" style="width:44px;height:44px;border-radius:12px;background:var(--navyL);color:var(--navy);display:flex;align-items:center;justify-content:center">${U.ic('ship', 22)}</span><span class="tx"><b style="font-size:16px">${esc(d.ship)}</b> <span style="color:var(--ink2)">· ${esc(d.pc_name)}</span><small>${T('등록', 'Registered')} ${U.ago(d.created_at)} · ${T('확인 번호', 'Code')} <span class="mono" style="color:var(--ink)">${U.code(d.id)}</span></small></span><button class="btn" data-dev="${d.id}" data-st="delete">${T('거절', 'Reject')}</button><button class="btn ok" data-dev="${d.id}" data-st="approved">${T('승인', 'Approve')}</button></div>`).join('') : `<div class="empty">${T('승인을 기다리는 기기가 없습니다.', 'No devices waiting.')}</div>`}</section>
+    <section class="card" style="overflow:hidden"><div class="lh"><h2>${T('등록된 기기', 'Registered devices')} <span>${T('하선·교체한 PC는 [해제]하세요', 'Revoke PCs that leave the vessel')}</span></h2></div><div class="tw"><table class="t">
+      <tr><th>${T('구분', 'Type')}</th><th>${T('선박', 'Vessel')}</th><th>${T('PC 이름', 'PC')}</th><th>${T('상태', 'Status')}</th><th>${T('마지막 접속', 'Last seen')}</th><th></th></tr>
+      ${A.map(d => `<tr><td><span class="pill ${d.role === 'office' ? 'o' : 's'}">${d.role === 'office' ? T('사무실', 'Office') : T('선박', 'Ship')}</span></td><td><b>${d.role === 'office' ? '—' : esc(d.ship)}</b></td><td>${esc(d.pc_name)}${m && d.id === m.id ? ` <span style="color:var(--grn);font-weight:700">(${T('이 기기', 'this')})</span>` : ''}</td><td><span class="pill ${d.status}">${d.status === 'approved' ? T('승인', 'Approved') : T('해제', 'Revoked')}</span></td><td>${U.ago(d.last_seen || d.created_at)}</td><td style="text-align:right">${m && d.id === m.id ? '' : d.status === 'approved' ? `<button class="btn s" data-dev="${d.id}" data-st="revoked">${T('해제', 'Revoke')}</button>` : `<button class="btn s" data-dev="${d.id}" data-st="approved">${T('다시 승인', 'Re-approve')}</button> <button class="btn s" data-dev="${d.id}" data-st="delete">${T('삭제', 'Delete')}</button>`}</td></tr>`).join('')}
+    </table></div></section>
+  </div>`; }
+
+/* ================= 설정 ================= */
+let DIRH = null, DIRP = 'none';
+async function dirLoad(){ DIRH = await C.dirGet(); DIRP = 'none'; if (DIRH){ try { DIRP = await DIRH.queryPermission({ mode: 'readwrite' }); } catch (e) { DIRP = 'prompt'; } } const s = $('#dirSt'); if (!s) return;
+  $('#dirOk').hidden = !(DIRH && DIRP !== 'granted'); $('#dirX').hidden = !DIRH;
+  s.innerHTML = !window.showDirectoryPicker ? T('이 브라우저는 폴더 저장을 지원하지 않습니다', 'Not supported in this browser') : !DIRH ? T('사용 안 함', 'Not used') : `📁 <b>${esc(DIRH.name)}</b> ${DIRP === 'granted' ? '<span style="color:var(--grn);font-weight:700">✓</span>' : `<span style="color:var(--goldD);font-weight:700">— ${T('이번 실행에서 허용 필요', 'allow for this session')}</span>`}`; }
+const standalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+function settingsHTML(){ const role = U.role(), off = role === 'office', m = CL.me(), co = company(), pc = C.get('pcname') || '', lang = C.get('lang') || 'ko';
+  setTimeout(dirLoad, 0);
+  const sync = !m ? `<span class="pill pending">${T('미등록', 'Not registered')}</span> <span style="font-size:13.5px;color:var(--ink2)">${T('인터넷이 연결되면 자동으로 등록합니다.', 'Registers automatically when online.')}</span>`
+    : `<span class="pill ${m.status}">${m.status === 'approved' ? T('연결됨', 'Connected') : m.status === 'pending' ? T('사무실 승인 대기', 'Waiting for approval') : T('해제됨', 'Revoked')}</span> <span style="font-size:13.5px;color:var(--ink2)">${T('확인 번호', 'Code')} <span class="mono">${U.code(m.id)}</span></span>`;
+  return `<header class="top"><div class="tt"><small>${T('모든 도구에 똑같이 적용', 'Applied to all tools')}</small><h1>${T('설정', 'Settings')}</h1></div></header>
+  <div class="wrap">
+    <section class="card sec" id="s-dev"><h2>${T('이 기기', 'This device')}</h2><p>${T('처음 설정에서 정한 내용입니다.', 'Set during first setup.')}</p>
+      <div class="row"><label>${T('기기 종류', 'Device type')}</label><div style="padding-top:8px"><span class="pill ${off ? 'o' : 's'}" style="font-size:13.5px">${off ? T('🏢 사무실 기기 — 선대 전체', '🏢 Office — whole fleet') : T('🚢 선박 기기 — 자기 선박만', '🚢 Ship — own vessel only')}</span><div class="h">${T('바꾸려면 아래 [기기 초기화] 후 다시 등록합니다.', 'To change, reset the device below and register again.')}</div></div></div>
+      ${off ? '' : `<div class="row"><label>${T('선박', 'Vessel')}</label><div style="padding-top:8px"><b style="font-size:15px">${esc(C.get('vessel') || '—')}</b><div class="h">${T('선박 기기는 등록한 선박으로 고정됩니다.', 'Fixed to the registered vessel.')}</div></div></div>`}
+      <div class="row"><label>${T('PC 이름', 'PC name')}</label><div><div style="display:flex;gap:8px;max-width:520px"><input class="i" id="pcIn" value="${esc(pc)}" style="flex:1"><button class="btn" data-act="pcSave">${T('저장', 'Save')}</button></div><div class="h">${T('같은 선박의 여러 PC를 구분하는 이름입니다. 바꾸면 서버의 기기 목록에도 반영됩니다.', 'Updates the server device list too.')}</div></div></div>
+      <div class="row"><label>${T('언어', 'Language')}</label><div><div class="seg" style="display:inline-flex"><button data-lang="ko" class="${lang === 'ko' ? 'on' : ''}">한국어</button><button data-lang="en" class="${lang === 'en' ? 'on' : ''}">English</button></div><div class="h">${T('화면 언어입니다. 출력 서식은 한·영 병기 그대로입니다.', 'Screen language. Printed forms stay bilingual.')}</div></div></div></section>
+    <section class="card sec" id="s-co"><h2>${T('회사 정보', 'Company')}</h2><p>${T('DPA 승인 요청·보고 메일에 쓰입니다 (모든 도구 공통).', 'Used for DPA requests and reports (all tools).')}</p>
+      <div class="row"><label>DPA · SQ</label><div class="gr2"><div><label>${T('DPA 성명', 'DPA name')}</label><input class="i" data-co="dpaName" value="${esc(co.dpaName)}"></div><div><label>${T('DPA 연락처', 'DPA phone')}</label><input class="i" data-co="dpaPhone" value="${esc(co.dpaPhone)}"></div><div><label>${T('DPA 메일', 'DPA e-mail')}</label><input class="i" data-co="dpaEmail" value="${esc(co.dpaEmail)}"></div><div><label>${T('안전품질팀 메일', 'SQ e-mail')}</label><input class="i" data-co="sqEmail" value="${esc(co.sqEmail)}"></div></div></div></section>
+    <section class="card sec" id="s-sync"><h2>${T('동기화·백업', 'Sync & backup')}</h2><p>${T('인터넷이 되면 회사 서버로 자동으로 주고받습니다 (도구를 열어 둔 동안 2분마다, 저장할 때).', 'Syncs through the company server when online.')}</p>
+      <div class="row"><label>${T('서버 동기화', 'Server sync')}</label><div><div style="padding-top:8px">${sync}</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn s" data-act="refresh">${T('상태 새로 고침', 'Refresh')}</button>${off && m && m.status === 'approved' ? `<button class="btn s" data-act="backup">${T('서버 자료 백업 받기', 'Download server backup')}</button>` : ''}</div>${ERR ? `<div class="err">⚠ ${esc(ERR)}</div>` : ''}</div></div>
+      <div class="row"><label>${T('백업 폴더 (선택)', 'Backup folder (optional)')}</label><div><div style="padding-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span id="dirSt"></span><button class="btn s" data-act="dir">${T('폴더 선택', 'Choose')}</button><button class="btn s" id="dirOk" data-act="dirOk" hidden>${T('이번에 허용', 'Allow')}</button><button class="btn s" id="dirX" data-act="dirX" hidden>${T('연결 해제', 'Disconnect')}</button></div><div class="h">${T('고르면 도구 자료 파일을 이 폴더에도 저장합니다 — 인터넷이 없을 때 같은 선박 PC끼리 공유 폴더로 주고받거나 PC 백업용. 서버 동기화를 쓰면 없어도 됩니다.', 'Also saves data files here — for sharing without internet or as a PC backup.')}</div></div></div></section>
+    <section class="card sec" id="s-push"><h2>${T('알림', 'Notifications')}</h2><p>${T('앱을 닫아 두어도 이 기기로 알림이 옵니다 (인터넷 연결 시). 노트북·태블릿·휴대폰 각각 켜야 합니다.', 'Arrive even when the app is closed (when online). Turn on for each device.')}</p>
+      <div class="row"><label>${T('이 기기', 'This device')}</label><div><div style="padding-top:8px" id="pushSt">…</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px" id="pushBtns"></div><div class="err" id="pushErr" hidden></div></div></div>
+      <div class="row"><label>${T('받는 알림', 'Alarms')}</label><div style="padding-top:6px" id="pfTypes"></div></div>
+      <div class="row"><label>${T('방해 금지 시간', 'Quiet hours')}</label><div id="pfQuiet"></div></div>
+      <div class="row"><label></label><div class="h" style="margin-top:0">${off ? T('사무실 알림은 선박별로 묶어 10분마다 새로 생긴 것만 보냅니다.', 'Office alarms are grouped by vessel; only new items, every 10 minutes.') : T('PTW 만료 알림은 인터넷이 없어도 위험성 관리를 열어 둔 동안 이 기기에서 울립니다.', 'The permit reminder also works offline while Risk is open.')} ${T('휴대폰 자체의 방해 금지 모드도 함께 적용됩니다.', 'Your phone’s own Do Not Disturb also applies.')} ${/iPhone|iPad/.test(navigator.userAgent) ? T('iPhone·iPad는 홈 화면에 설치한 앱에서만 알림을 받을 수 있습니다 (iOS 16.4 이상).', 'iPhone/iPad: only from the app added to the Home Screen (iOS 16.4+).') : ''}</div></div></div></section>
+    <section class="card sec" id="s-tools"><h2>${T('도구별 설정', 'Tool settings')}</h2><p>${T('그 도구에만 필요한 설정입니다.', 'Settings that belong to one tool.')}</p>
+      <div class="tl" style="padding:8px 0 16px"><a href="tools/pms.html#/settings"><span class="ic" style="background:var(--navy)">${U.ic('pms', 21)}</span><span><b>${T('계획정비', 'Maintenance')}</b><small>${T('본선 정보·선박 DB·SFI DB', 'Vessel, ship DB, SFI DB')}</small></span></a><a href="tools/rsk.html#settings"><span class="ic" style="background:var(--org)">${U.ic('rsk', 21)}</span><span><b>${T('위험성 관리', 'Risk')}</b><small>${T('본선 메일·승무원 명단·PTW 판정 기준', 'Ship e-mail, crew list, PTW criteria')}</small></span></a></div></section>
+    <section class="card sec" id="s-app"><h2>${T('앱', 'App')}</h2>
+      <div class="row"><label>${T('버전', 'Version')}</label><div><div style="padding-top:8px"><b>v2026.11.11.1538</b> <span style="color:var(--mut);font-size:12.5px">· PMS 2.3.0 (v19) · RSK v1.23</span></div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn s" data-act="update">${T('업데이트 확인', 'Check for updates')}</button>${standalone() ? '' : `<button class="btn s g" data-act="install">${T('이 PC에 설치', 'Install on this PC')}</button>`}</div><div class="h" id="updSt"></div><div class="note" id="inst" hidden style="margin-top:10px"></div></div></div>
+      <div class="row"><label>${T('기기 초기화', 'Reset device')}</label><div><button class="btn s" data-act="reset" style="color:var(--red);border-color:#F3B4AE">${T('기기 초기화…', 'Reset device…')}</button><div class="h">${T('기기 종류·선박을 다시 정할 때. 서버 연결을 끊고 처음 설정으로 돌아갑니다. 이 기기의 도구 자료는 지워지지 않습니다.', 'Disconnects from the server and returns to first setup. Tool records on this device are kept.')}</div></div></div></section>
+  </div>`; }
+
+/* ================= 알림 ================= */
+async function pushPaint(){ const st = $('#pushSt'); if (!st) return; const m = CL.me(), ok = m && m.status === 'approved', ps = await CL.pushState();
+  st.innerHTML = !ok ? `<span class="pill pending">${T('서버 승인 후 사용', 'After server approval')}</span>` : ps === 'on' ? `<span class="pill approved">${T('켜짐', 'On')}</span>` : ps === 'denied' ? `<span class="pill revoked">${T('브라우저에서 막힘', 'Blocked by the browser')}</span> <span style="font-size:13px;color:var(--mut)">${T('주소창 왼쪽 자물쇠 → 알림 → 허용', 'Address bar lock icon → Notifications → Allow')}</span>` : ps === 'unsup' ? `<span class="pill revoked">${T('이 브라우저는 지원하지 않음', 'Not supported')}</span>` : `<span class="pill pending">${T('꺼짐', 'Off')}</span>`;
+  $('#pushBtns').innerHTML = !ok || ps === 'unsup' ? '' : ps === 'on' ? `<button class="btn s" data-act="pushTest">${T('시험 알림 보내기', 'Send a test')}</button><button class="btn s" data-act="pushOff">${T('끄기', 'Turn off')}</button>` : `<button class="btn s p" data-act="pushOn">${T('알림 켜기', 'Turn on')}</button>`; }
+const PFT = { ship: [['daily', '🌅', '매일 아침 08:00 — 기한 초과·7일 이내 작업', 'Every morning 08:00 — overdue / 7-day jobs'], ['ptw', '⏱', 'PTW 만료 30분 전', 'Permit expiring in 30 min'], ['dpa', '✍️', '위험성 평가 DPA 결과 (승인·조건부·반려)', 'DPA decision on risk assessments']],
+  office: [['off', '🔧', '결함·청구서·DPA 승인 요청 (선박별 묶음)', 'Defects, requisitions, DPA requests (by vessel)'], ['dev', '🖥', '새 기기 승인 요청', 'New device approval']] };
+const hm = m => String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'), mh = v => { const [h, m] = String(v || '0:0').split(':').map(Number); return (h || 0) * 60 + (m || 0); };
+function prefsPaint(){ const a = $('#pfTypes'), b = $('#pfQuiet'); if (!a) return; const pf = CL.prefs(), role = U.role() === 'office' ? 'office' : 'ship';
+  a.innerHTML = PFT[role].map(([k, ic, ko, en]) => `<label style="display:flex;gap:10px;align-items:center;padding:6px 0;font-size:14.5px;cursor:pointer"><input type="checkbox" data-pft="${k}" ${pf.types[k] === false ? '' : 'checked'} style="width:20px;height:20px">${ic} ${T(ko, en)}</label>`).join('');
+  b.innerHTML = `<label style="display:flex;gap:10px;align-items:center;padding:6px 0;font-size:14.5px;cursor:pointer"><input type="checkbox" data-pfq ${pf.quiet ? 'checked' : ''} style="width:20px;height:20px">${T('사용', 'On')}</label>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:4px 0 6px;${pf.quiet ? '' : 'opacity:.45;pointer-events:none'}"><input class="i" type="time" data-pff value="${hm(pf.from)}" style="width:130px"> ~ <input class="i" type="time" data-pfto value="${hm(pf.to)}" style="width:130px"> <span style="font-size:13px;color:var(--mut)">${T('이 기기 현지 시각', 'local time on this device')}</span></div>
+    ${role === 'ship' ? `<label style="display:flex;gap:10px;align-items:center;padding:4px 0;font-size:14px;cursor:pointer;${pf.quiet ? '' : 'opacity:.45;pointer-events:none'}"><input type="checkbox" data-pfp ${pf.ptw ? 'checked' : ''} style="width:20px;height:20px">${T('PTW 만료 알림은 방해 금지 중에도 받기 (당직자용, 권장)', 'Still get permit-expiry alarms during quiet hours (for the watch, recommended)')}</label>` : ''}
+    <div class="h">${T('방해 금지 동안 생긴 알림은 버리지 않고, 끝나는 시각에 한 번에 모아서 보냅니다.', 'Alarms during quiet hours are kept and delivered together when quiet hours end.')}</div>`; }
+async function prefsSave(){ const pf = CL.prefs(); document.querySelectorAll('[data-pft]').forEach(c => { if (c.checked) delete pf.types[c.dataset.pft]; else pf.types[c.dataset.pft] = false; });
+  const q = $('[data-pfq]'), f = $('[data-pff]'), t2 = $('[data-pfto]'), pp = $('[data-pfp]'); if (q) pf.quiet = q.checked; if (f && f.value) pf.from = mh(f.value); if (t2 && t2.value) pf.to = mh(t2.value); if (pp) pf.ptw = pp.checked;
+  try { await CL.prefsSet(pf); toast(T('알림 설정을 저장했습니다', 'Saved')); } catch (e) { pushErr(e); } prefsPaint(); }
+function pushErr(e){ const el = $('#pushErr'); if (!el) return; const s = String(e && e.message || e); el.hidden = !s; el.textContent = s ? '⚠ ' + (/denied/.test(s) ? T('알림이 거부되었습니다 — 주소창 왼쪽 자물쇠 → 알림 → 허용 후 다시 누르세요', 'Notifications were blocked — allow them from the address bar lock icon') : /dismissed/.test(s) ? T('알림 허용 창이 닫혔습니다 — 다시 누르세요', 'The permission prompt was closed — try again') : /HTTP 401|JWT|authorization/i.test(s) ? T('알림 함수(sj-push)의 JWT 확인이 아직 켜져 있습니다 — Supabase › Edge Functions › sj-push › Details에서 끄세요', 'JWT verification is still on for sj-push — turn it off under Details') : /Failed to fetch|NetworkError|404|not found/i.test(s) ? T('알림 서버(sj-push)에 연결할 수 없습니다 — 서버 설정 4단계를 확인하세요', 'Cannot reach the notification function (sj-push)') : /does not exist|Could not find the function/i.test(s) ? T('알림 서버 설정(SQL)이 아직 실행되지 않았습니다', 'Notification SQL has not been run') : s) : ''; }
+function appBadge(){ try { if (!navigator.setAppBadge) return; const role = U.role(); let n = 0; if (role === 'office'){ const sp = U.sum('pms'), sr = U.sum('rsk'); Object.values((sp && sp.ships) || {}).forEach(s => n += (s.O || []).length); Object.values((sr && sr.v) || {}).forEach(s => n += s.wait || 0); if (DEV) n += DEV.filter(d => d.status === 'pending').length; } else if (role === 'ship') n = shipItems().length; n ? navigator.setAppBadge(n) : navigator.clearAppBadge(); } catch (e) {} }
+
+/* ================= 동작 ================= */
+async function regShip(){ const v = ($('#suV') || {}).value, other = $('#suPc') && !$('#suPc').hidden ? $('#suPc').value.trim() : '', pc = other || SU.pc || '';
+  SU.vessel = v; if (!v){ SU.err = T('선박을 고르세요', 'Choose the vessel'); return paint(); } if (!pc){ SU.err = T('PC 이름을 고르거나 입력하세요', 'Choose or type a PC name'); return paint(); }
+  C.set('role', 'ship'); C.set('vessel', v); C.set('lastship', v); C.set('pcname', pc); SU.busy = true; SU.err = ''; paint();
+  try { if (navigator.onLine) await CL.register('ship', v, pc); } catch (e) { console.warn(e); }
+  SU.busy = false; SU.s = 'wait'; paint(); }
+async function regOffice(){ const pc = ($('#suOpc').value || '').trim(), pin = $('#suPin').value; SU.opc = pc;
+  if (!pc || /- $/.test(pc)){ SU.err = T('PC 이름을 입력하세요', 'Enter the PC name'); return paint(); } if (!pin){ SU.err = T('사무실 PIN을 입력하세요', 'Enter the office PIN'); return paint(); }
+  SU.busy = true; SU.err = ''; paint();
+  try { await CL.register('office', '', pc, pin); C.set('role', 'office'); C.set('vessel', '__office'); C.set('pcname', pc); C.set('view', ''); SU = { s: 'choose', err: '' }; location.hash = ''; devLoad(); paint(); }
+  catch (e) { SU.busy = false; SU.err = clErr(e); paint(); } }
+async function devLoad(){ if (U.role() !== 'office' || !U.officeOK()) return; try { DEV = await CL.rpc('sj_devices_list'); DEVERR = ''; } catch (e) { DEVERR = clErr(e); } if (VIEW === 'devices' || VIEW === 'home') paint(); else pendBadge(); }
+async function lstLoad(){ if (U.role() !== 'office' || !U.officeOK()) return; try { const a = await CL.rpc('sj_list', { p_tool: 'pms' }), b = await CL.rpc('sj_list', { p_tool: 'rsk' }); LST = [...(a || []), ...(b || [])]; if (VIEW === 'home') paint(); } catch (e) {} }
 async function saveFile(name, text){ const blob = new Blob([text], { type: 'application/json' });
   if (window.showSaveFilePicker){ try { const h = await showSaveFilePicker({ suggestedName: name, types: [{ description: 'JSON', accept: { 'application/json': ['.json'] } }] }); const w = await h.createWritable(); await w.write(blob); await w.close(); return true; } catch (e) { if (e.name === 'AbortError') return false; } }
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); return true; }
-document.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return;
-  if (b.dataset.clrole){ CLR.role = b.dataset.clrole; CLR.err = ''; clPaint(); }
-  else if (b.id === 'clReg'){ const pin0 = (document.getElementById('clPin') || {}).value; clDo(async () => { const role = CLR.role || (SJAPP.get('vessel') === '__office' ? 'office' : 'ship'), v = SJAPP.get('vessel') || '', pc = SJAPP.get('pcname') || '';
-    if (!pc) throw T('먼저 [이 PC 이름]을 입력하세요|Set the PC name first'); if (role === 'ship' && (!v || v === '__office')) throw T('먼저 [선박]을 고르세요|Choose the vessel first');
-    const pin = role === 'office' ? pin0 : null; if (role === 'office' && !pin) throw T('사무실 PIN을 입력하세요|Enter the office PIN');
-    await CL.register(role, role === 'office' ? '' : v, pc, pin); if (role === 'office') await clDevs(); }); }
-  else if (b.id === 'clRef') clDo(async () => { await CL.refresh(); if (CLR.devs) await clDevs(); });
-  else if (b.id === 'clDev') clDo(async () => { if (CLR.devs){ CLR.devs = null; return; } await clDevs(); });
-  else if (b.dataset.cld){ if (b.dataset.st === 'delete' && !confirm(T('이 기기 등록을 삭제할까요?|Delete this device?'))) return; if (b.dataset.st === 'revoked' && !confirm(T('이 기기의 서버 동기화를 해제할까요?|Revoke server sync for this device?'))) return; clDo(async () => { await CL.rpc('sj_device_set', { p_id: b.dataset.cld, p_status: b.dataset.st }); await clDevs(); }); }
-  else if (b.id === 'clBak') clDo(async () => { const rows = await CL.rpc('sj_backup', {}, 300e3) || [], out = [];
-    for (const r of rows){ let data = null; try { data = JSON.parse(await CL.ungz(r.body)); } catch (e) {} out.push({ tool: r.tool, name: r.name, ship: r.ship, pc: r.pc_name, savedAt: r.saved_at, data }); }
-    const d = new Date(), d8 = d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0');
-    await saveFile(`SEJUL_SERVER_BACKUP_${d8}.json`, JSON.stringify({ kind: 'SEJUL-SERVER-BACKUP', at: d.toISOString(), files: out })); });
-  else if (b.id === 'clOut'){ if (!confirm(T('이 기기의 서버 연결을 끊을까요? (이 PC의 자료는 그대로 남습니다. 다시 쓰려면 새로 등록·승인이 필요합니다)|Disconnect this device? (Local records stay. Re-registration and approval needed to reconnect)'))) return; ['sejul_cloud_key', 'sejul_cloud_me', 'sejul_cloud_pms_pushed', 'sejul_cloud_pms_seen', 'sejul_cloud_rsk_pushed', 'sejul_cloud_rsk_seen'].forEach(k => localStorage.removeItem(k)); CLR = { role: '', err: '', devs: null, busy: false }; clPaint(); } });
-const _paint0 = paint; paint = function(){ _paint0(); clPaint(); };
-/* 앱 홈을 열 때마다 상태 확인 (서버 쉼 방지 접속 기록 포함) */
-if (CL.me() && navigator.onLine) CL.refresh().then(async m => { if (m && m.role === 'office' && m.status === 'approved') { try { await clDevs(); } catch (e) {} } clPaint(); }).catch(() => {});
-setInterval(() => { if (CL.me() && navigator.onLine) CL.refresh().then(() => { if (!CLR.busy) clPaint(); }).catch(() => {}); }, 10 * 60e3);
-paint(); paintInst(); SJAPP.watchUpdate();
-navigator.serviceWorker && navigator.serviceWorker.ready.then(() => document.getElementById('swst').textContent = T('오프라인 사용 준비됨 ✓|Ready for offline use ✓'));
+async function checkUpdate(){ const s = $('#updSt'); s && (s.textContent = T('확인 중…', 'Checking…'));
+  try { const r = await navigator.serviceWorker.getRegistration(); if (r.waiting){ r.waiting.postMessage('skip'); return; } await r.update(); setTimeout(() => { if (r.waiting) r.waiting.postMessage('skip'); const e = $('#updSt'); e && (e.textContent = r.installing || r.waiting ? T('새 버전을 받는 중 — 곧 바뀝니다', 'Downloading…') : T('최신 버전입니다 ✓', 'Up to date ✓')); }, 1500); }
+  catch (e) { s && (s.textContent = T('오프라인 — 연결되면 다시 확인', 'Offline — try later')); } }
+function instHelp(){ const ua = navigator.userAgent, edge = /Edg\//.test(ua), ios = /iPhone|iPad/.test(ua), n = $('#inst'); if (!n) return; n.hidden = false;
+  n.innerHTML = ios ? T('iPhone·iPad: Safari 아래쪽 [공유 ⬆] → [홈 화면에 추가]', 'Safari Share → Add to Home Screen') : edge ? T('Edge: 주소창 오른쪽 [앱 설치 ⊕] → [설치]. 없으면 [···] → [앱] → [이 사이트를 앱으로 설치]', 'Edge: install icon in the address bar, or ··· → Apps → Install') : T('Chrome: 주소창 오른쪽 [설치 ⊕] → [설치]. 없으면 [⋮] → [전송, 저장, 공유] → [페이지를 앱으로 설치…]', 'Chrome: install icon in the address bar, or ⋮ → Cast, save and share → Install page as app'); }
+document.addEventListener('click', async e => { const b = e.target.closest('button,[data-ship]'); if (!b) return; const d = b.dataset;
+  if (d.su){ if (d.su === 'regShip') return regShip(); if (d.su === 'regOffice') return regOffice(); if (d.su === 'done'){ SU = { s: 'choose', err: '' }; location.hash = ''; return paint(); } SU.err = ''; SU.s = d.su; return paint(); }
+  if (d.supc != null){ SU.vessel = ($('#suV') || {}).value; if (d.supc){ SU.pc = d.supc; SU.pcOther = false; } else { SU.pc = ''; SU.pcOther = true; } paint(); if (!d.supc) setTimeout(() => $('#suPc') && $('#suPc').focus(), 30); return; }
+  if (d.tf){ TF = d.tf; return paint(); }
+  if (d.ship && b.tagName === 'TR'){ C.set('view', d.ship); location.href = goTool('pms', { view: d.ship, hash: '#/home' }); return; }
+  if (d.lang){ C.set('lang', d.lang); return paint(); }
+  if (d.dev){ if (d.st === 'revoked' && !confirm(T('이 기기의 서버 동기화를 해제할까요?', 'Revoke sync for this device?'))) return; if (d.st === 'delete' && !confirm(T('이 기기 등록을 지울까요?', 'Delete this device?'))) return;
+    b.disabled = true; try { await CL.rpc('sj_device_set', { p_id: d.dev, p_status: d.st }); toast(d.st === 'approved' ? T('승인했습니다', 'Approved') : T('처리했습니다', 'Done')); } catch (er) { toast(clErr(er)); } return devLoad(); }
+  switch (d.act){
+    case 'refresh': ERR = ''; try { await CL.refresh(); } catch (er) { ERR = clErr(er); } devLoad(); return paint();
+    case 'devload': DEV = null; paint(); return devLoad();
+    case 'pcSave': { const v = $('#pcIn').value.trim(); if (!v) return; C.set('pcname', v); try { const m = CL.me(); if (m && m.status !== 'none' && navigator.onLine) await CL.register(m.role, m.role === 'office' ? '' : C.get('vessel'), v); } catch (er) {} toast(T('저장했습니다', 'Saved')); return paint(); }
+    case 'backup': try { const rows = await CL.rpc('sj_backup', {}, 300e3) || [], out = []; for (const r of rows){ let data = null; try { data = JSON.parse(await CL.ungz(r.body)); } catch (er) {} out.push({ tool: r.tool, name: r.name, ship: r.ship, pc: r.pc_name, savedAt: r.saved_at, data }); }
+        const t = new Date(), d8 = t.getFullYear() + String(t.getMonth() + 1).padStart(2, '0') + String(t.getDate()).padStart(2, '0'); await saveFile(`SEJUL_SERVER_BACKUP_${d8}.json`, JSON.stringify({ kind: 'SEJUL-SERVER-BACKUP', at: t.toISOString(), files: out })); } catch (er) { ERR = clErr(er); paint(); } return;
+    case 'dir': if (!window.showDirectoryPicker) return; try { const h = await showDirectoryPicker({ id: 'sejul', mode: 'readwrite' }); await h.requestPermission({ mode: 'readwrite' }); await C.dirSet(h); toast(T('백업 폴더를 연결했습니다', 'Folder connected')); } catch (er) {} return dirLoad();
+    case 'dirOk': try { await DIRH.requestPermission({ mode: 'readwrite' }); } catch (er) {} return dirLoad();
+    case 'dirX': if (confirm(T('백업 폴더 연결을 해제할까요? (폴더의 파일은 그대로 남습니다)', 'Disconnect the folder? (files stay)'))){ await C.dirSet(null); dirLoad(); } return;
+    case 'update': return checkUpdate();
+    case 'pushOn': pushErr(''); b.disabled = true; try { await CL.pushOn(); toast(T('알림을 켰습니다', 'Notifications on')); } catch (er) { pushErr(er); } return pushPaint();
+    case 'pushOff': try { await CL.pushOff(); toast(T('알림을 껐습니다', 'Notifications off')); } catch (er) { pushErr(er); } return pushPaint();
+    case 'pushTest': pushErr(''); try { const r = await CL.pushTest(); toast(r.sent ? T('시험 알림을 보냈습니다 — 몇 초 안에 도착합니다', 'Test sent — arrives in a few seconds') : T('보낼 구독이 없습니다 — 끄고 다시 켜 보세요', 'No subscription — turn off and on again')); } catch (er) { pushErr(er); } return;
+    case 'install': if (window.__bip){ __bip.prompt(); await __bip.userChoice.catch(() => ({})); __bip = null; } else instHelp(); return;
+    case 'reset': if (!confirm(T('이 기기를 초기화할까요?\n· 서버 연결을 끊고 처음 설정으로 돌아갑니다\n· 다시 쓰려면 새로 등록하고 (선박 기기는) 사무실 승인을 받아야 합니다\n· 이 기기에 저장된 도구 자료는 지워지지 않습니다', 'Reset this device? It will disconnect from the server and return to first setup. Records stay.'))) return;
+      ['sejul_cloud_key', 'sejul_cloud_me', 'sejul_cloud_pms_pushed', 'sejul_cloud_pms_seen', 'sejul_cloud_rsk_pushed', 'sejul_cloud_rsk_seen', 'sejul_sum_pms', 'sejul_sum_rsk'].forEach(k => localStorage.removeItem(k)); ['role', 'view'].forEach(k => C.set(k, '')); DEV = null; LST = null; SU = { s: 'choose', err: '' }; location.hash = ''; return paint(); } });
+document.addEventListener('change', e => { const k = e.target.dataset && e.target.dataset.co; if (k){ const o = company(); o[k] = e.target.value.trim() || CO0[k]; C.set('company', JSON.stringify(o)); toast(T('저장했습니다 — 모든 도구에 적용', 'Saved — applied to all tools')); }
+  if (e.target.id === 'suV') SU.vessel = e.target.value;
+  if (e.target.matches && e.target.matches('[data-pft],[data-pfq],[data-pff],[data-pfto],[data-pfp]')) prefsSave(); });
+document.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.id === 'suPin') regOffice(); if (e.key === 'Enter' && e.target.id === 'pcIn') document.querySelector('[data-act=pcSave]').click(); });
+U.onView = v => { location.href = v ? goTool('pms', { view: v, hash: '#/home' }) : goTool('pms', { hash: '#/fleet' }); };
+addEventListener('hashchange', () => { paint(); if (VIEW === 'devices') devLoad(); if (VIEW === 'home') lstLoad(); }); addEventListener('online', () => { autoReg(); paint(); }); addEventListener('offline', paint);
+addEventListener('beforeinstallprompt', e => { e.preventDefault(); window.__bip = e; });
+addEventListener('storage', e => { if (/^sejul_(sum_|common_)/.test(e.key || '')) paint(); });
+/* 처음 설정을 오프라인에서 한 선박 기기: 연결되면 자동 등록 */
+async function autoReg(){ const role = C.get('role'), m = CL.me(); if (role !== 'ship' || (m && m.status && m.status !== 'none') || !navigator.onLine) return; const v = C.get('vessel'), pc = C.get('pcname'); if (!v || !pc) return; try { await CL.register('ship', v, pc); paint(); } catch (e) {} }
+/* 새 버전 */
+if ('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').then(reg => { const on = () => { UPD = true; paint(); }; if (reg.waiting && navigator.serviceWorker.controller) on(); reg.addEventListener('updatefound', () => { const w = reg.installing; w && w.addEventListener('statechange', () => { if (w.state === 'installed' && navigator.serviceWorker.controller) on(); }); }); setInterval(() => reg.update().catch(() => {}), 30 * 60e3); }).catch(() => {});
+  let rl = false; navigator.serviceWorker.addEventListener('controllerchange', () => { if (rl) return; rl = true; location.reload(); }); }
+/* 시작 */
+{ const st = document.createElement('style'); st.textContent = U.css; document.head.appendChild(st); }
+paint(); autoReg();
+if (CL.me() && navigator.onLine) CL.refresh().then(() => { devLoad(); lstLoad(); paint(); CL.sumPush().catch(() => {}); CL.pushState().then(st => { if (st === 'on') CL.prefsSet(CL.prefs()).catch(() => {}); }); }).catch(() => {});
+setInterval(() => { if (CL.me() && navigator.onLine) CL.refresh().then(() => { U.syncPaint(); devLoad(); }).catch(() => {}); }, 5 * 60e3);
 </script></body></html>

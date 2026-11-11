@@ -19,7 +19,7 @@
   const hash = s => { let h = 2166136261 >>> 0; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; } return h.toString(36) + ':' + s.length; };
   /* 상태 표시 */
   C.state = { busy: false, last: null, err: '', up: 0, down: 0 };
-  C.badge = () => { const b = document.getElementById('sjAppHome'); if (!b) return; let c = b.querySelector('.cl'); if (!c) { c = document.createElement('i'); c.className = 'cl'; b.appendChild(c); }
+  C.badge = () => { if (window.SJUI && SJUI.syncPaint) SJUI.syncPaint(); const b = document.getElementById('sjAppHome'); if (!b) return; let c = b.querySelector('.cl'); if (!c) { c = document.createElement('i'); c.className = 'cl'; b.appendChild(c); }
     const m = C.me(), s = C.state; c.textContent = !m || m.status === 'none' ? '' : m.status !== 'approved' ? ' ☁⏳' : s.err ? ' ☁⚠' : s.busy ? ' ☁…' : s.last ? ' ☁✓' : ' ☁';
     b.title = '앱 홈 · App home' + (m && m.status === 'approved' ? `\n서버 동기화: ${s.err ? '오류 — ' + s.err : s.last ? new Date(s.last).toLocaleTimeString() + ' (올림 ' + s.up + ' · 받음 ' + s.down + ')' : '대기'}` : m && m.status === 'pending' ? '\n서버 동기화: 사무실 승인 대기' : ''); };
   /* 동기화 한 번: 올리기 → 받기 */
@@ -41,8 +41,41 @@
       LSS('sejul_cloud_' + tool + '_seen', JSON.stringify(seen));
       if (n) await A.after(n);
       C.state.last = Date.now(); C.state.err = '';
+      setTimeout(() => C.sumPush().catch(() => {}), 2500);
     } catch (e) { C.state.err = e.message; console.warn('cloud', e); }
     C.state.busy = false; C.badge(); return n; };
+  /* 알림용 요약 올리기 — 선박: 자기 선박의 계획정비·위험성 요약 / 사무실: 선박별 DPA 결정 (바뀐 것만) */
+  C.sumPush = async function () { const m = C.me(); if (!m || m.status !== 'approved' || !navigator.onLine) return;
+    const rd = k => { try { return JSON.parse(LS('sejul_sum_' + k) || 'null'); } catch (e) { return null; } }, sp = rd('pms'), sr = rd('rsk'), out = [];
+    if (m.role === 'ship') { const v = m.ship, s = sp && sp.ships && sp.ships[v], r = sr && sr.v && sr.v[v];
+      if (s && sp.mode !== 'admin') out.push(['pms', v, { od: s.od || 0, d7: s.d7 || 0, D: s.D || [], R: s.R || [] }]);
+      if (r && sr.site !== 'office') out.push(['rsk', v, { wait: (r.items || []).filter(x => x[0] === 'wait').map(x => [x[1], x[2]]), ptw: r.ptw || [] }]); }
+    else if (sr && sr.site === 'office') Object.entries(sr.v || {}).forEach(([v, r]) => { if (v && v !== '—' && (r.dpa || []).length) out.push(['dpa', v, { list: r.dpa }]); });
+    let h = {}; try { h = JSON.parse(LS('sejul_cloud_sum_h') || '{}'); } catch (e) { }
+    for (const [tool, ship, data] of out) { const j = JSON.stringify(data), hk = tool + ':' + ship, hv = hash(j); if (h[hk] === hv) continue;
+      try { await C.rpc('sj_summary_put', { p_ship: ship, p_tool: tool, p_data: data }); h[hk] = hv; } catch (e) { if (/does not exist|Could not find the function/i.test(e.message)) break; console.warn('sum', e.message); } }
+    LSS('sejul_cloud_sum_h', JSON.stringify(h)); };
+  /* 알림(푸시) 켜기·끄기·시험 */
+  /* 알림 함수 이름: 대시보드에서 정한 이름이 달라도 찾아서 기억 (sj-push → sg-push → rapid-api) */
+  C.FN = ['sj-push', 'sg-push', 'rapid-api'];
+  C.fn = async (body) => { const saved = LS('sejul_push_fn'), names = saved ? [saved, ...C.FN.filter(n => n !== saved)] : C.FN; let last;
+    for (const n of names) { const r = await fetch(C.url + '/functions/v1/' + n, { method: 'POST', headers: { apikey: C.key, 'Content-Type': 'application/json' }, body: JSON.stringify(body) }); const t = await r.text(); let j; try { j = JSON.parse(t); } catch (e) { j = { error: t }; }
+      if (r.status === 404 && /NOT_FOUND|not found/i.test(t)) { last = new Error('HTTP 404 function not found'); continue; }
+      if (!r.ok) throw new Error('HTTP ' + r.status + ' ' + (j.error || j.message || j.msg || ''));
+      LSS('sejul_push_fn', n); return j; }
+    throw last || new Error('HTTP 404 function not found'); };
+  const u8 = b => { const p = '='.repeat((4 - b.length % 4) % 4), s = atob((b + p).replace(/-/g, '+').replace(/_/g, '/')), a = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) a[i] = s.charCodeAt(i); return a; };
+  C.pushState = async () => { if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) return 'unsup'; if (Notification.permission === 'denied') return 'denied';
+    try { const reg = await navigator.serviceWorker.getRegistration(); const sub = reg && await reg.pushManager.getSubscription(); return sub ? 'on' : 'off'; } catch (e) { return 'off'; } };
+  C.prefs = () => { let o = {}; try { o = JSON.parse(LS('sejul_push_prefs') || '{}') || {}; } catch (e) { } return Object.assign({ quiet: true, from: 1320, to: 420, ptw: true, types: {} }, o); };
+  C.prefsSet = async o => { LSS('sejul_push_prefs', JSON.stringify(o)); const reg = await navigator.serviceWorker.getRegistration(), sub = reg && await reg.pushManager.getSubscription(); if (sub) await C.rpc('sj_push_prefs', { p_endpoint: sub.endpoint, p_prefs: o, p_tz: -new Date().getTimezoneOffset() }); };
+  C.pushOn = async () => { const p = await Notification.requestPermission(); if (p !== 'granted') throw new Error(p === 'denied' ? 'denied' : 'dismissed');
+    const reg = await navigator.serviceWorker.ready, { key } = await C.fn({ op: 'vapid' });
+    let sub = await reg.pushManager.getSubscription(); if (sub && sub.options && sub.options.applicationServerKey) { const a = new Uint8Array(sub.options.applicationServerKey), b = u8(key); if (a.length !== b.length || a.some((x, i) => x !== b[i])) { await sub.unsubscribe(); sub = null; } }
+    if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: u8(key) });
+    await C.rpc('sj_push_sub', { p_sub: sub.toJSON(), p_tz: -new Date().getTimezoneOffset(), p_prefs: C.prefs() }); LSS('sejul_push_on', '1'); return true; };
+  C.pushOff = async () => { const reg = await navigator.serviceWorker.getRegistration(), sub = reg && await reg.pushManager.getSubscription(); if (sub) { try { await C.rpc('sj_push_unsub', { p_endpoint: sub.endpoint }); } catch (e) { } await sub.unsubscribe(); } LSS('sejul_push_on', ''); };
+  C.pushTest = () => C.fn({ op: 'test', key: C.devKey() });
   /* 도구 연결: 시작 5초 후 · 2분마다 · 저장 15초 후 · 창으로 돌아올 때 · 인터넷 연결될 때 */
   C.start = function (A) { if (!C.url || /__CLOUD/.test(C.url)) return; C.A = A; let t;
     const kick = (d) => { clearTimeout(t); t = setTimeout(() => C.sync(A), d); };

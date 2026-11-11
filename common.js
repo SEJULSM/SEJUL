@@ -3,7 +3,7 @@
    도구 코드는 그대로 두고 저장 키만 연결하므로, 도구를 따로(HTML 파일) 써도 동작은 같음. */
 (function () {
   const C = window.SJAPP = window.SJAPP || {};
-  C.ver = '2026.11.11.1321';
+  C.ver = '2026.11.11.1538';
   C.inApp = true;
   /* 도구별 키 ↔ 공통 키 */
   const MAP = {
@@ -47,6 +47,6 @@
       if (reg.waiting && navigator.serviceWorker.controller) show(); reg.addEventListener('updatefound', () => { const w = reg.installing; w && w.addEventListener('statechange', () => { if (w.state === 'installed' && navigator.serviceWorker.controller) show(); }); }); setInterval(() => reg.update().catch(() => { }), 30 * 60e3); }).catch(() => { });
     let rl = false; navigator.serviceWorker.addEventListener('controllerchange', () => { if (rl) return; rl = true; location.reload(); }); };
   /* 도구 페이지: 불러온 뒤 연결 */
-  if (!C.isHub) { const go = () => { C.hookTools(); C.homeBtn(); C.watchUpdate(); setTimeout(C.applyVessel, 1500); setTimeout(C.hookTools, 2500); };
+  if (!C.isHub) { const go = () => { C.hookTools(); if (!C.shell) { C.homeBtn(); setTimeout(C.applyVessel, 1500); } C.watchUpdate(); setTimeout(C.hookTools, 2500); };
     if (document.readyState === 'complete') setTimeout(go, 300); else window.addEventListener('load', () => setTimeout(go, 300)); }
 })();
