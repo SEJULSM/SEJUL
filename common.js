@@ -3,7 +3,7 @@
    도구 코드는 그대로 두고 저장 키만 연결하므로, 도구를 따로(HTML 파일) 써도 동작은 같음. */
 (function () {
   const C = window.SJAPP = window.SJAPP || {};
-  C.ver = '2026.11.11.1603';
+  C.ver = '2026.11.11.1621';
   C.inApp = true;
   /* 도구별 키 ↔ 공통 키 */
   const MAP = {
@@ -39,12 +39,21 @@
   C.homeBtn = function () { if (document.getElementById('sjAppHome')) return; const a = document.createElement('a'); a.id = 'sjAppHome'; a.href = '../index.html'; a.title = '앱 홈 · App home'; a.innerHTML = '<b>⌂</b><span>앱 홈</span>'; document.body.appendChild(a); };
   const css = `#sjAppHome{position:fixed;left:8px;bottom:84px;z-index:9998;display:flex;align-items:center;gap:4px;background:#1F3864;color:#fff;text-decoration:none;border-radius:20px;padding:6px 12px 6px 9px;font:600 13px/1 'Noto Sans KR',sans-serif;box-shadow:0 3px 10px #0004;opacity:.88}#sjAppHome:hover{opacity:1}#sjAppHome b{font-size:16px;color:#F5B800}#sjAppHome .cl{font-style:normal;font-size:12px}
   @media (max-width:760px){#sjAppHome{left:auto;right:8px;top:6px;bottom:auto;padding:5px 9px;font-size:0}#sjAppHome b{font-size:16px}}
-  #sjUpd{position:fixed;left:50%;transform:translateX(-50%);top:10px;z-index:9999;background:#1F3864;color:#fff;border-radius:10px;padding:10px 14px;font:14px 'Noto Sans KR',sans-serif;box-shadow:0 6px 20px #0005;display:flex;gap:10px;align-items:center}#sjUpd button{background:#F5B800;border:0;border-radius:6px;padding:6px 12px;font-weight:700;cursor:pointer}`;
+  #sjUpd{position:fixed;left:0;right:0;top:0;z-index:10000;background:#F2B705;color:#14244A;padding:10px 18px;font:14.5px 'Noto Sans KR','Malgun Gothic',sans-serif;box-shadow:0 2px 10px #0003;display:flex;gap:14px;align-items:center;justify-content:center;flex-wrap:wrap}#sjUpd button{background:#14244A;color:#fff;border:0;border-radius:8px;padding:7px 16px;font-weight:700;cursor:pointer;font:inherit;font-weight:700}html.sj-hasupd body{padding-top:46px!important}html.sj-hasupd #top.sj-top,html.sj-hasupd .sjr{top:46px!important}`;
   const st = document.createElement('style'); st.textContent = css; (document.head || document.documentElement).appendChild(st);
   /* 6) 새 버전 알림 (서비스 워커) */
+  C.updHas = false;
+  C.updBar = function () { if (!C.updHas || document.getElementById('sjUpd') || !document.body) return; const en = (C.get('lang') || 'ko') === 'en', d = document.createElement('div'); d.id = 'sjUpd'; d.setAttribute('role', 'alert');
+    d.innerHTML = '<b>⬆ ' + (en ? 'An update is available — please update to the latest version.' : '업데이트가 있습니다 — 최신 버전으로 업데이트해 주십시오.') + '</b><button type="button">' + (en ? 'Update now' : '지금 업데이트') + '</button>';
+    d.querySelector('button').onclick = () => C.updNow(); document.body.appendChild(d); document.documentElement.classList.add('sj-hasupd'); };
+  C.updNow = async function () { try { const reg = await navigator.serviceWorker.getRegistration(); if (reg && reg.waiting) { reg.waiting.postMessage('skip'); return true; } } catch (e) { } return false; };
+  C.updCheck = async function () { try { const reg = await navigator.serviceWorker.getRegistration(); if (!reg) return 'none'; if (reg.waiting) { C.updFound(); return 'has'; } await reg.update(); await new Promise(r => setTimeout(r, 1800)); if (reg.waiting || reg.installing) { C.updFound(); return 'has'; } return 'latest'; } catch (e) { return 'offline'; } };
+  C.updFound = function () { C.updHas = true; C.updBar(); if (window.SJUI && SJUI.updPaint) SJUI.updPaint(); if (C.onUpd) C.onUpd(); };
   C.watchUpdate = function () { if (!('serviceWorker' in navigator)) return;
-    navigator.serviceWorker.register(C.swPath || '../sw.js').then(reg => { const show = () => { if (document.getElementById('sjUpd')) return; const d = document.createElement('div'); d.id = 'sjUpd'; d.innerHTML = '🔄 새 버전이 있습니다 · New version <button>지금 업데이트</button>'; d.querySelector('button').onclick = () => { if (reg.waiting) reg.waiting.postMessage('skip'); }; document.body.appendChild(d); };
-      if (reg.waiting && navigator.serviceWorker.controller) show(); reg.addEventListener('updatefound', () => { const w = reg.installing; w && w.addEventListener('statechange', () => { if (w.state === 'installed' && navigator.serviceWorker.controller) show(); }); }); setInterval(() => reg.update().catch(() => { }), 30 * 60e3); }).catch(() => { });
+    navigator.serviceWorker.register(C.swPath || '../sw.js').then(reg => {
+      if (reg.waiting && navigator.serviceWorker.controller) C.updFound();
+      reg.addEventListener('updatefound', () => { const w = reg.installing; w && w.addEventListener('statechange', () => { if (w.state === 'installed' && navigator.serviceWorker.controller) C.updFound(); }); });
+      setTimeout(() => reg.update().catch(() => { }), 3000); setInterval(() => reg.update().catch(() => { }), 30 * 60e3); }).catch(() => { });
     let rl = false; navigator.serviceWorker.addEventListener('controllerchange', () => { if (rl) return; rl = true; location.reload(); }); };
   /* 도구 페이지: 불러온 뒤 연결 */
   if (!C.isHub) { const go = () => { C.hookTools(); if (!C.shell) { C.homeBtn(); setTimeout(C.applyVessel, 1500); } C.watchUpdate(); setTimeout(C.hookTools, 2500); };

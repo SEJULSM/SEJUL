@@ -8,6 +8,10 @@
   /* 기기 종류: 처음 설정에서 정함 (선박 / 사무실). 서버 등록 정보가 있으면 그것을 따름 */
   U.me = () => window.SJCLOUD && SJCLOUD.me ? SJCLOUD.me() : null;
   U.role = () => { const m = U.me(); if (m && m.role && m.status !== 'none') return m.role; return C.get('role') || ''; };
+  /* 기기 종류: PC · 노트북 · 태블릿 · 휴대폰 (처음 설정에서 자동으로 고르고 바꿀 수 있음) */
+  U.KINDS = [['pc', '🖥', 'PC', 'Desktop PC'], ['laptop', '💻', '노트북', 'Laptop'], ['tablet', '📟', '태블릿', 'Tablet'], ['phone', '📱', '휴대폰', 'Phone']];
+  U.kindGuess = () => { const ua = navigator.userAgent, touch = navigator.maxTouchPoints > 1; if (/iPad/.test(ua) || (/Macintosh/.test(ua) && touch) || (/Android/.test(ua) && !/Mobile/.test(ua))) return 'tablet'; if (/iPhone|Android.*Mobile|Mobile/.test(ua)) return 'phone'; return 'pc'; };
+  U.kindLabel = k => { const x = U.KINDS.find(y => y[0] === k); return x ? x[1] + ' ' + U.T(x[2], x[3]) : '—'; };
   U.officeOK = () => { const m = U.me(); return !!(m && m.role === 'office' && m.status === 'approved'); };
   U.code = id => { const h = String(id || '').replace(/-/g, '').toUpperCase(); return h ? h.slice(0, 4) + '-' + h.slice(4, 8) : '—'; };
   U.sum = k => { try { return JSON.parse(localStorage.getItem('sejul_sum_' + k) || 'null'); } catch (e) { return null; } };
@@ -37,6 +41,7 @@
 .sjr .sj-it:hover{background:#1E3260;color:#fff}.sjr .sj-it .sj-ii{color:#A9B4CE;display:flex}.sjr .sj-it.on{background:#24396B;color:#fff;font-weight:700}.sjr .sj-it.on .sj-ii{color:#F2B705}
 .sjr .sj-it .sj-bd{margin-left:auto;background:#D92D20;color:#fff;border-radius:10px;padding:1px 8px;font-size:12px;font-weight:700}.sjr .sj-it .sj-bd.y{background:#F2B705;color:#14244A}
 .sjr .sj-it.soon{color:#6F7C9C;pointer-events:none}.sjr .sj-it.soon .sj-sn{margin-left:auto;border:1px solid #3A4E7C;color:#8F9BB8;border-radius:10px;padding:0 7px;font-size:11px}
+.sjr .sj-up .sj-ut{display:flex;flex-direction:column;line-height:1.25}.sjr .sj-up .sj-ut span{font-size:12.5px;color:#C9D2E6}.sjr .sj-up .sj-ut small{font-size:12px;color:#8F9BB8}.sjr .sj-up.has{background:#F2B705!important;color:#14244A!important}.sjr .sj-up.has .sj-ii,.sjr .sj-up.has .sj-ut span,.sjr .sj-up.has .sj-ut small{color:#14244A!important;font-weight:700}
 .sjr .sj-ft{margin-top:auto;display:flex;flex-direction:column;gap:6px;padding-top:10px}
 .sjr .sj-sy{display:flex;align-items:center;gap:9px;background:#0F1D3D;border-radius:12px;padding:10px 12px;font-size:12.5px;color:#C9D2E6}.sjr .sj-sy .sj-d{width:9px!important;height:9px!important;min-width:0!important;padding:0!important;border-radius:50%;background:#8F9BB8;flex:none}.sjr .sj-sy .sj-d.ok{background:#3CCB7F}.sjr .sj-sy .sj-d.warn{background:#F2B705}.sjr .sj-sy .sj-d.err{background:#F04438}
 @media (max-width:899px){.sjr{display:none!important}}
@@ -58,7 +63,7 @@
       ${off ? it('devices', base + 'index.html#devices', T('기기 승인', 'Devices'), 'dev', '<span class="sj-bd y" data-sjpend hidden></span>') : ''}
       <span class="sj-it soon"><span class="sj-ii">${U.ic('stw')}</span><span>${T('화물 호환성', 'Cargo compat.')}</span><span class="sj-sn">${T('준비 중', 'Soon')}</span></span>
       <span class="sj-it soon"><span class="sj-ii">${U.ic('sms')}</span><span>${T('SMS 서식', 'SMS forms')}</span><span class="sj-sn">${T('준비 중', 'Soon')}</span></span>
-      <div class="sj-ft">${it('settings', base + 'index.html#settings', T('설정', 'Settings'), 'set')}<a class="sj-sy" id="sjSync" href="${base}index.html#settings/sync"><span class="sj-d"></span><span class="sj-t">${T('서버 동기화', 'Server sync')}</span></a></div></nav>`; };
+      <div class="sj-ft"><a class="sj-it sj-up" href="#" data-sjupd><span class="sj-ii">${U.ic('M21 12a9 9 0 1 1-2.6-6.4L21 8M21 3v5h-5')}</span><span class="sj-ut"><span>${T('앱 버전', 'App version')} v${U.esc(String(C.ver || '').replace(/^(\d{4})\.(\d\d)\.(\d\d)\.(\d\d)(\d\d)$/, '$1.$2.$3 $4:$5'))}</span><small>${T('업데이트 확인', 'Check for updates')}</small></span></a>${it('settings', base + 'index.html#settings', T('설정', 'Settings'), 'set')}<a class="sj-sy" id="sjSync" href="${base}index.html#settings/sync"><span class="sj-d"></span><span class="sj-t">${T('서버 동기화', 'Server sync')}</span></a></div></nav>`; };
   /* 동기화 표시 (레일 아래) */
   U.syncPaint = function () { const el = document.getElementById('sjSync'); if (!el) return; const T = U.T, m = U.me(), s = (window.SJCLOUD && SJCLOUD.state) || {};
     let c = '', t;
@@ -70,6 +75,11 @@
     else if (s.busy) { c = 'ok'; t = T('동기화 중…', 'Syncing…'); }
     else { c = 'ok'; const at = s.last; t = at ? T('동기화', 'Synced') + ' · ' + U.ago(at) : T('서버 연결됨', 'Connected'); }
     el.querySelector('.sj-d').className = 'sj-d ' + c; el.querySelector('.sj-t').textContent = t; el.title = s.err ? s.err : ''; };
+  /* 업데이트 표시 (왼쪽 메뉴) */
+  U.updPaint = function (msg) { const a = document.querySelector('.sjr [data-sjupd]'); if (!a) return; const has = !!C.updHas; a.classList.toggle('has', has); const sm = a.querySelector('small'); if (sm) sm.textContent = has ? U.T('⬆ 새 버전 — 눌러서 업데이트', '⬆ New version — tap to update') : (msg || U.T('업데이트 확인', 'Check for updates')); };
+  document.addEventListener('click', async e => { const a = e.target.closest && e.target.closest('[data-sjupd]'); if (!a) return; e.preventDefault();
+    if (C.updHas && C.updNow && await C.updNow()) return; U.updPaint(U.T('확인 중…', 'Checking…')); const r = C.updCheck ? await C.updCheck() : 'none';
+    U.updPaint(r === 'latest' ? U.T('최신 버전입니다 ✓', 'Up to date ✓') : r === 'offline' ? U.T('오프라인 — 나중에 다시', 'Offline — try later') : r === 'has' ? '' : U.T('업데이트 확인', 'Check for updates')); });
   /* 보는 선박 바꾸기 (사무실) */
   document.addEventListener('change', e => { const s = e.target.closest && e.target.closest('[data-sjview]'); if (!s) return; C.set('view', s.value); if (U.onView) U.onView(s.value); });
 })();

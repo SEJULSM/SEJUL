@@ -12,7 +12,7 @@
     try { const r = await fetch(C.url + '/rest/v1/rpc/' + fn, { method: 'POST', headers: { apikey: C.key, 'Content-Type': 'application/json' }, body: JSON.stringify(Object.assign({ p_key: C.devKey() }, args || {})), signal: ac.signal });
       const tx = await r.text(); let j; try { j = tx ? JSON.parse(tx) : null; } catch (e) { j = tx; } if (!r.ok) throw new Error((j && (j.message || j.hint)) || ('HTTP ' + r.status)); return j; } finally { clearTimeout(tm); } };
   C.refresh = async () => { const m = await C.rpc('sj_me'); C.setMe(Object.assign(m || {}, { at: Date.now() })); return m; };
-  C.register = async (role, ship, pc, pin) => { const m = await C.rpc('sj_register', { p_role: role, p_ship: ship, p_pc: pc, p_pin: pin || null }); C.setMe(Object.assign(m, { at: Date.now() })); return m; };
+  C.register = async (role, ship, pc, pin, kind) => { const m = await C.rpc('sj_register', { p_role: role, p_ship: ship, p_pc: pc, p_pin: pin || null, p_kind: kind || (window.SJAPP && SJAPP.get('kind')) || null }); C.setMe(Object.assign(m, { at: Date.now() })); return m; };
   /* gzip + base64 */
   C.gz = async s => { const b = await new Response(new Blob([s]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer(), u = new Uint8Array(b); let o = ''; for (let i = 0; i < u.length; i += 0x8000) o += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000)); return btoa(o); };
   C.ungz = async b64 => { const b = atob(b64), u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return new Response(new Blob([u]).stream().pipeThrough(new DecompressionStream('gzip'))).text(); };
@@ -49,7 +49,7 @@
     const rd = k => { try { return JSON.parse(LS('sejul_sum_' + k) || 'null'); } catch (e) { return null; } }, sp = rd('pms'), sr = rd('rsk'), out = [];
     if (m.role === 'ship') { const v = m.ship, s = sp && sp.ships && sp.ships[v], r = sr && sr.v && sr.v[v];
       if (s && sp.mode !== 'admin') out.push(['pms', v, { od: s.od || 0, d7: s.d7 || 0, d30: s.d30 || 0, cri: s.cri || 0, def: s.def || 0, defA: s.defA || 0, low: s.low || 0, D: s.D || [], R: s.R || [] }]);
-      if (r && sr.site !== 'office') out.push(['rsk', v, { draft: r.draft || 0, waitN: r.wait || 0, stop: r.stop || 0, act: r.act || 0, moc: r.moc || 0, wait: (r.items || []).filter(x => x[0] === 'wait').map(x => [x[1], x[2]]), ptw: r.ptw || [] }]); }
+      if (r && sr.site !== 'office') out.push(['rsk', v, { draft: r.draft || 0, waitN: r.wait || 0, stop: r.stop || 0, act: r.act || 0, moc: r.moc || 0, wait: (r.items || []).filter(x => x[0] === 'wait' || x[0] === 'mocw').map(x => [x[1], x[2]]), ptw: r.ptw || [] }]); }
     else if (sr && sr.site === 'office') Object.entries(sr.v || {}).forEach(([v, r]) => { if (v && v !== '—' && (r.dpa || []).length) out.push(['dpa', v, { list: r.dpa }]); });
     let h = {}; try { h = JSON.parse(LS('sejul_cloud_sum_h') || '{}'); } catch (e) { }
     for (const [tool, ship, data] of out) { const j = JSON.stringify(data), hk = tool + ':' + ship, hv = hash(j); if (h[hk] === hv) continue;
