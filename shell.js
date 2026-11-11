@@ -84,6 +84,24 @@ body{background:var(--sjx-bg)!important;font-family:'Pretendard','Noto Sans KR',
 #mback .modal .mb :is(input,select,textarea):focus{border-color:#2F5496!important;box-shadow:0 0 0 3px rgba(47,84,150,.15)!important;outline:0!important}
 #mback .modal .dfh{background:#F3F6FB;border:0!important;border-left:5px solid #1B2F5B!important;border-radius:8px;padding:9px 14px!important;margin:18px 0 12px!important;font-size:16px!important}
 @media (max-width:640px){#mback .modal{border-radius:18px 18px 0 0!important}#mback .modal .mh,#mback .modal .mb{padding-left:16px!important;padding-right:16px!important}}
+/* 한글이 한 글자씩 끊겨 보이지 않게 (단어 단위 줄바꿈) */
+#main,#mback .modal{word-break:keep-all;overflow-wrap:anywhere}
+/* 휴대폰: 점검표 항목 줄 — 번호 | 내용, 그 아래 ✓✗ · 비고 */
+@media (max-width:640px){
+ #mback .ckr,#mback .ckr:has(.ckmv),#main .ckr{grid-template-columns:30px minmax(0,1fr)!important;gap:6px 8px!important;align-items:start!important}
+ #mback .ckr>:not(.ckn),#main .ckr>:not(.ckn){grid-column:2!important;min-width:0}
+ #mback .ckr .ckseg{justify-self:start}#mback .ckr .ckseg button{min-width:52px;min-height:40px;font-size:16px}#mback .ckr .ckm,#mback .ckr input{width:100%!important}
+ #mback .ckpk{grid-template-columns:repeat(2,1fr)!important}#mback .mr .mrsum,#main .mr .mrsum{overflow-x:auto;grid-template-columns:repeat(7,minmax(70px,1fr))!important}
+ #mback .modal table{display:block;overflow-x:auto}
+ /* 간소화: 설명 문단·출력·엑셀·대량 등록은 PC에서 */
+ #main>p.hsub,#main>.info.small,#main .sech,#main .sfitiles,#main section.eql,
+ #main [data-act=prt9],#main .prt9,#main .prt9s,#main .sjx-dd,#main [data-act=ckPrintMenu],#main [data-act=ckBlankMenu],#main [data-act=sfiPrint],#main [data-act=clsPrint],#main [data-act=clsBlank],#main [data-act=monthlyReport],
+ #main .sjx-ph [data-act=eqAdd],#main .sjx-ph [data-act=calAdd],#main .sjx-ph [data-act=clsNew],#main .sjx-ph [data-act=spNew],#main [data-act=sfiAdd]{display:none!important}
+ #main .sjx-row:has([data-act=ckBlankMenu]):not(:has(input,select)),#main .sjx-fc:has([data-act=ckBlankMenu]):not(:has(input,select)){display:none!important}
+ #main h1{font-size:22px!important}#main .sjx-ph{margin-bottom:6px}
+ .sjx-pcnote{display:block!important}
+}
+.sjx-pcnote{display:none;font-size:12.5px;color:#5B6474;background:#EEF3FB;border-radius:10px;padding:8px 12px;margin:0 0 12px}
 /* 이전/다음 막대 없앰 (위 탭·왼쪽 메뉴로 이동) · 실행 취소 단추는 저장 알림의 [되돌리기]로 · 위험성 관리 '설정' 탭은 앱 설정으로 */
 #sjFoot{display:none!important}#top .sj-tool[data-act=undo],#top .sj-tool[data-act=redo]{display:none!important}#nav [data-v=settings],#mtab [data-v=settings]{display:none!important}
 #toasts .toast button:not(.tx){white-space:nowrap;flex:none;background:#F2B705!important;color:#14244A!important;border:0!important;border-radius:8px!important;font-weight:800!important;padding:5px 12px!important}
@@ -174,6 +192,7 @@ body{background:var(--sjx-bg)!important;font-family:'Pretendard','Noto Sans KR',
         if ((e.classList.contains('chips') || e.classList.contains('tabs9') || e.classList.contains('caltabs')) && e.querySelectorAll('button').length <= 8 && !e.classList.contains('dfsub')) { e.classList.add('sjx-seg'); e.querySelectorAll('button').forEach(b => { b.classList.add('chip'); const k = Object.values(b.dataset).join(' '); const m = Object.keys(DOT).find(x => new RegExp('\\b' + x + '\\b').test(k)); if (m) b.style.setProperty('--dot', DOT[m]); }); } }));
       /* 목록 위 'N건' */
       const fc = main.querySelector('.sjx-fc'), tw = fc && fc.nextElementSibling; if (tw && tw.classList && tw.classList.contains('tw') && !main.querySelector('.sjx-cnt')) { let n = [...tw.querySelectorAll('tbody tr')].filter(t => !t.classList.contains('pgrp') && !t.hidden && t.querySelectorAll('td').length >= 3).length; const ac = fc.querySelector('.sjx-seg .chip.on, .sjx-seg .chip.active, .sjx-seg [aria-pressed="true"]'); const an = ac && (ac.textContent.match(/(\d[\d,]*)\s*$/) || [])[1]; if (n && an && +an.replace(/,/g, '') > n) n = +an.replace(/,/g, ''); if (n) tw.insertAdjacentHTML('beforebegin', `<div class="sjx-cnt">${n.toLocaleString()}${T('건', ' items')}</div>`); }
+      if (!main.querySelector('.sjx-pcnote')) { const ph2 = main.querySelector('.sjx-ph'); if (ph2 && ['ck', 'cal', 'cls', 'spares', 'defects', 'jobs', 'due'].includes(route())) ph2.insertAdjacentHTML('afterend', `<div class="sjx-pcnote">📱 ${T('휴대폰 화면은 입력 위주로 간단히 보입니다 — 출력·엑셀·품목/장비 등록은 PC·노트북에서 하세요.', 'Phone view is simplified for data entry — printing, Excel and registration are on PC.')}</div>`); }
       main.dataset.sjx = route() + ':' + main.childElementCount; },
     after() { try { if (MODE === 'admin' && OFFICE.wiped) { OFFICE.wiped = false; if (typeof ensureVessels === 'function') ensureVessels(); KV.set('office', OFFICE); ['sejul_cloud_pms_seen', 'sejul_cloud_pms_pushed'].forEach(k => localStorage.removeItem(k)); setTimeout(() => { try { if (window.SJCLOUD && SJCLOUD.A) SJCLOUD.sync(SJCLOUD.A, true); } catch (e) { } }, 1500); setTimeout(() => { try { render(); } catch (e) { } }, 0); } } catch (e) { }
       try { const main = document.getElementById('main'); if (main) { main.querySelectorAll('select').forEach(sl => { const e = [...sl.options].filter(o => o.value === ''); if (e.length > 1) { const sel = sl.value === ''; e.slice(1).forEach(o => o.remove()); if (sel) sl.selectedIndex = [...sl.options].indexOf(e[0]); } });   /* 이름 없는 빈 선택 항목 정리 */ } } catch (e) { } try { PMS.group(); } catch (e) { } try { PMS.layout(); } catch (e) { console.warn('layout', e); } try { PMS.hero(); } catch (e) { } if (MODE !== 'admin') return; const main = document.getElementById('main'); if (!main) return; const view = C.get('view') || '';
@@ -207,7 +226,8 @@ body{background:var(--sjx-bg)!important;font-family:'Pretendard','Noto Sans KR',
           D: td.O.filter(x => x[0] === 'def').slice(0, 30).map(x => [x[1], x[2], x[3]]),
           R: (typeof RQS === 'function' ? RQS(db) : []).filter(r => r.st === 'sent').slice(0, 30).map(r => [r.id, r.no + (r.kind === 'rep' ? ' (수리 repair)' : '') + ' · ' + (r.items || []).length + '건', r.urg === 'u' ? 'u' : 'n']) }; } catch (e) { } }
       localStorage.setItem('sejul_sum_pms', JSON.stringify({ at: Date.now(), mode: MODE, ships: out })); },
-    hookRender() { const r0 = render; render = function () { const x = r0.apply(this, arguments); try { PMS.after(); } catch (e) { } sumSoon(PMS); return x; }; }
+    hookRender() { const r0 = render; render = function () { try { const v = C.get('view') || ''; if (MODE === 'admin' && v && OFFICE.ships[v] && OFFICE.sel !== v) OFFICE.sel = v; } catch (e) { }   /* 사무실: 항상 왼쪽 메뉴에서 고른 선박 */
+      const x = r0.apply(this, arguments); try { PMS.after(); } catch (e) { } sumSoon(PMS); return x; }; }
   };
   /* ---------- 위험성 관리 ---------- */
   const RSK = {

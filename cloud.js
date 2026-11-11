@@ -29,17 +29,18 @@
     C.state.busy = true; C.badge(); let n = 0;
     try { const tool = A.tool, pushed = JSON.parse(LS('sejul_cloud_' + tool + '_pushed') || '{}'), seen = JSON.parse(LS('sejul_cloud_' + tool + '_seen') || '{}');
       const files = A.files(m) || [], mine = new Set(files.map(f => f.name)); C.state.up = 0; C.state.down = 0;
-      for (const f of files) { const core = JSON.stringify(f.core), h = hash(core); if (!force && pushed[f.name] === h) continue;
+      const bg = !!(window.SJAPP && SJAPP.bg);   /* 앱 홈이 요약만 만들려고 연 보이지 않는 창: 올리기·저장 없이 받아서 계산만 (열려 있는 도구 화면의 자료를 덮어쓰지 않게) */
+      for (const f of bg ? [] : files) { const core = JSON.stringify(f.core), h = hash(core); if (!force && pushed[f.name] === h) continue;
         const at = new Date().toISOString(), body = await C.gz(JSON.stringify(Object.assign({}, f.obj, { savedAt: at })));
         await C.rpc('sj_put', { p_tool: tool, p_name: f.name, p_ship: f.ship, p_body: body, p_size: body.length, p_saved_at: at, p_pc: A.pc() }); pushed[f.name] = h; seen[f.name] = at; C.state.up++; }
-      LSS('sejul_cloud_' + tool + '_pushed', JSON.stringify(pushed));
+      if (!bg) LSS('sejul_cloud_' + tool + '_pushed', JSON.stringify(pushed));
       const list = await C.rpc('sj_list', { p_tool: tool }) || [];
-      for (const r of list) { if (r.mine || mine.has(r.name)) continue; const at = new Date(r.saved_at).toISOString(); if (!force && seen[r.name] && seen[r.name] >= at) continue;
+      for (const r of list) { if (r.mine || mine.has(r.name)) continue; const at = new Date(r.saved_at).toISOString(); if (!force && !bg && seen[r.name] && seen[r.name] >= at) continue;
         const b64 = await C.rpc('sj_get', { p_tool: tool, p_name: r.name }); if (!b64) continue;
         try { const o = JSON.parse(await C.ungz(b64)); n += (await A.apply(o, r)) || 0; } catch (e) { console.warn('cloud apply', r.name, e); }
         seen[r.name] = at; C.state.down++; }
-      LSS('sejul_cloud_' + tool + '_seen', JSON.stringify(seen));
-      if (n) await A.after(n);
+      if (!bg) LSS('sejul_cloud_' + tool + '_seen', JSON.stringify(seen));
+      if (n) { if (bg) { try { render(); } catch (e) { } } else await A.after(n); }
       C.state.last = Date.now(); C.state.err = '';
       setTimeout(() => C.sumPush().catch(() => {}), 2500);
     } catch (e) { C.state.err = e.message; console.warn('cloud', e); }
@@ -62,6 +63,7 @@
     for (const n of names) { const r = await fetch(C.url + '/functions/v1/' + n, { method: 'POST', headers: { apikey: C.key, 'Content-Type': 'application/json' }, body: JSON.stringify(body) }); const t = await r.text(); let j; try { j = JSON.parse(t); } catch (e) { j = { error: t }; }
       if (r.status === 404 && /NOT_FOUND|not found/i.test(t)) { last = new Error('HTTP 404 function not found'); continue; }
       if (!r.ok) throw new Error('HTTP ' + r.status + ' ' + (j.error || j.message || j.msg || ''));
+      if (j.key === undefined && j.sent === undefined && j.error === undefined) { last = new Error('NOT_SEJUL ' + n); continue; }   /* 그 이름의 함수에 SEJUL 코드가 아닌 예제 코드가 올라가 있음 */
       LSS('sejul_push_fn', n); return j; }
     throw last || new Error('HTTP 404 function not found'); };
   const u8 = b => { const p = '='.repeat((4 - b.length % 4) % 4), s = atob((b + p).replace(/-/g, '+').replace(/_/g, '/')), a = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) a[i] = s.charCodeAt(i); return a; };
