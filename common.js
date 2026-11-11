@@ -3,7 +3,7 @@
    도구 코드는 그대로 두고 저장 키만 연결하므로, 도구를 따로(HTML 파일) 써도 동작은 같음. */
 (function () {
   const C = window.SJAPP = window.SJAPP || {};
-  C.ver = '2026.11.11.1252';
+  C.ver = '2026.11.11.1321';
   C.inApp = true;
   /* 도구별 키 ↔ 공통 키 */
   const MAP = {
@@ -31,13 +31,13 @@
     try { if (typeof fsIdbSet === 'function' && !window.__sjFs) { const f = fsIdbSet; window.fsIdbSet = fsIdbSet = async v => { await f(v); if (v && v.kind === 'directory') { idbPut('sejul_common', 'h', 'dir', v); idbPut('sejul-pms', 'kv', 'dir', v); } }; window.__sjFs = 1; } } catch (e) { }
   };
   /* 4) 선박: 공통 선박이 있고 도구에 선박이 없으면 자동 적용 */
-  C.applyVessel = function () { const v = C.get('vessel'); if (!v) return;
+  C.applyVessel = function () { const v = C.get('vessel'); if (!v || v === '__office') return;
     try { if (typeof DB !== 'undefined' && DB.settings && !DB.settings.vessel && DB.settings.site !== 'office') { DB.settings.vessel = v; if (typeof save === 'function') save(); if (typeof render === 'function') render(); } } catch (e) { }
     try { if (typeof SHIP !== 'undefined' && !SHIP && typeof MODE !== 'undefined' && MODE === 'ship' && typeof ACT !== 'undefined' && ACT.v9pickVessel) { const b = document.createElement('button'); b.dataset.name = v; ACT.v9pickVessel(b); setTimeout(() => { const ok = document.querySelector('#mback .modal:last-child .mf button:last-child'); if (ok && /선박|vessel/i.test((document.querySelector('#mback .modal:last-child') || {}).textContent || '')) ok.click(); }, 50); } } catch (e) { }
     try { if (typeof DB !== 'undefined' && DB.settings && DB.settings.vessel && DB.settings.vessel !== v && !C.get('vessel')) C.set('vessel', DB.settings.vessel); } catch (e) { } };
   /* 5) 앱 홈으로 버튼 */
   C.homeBtn = function () { if (document.getElementById('sjAppHome')) return; const a = document.createElement('a'); a.id = 'sjAppHome'; a.href = '../index.html'; a.title = '앱 홈 · App home'; a.innerHTML = '<b>⌂</b><span>앱 홈</span>'; document.body.appendChild(a); };
-  const css = `#sjAppHome{position:fixed;left:8px;bottom:84px;z-index:9998;display:flex;align-items:center;gap:4px;background:#1F3864;color:#fff;text-decoration:none;border-radius:20px;padding:6px 12px 6px 9px;font:600 13px/1 'Noto Sans KR',sans-serif;box-shadow:0 3px 10px #0004;opacity:.88}#sjAppHome:hover{opacity:1}#sjAppHome b{font-size:16px;color:#F5B800}
+  const css = `#sjAppHome{position:fixed;left:8px;bottom:84px;z-index:9998;display:flex;align-items:center;gap:4px;background:#1F3864;color:#fff;text-decoration:none;border-radius:20px;padding:6px 12px 6px 9px;font:600 13px/1 'Noto Sans KR',sans-serif;box-shadow:0 3px 10px #0004;opacity:.88}#sjAppHome:hover{opacity:1}#sjAppHome b{font-size:16px;color:#F5B800}#sjAppHome .cl{font-style:normal;font-size:12px}
   @media (max-width:760px){#sjAppHome{left:auto;right:8px;top:6px;bottom:auto;padding:5px 9px;font-size:0}#sjAppHome b{font-size:16px}}
   #sjUpd{position:fixed;left:50%;transform:translateX(-50%);top:10px;z-index:9999;background:#1F3864;color:#fff;border-radius:10px;padding:10px 14px;font:14px 'Noto Sans KR',sans-serif;box-shadow:0 6px 20px #0005;display:flex;gap:10px;align-items:center}#sjUpd button{background:#F5B800;border:0;border-radius:6px;padding:6px 12px;font-weight:700;cursor:pointer}`;
   const st = document.createElement('style'); st.textContent = css; (document.head || document.documentElement).appendChild(st);

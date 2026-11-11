@@ -2,7 +2,7 @@
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>SEJUL 선박관리 앱</title>
 <meta name="theme-color" content="#1F3864"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="favicon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png">
-<script>window.SJAPP = { isHub: true, swPath: 'sw.js' };</script><script src="common.js"></script>
+<script>window.SJAPP = { isHub: true, swPath: 'sw.js' };</script><script src="common.js"></script><script src="cloud.js"></script>
 <style>
 :root{--navy:#1F3864;--navy2:#2b4c86;--gold:#F5B800;--bg:#f2f4f8;--line:#dfe6f0;--mut:#5b6577}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:'Noto Sans KR','Malgun Gothic',system-ui,sans-serif;color:#1d2533}
@@ -27,6 +27,10 @@ select,input{font:inherit;font-size:14px;padding:8px 10px;border:1px solid #c6d1
 .note{background:#eef3fa;border-radius:10px;padding:10px 14px;font-size:13px;color:#3a4558;line-height:1.6;margin-top:10px}
 footer{text-align:center;color:var(--mut);font-size:12px;padding:20px}
 @media (max-width:640px){.row{grid-template-columns:1fr}.row .h{grid-column:1}header h1{font-size:17px}}
+.cl .tb{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}.cl .tb th,.cl .tb td{border-bottom:1px solid var(--line);padding:6px 6px;text-align:left}.cl .tb th{color:var(--mut);font-weight:600}
+.cl .tag{display:inline-block;border-radius:10px;padding:1px 8px;font-size:12px;font-weight:700}.tag.pending{background:#FFF4E5;color:#B54708}.tag.approved{background:#E8F5E9;color:#2E7D32}.tag.revoked{background:#FDECEA;color:#C62828}
+.cl .bs{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.cl .btn.s{padding:4px 10px;font-size:12.5px}.cl .err{color:#C62828;font-size:13px;margin-top:6px}
+@media (max-width:640px){.cl .tb .hm{display:none}}
 </style></head><body>
 <header><img src="icon-192.png" alt=""><div><h1 data-t="SEJUL 선박관리 앱|SEJUL Fleet Apps"></h1><small>SEJUL SHIP MANAGEMENT CO., LTD.</small></div><span class="sp"></span>
   <span class="pill" id="net"></span><span class="pill" id="ves"></span><div class="lang"><button data-lang="ko">한국어</button><button data-lang="en">English</button></div></header>
@@ -44,10 +48,10 @@ footer{text-align:center;color:var(--mut);font-size:12px;padding:20px}
     <div class="row"><label data-t="선박|Vessel"></label><select id="cVes"></select><div class="h" data-t="이 PC(기기)가 쓰는 선박. 사무실이면 '사무실'.|Vessel used on this device; choose Office for shore."></div></div>
     <div class="row"><label data-t="이 PC 이름|This PC"></label><div><div class="chips" id="cPcP"></div><div style="display:flex;gap:6px;margin-top:6px"><input id="cPc" placeholder="예: 개인 PC - 1항사 홍길동" style="flex:1"><button class="btn" id="cPcS" data-t="저장|Save"></button></div></div><div class="h" data-t="같은 폴더·서버를 쓰는 여러 PC를 구분합니다.|Tells several PCs apart."></div></div>
     <div class="row"><label data-t="데이터 폴더|Data folder"></label><div><span class="st" id="cDirSt"></span> <button class="btn p" id="cDir" data-t="📁 폴더 선택|📁 Choose folder"></button></div><div class="h" data-t="한 번 고르면 PMS·위험성 관리 모두 이 폴더에 저장합니다 (선교·CCR·ECR 공유 폴더 권장).|Both tools save to this folder (a shared folder is recommended)."></div></div>
-    <div class="row"><label data-t="서버 동기화|Server sync"></label><div><span class="st warn" data-t="준비 중 — 회사 서버 연결 후 사용|Coming — after the company server is set up"></span></div><div class="h" data-t="인터넷이 되면 선박↔사무실 자료를 자동으로 주고받습니다. 지금은 공유 폴더·사무실 회신 파일로 주고받습니다.|Automatic ship↔office sync when online. For now, shared folder and reply files."></div></div>
-    <div class="row"><label data-t="앱|App"></label><div><span class="st">v2026.11.11.1252</span> <button class="btn" id="cUpd" data-t="업데이트 확인|Check for updates"></button> <button class="btn g" id="cInst" data-t="⬇ 이 PC에 설치|⬇ Install on this PC"></button> <span class="st" id="cUpdSt"></span></div></div>
+    <div class="row"><label data-t="서버 동기화|Server sync"></label><div id="cl"></div><div class="h" data-t="인터넷이 되면 선박↔사무실 자료를 회사 서버로 자동으로 주고받습니다 (2분마다·저장할 때). 새 기기는 사무실 승인 후에만 연결됩니다.|Ship↔office records sync through the company server when online (every 2 min and on save). New devices need office approval."></div></div>
+    <div class="row"><label data-t="앱|App"></label><div><span class="st">v2026.11.11.1321</span> <button class="btn" id="cUpd" data-t="업데이트 확인|Check for updates"></button> <button class="btn g" id="cInst" data-t="⬇ 이 PC에 설치|⬇ Install on this PC"></button> <span class="st" id="cUpdSt"></span></div></div>
   </div>
-  <div class="note" data-t="📶 한 번 설치하면 인터넷 없이 선박에서 그대로 쓸 수 있습니다. 인터넷이 연결되면 새 버전을 자동으로 받습니다. 입력한 자료는 이 PC(와 고른 폴더)에만 저장되고, 앱 주소(서버)로는 올라가지 않습니다.|📶 Once installed, works offline on board. Updates download automatically when online. Your records stay on this PC (and the chosen folder)."></div>
+  <div class="note" data-t="📶 한 번 설치하면 인터넷 없이 선박에서 그대로 쓸 수 있습니다. 인터넷이 연결되면 새 버전을 자동으로 받습니다. 입력한 자료는 이 PC(와 고른 폴더)에 저장되고, 서버 동기화를 켠 기기는 승인된 회사 선대끼리만 회사 서버로 주고받습니다.|📶 Once installed, works offline on board. Updates download automatically when online. Records are kept on this PC (and the chosen folder); with server sync on, they are shared only among approved company devices."></div>
 </main>
 <footer>SEJUL SHIP MANAGEMENT · <span id="swst"></span></footer>
 <script>
@@ -80,6 +84,54 @@ addEventListener('appinstalled', () => { const n = document.getElementById('inst
 document.getElementById('cVes').onchange = e => { SJAPP.set('vessel', e.target.value); paint(); };
 addEventListener('online', net); addEventListener('offline', net);
 addEventListener('beforeinstallprompt', e => { e.preventDefault(); window.__bip = e; });
+
+/* ===== 서버 동기화 (등록 · 승인 · 백업) ===== */
+const CL = window.SJCLOUD, esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let CLR = { role: '', err: '', devs: null, busy: false };
+const ago = t => { if (!t) return '—'; const m = (Date.now() - new Date(t)) / 60e3; return m < 2 ? T('방금|just now') : m < 60 ? Math.round(m) + T('분 전| min ago') : m < 1440 ? Math.round(m / 60) + T('시간 전| h ago') : Math.round(m / 1440) + T('일 전| d ago'); };
+function clPaint(){ const el = document.getElementById('cl'); if (!el) return; el.className = 'cl'; const m = CL.me(), v = SJAPP.get('vessel') || '', pc = SJAPP.get('pcname') || '';
+  if (!navigator.onLine && !m){ el.innerHTML = `<span class="st warn">${T('오프라인 — 인터넷 연결 후 등록|Offline — connect to register')}</span>`; return; }
+  if (!m || m.status === 'none'){ const role = CLR.role || (v === '__office' ? 'office' : 'ship');
+    el.innerHTML = `<div class="st">${T('이 기기는 아직 서버에 등록되지 않았습니다.|This device is not registered yet.')}</div>
+     <div class="chips" style="margin-top:8px"><button data-clrole="ship" class="${role === 'ship' ? 'on' : ''}">🚢 ${T('선박 기기|Ship device')}</button><button data-clrole="office" class="${role === 'office' ? 'on' : ''}">🏢 ${T('사무실 기기|Office device')}</button></div>
+     <div class="st" style="margin-top:8px">${role === 'ship' ? (v && v !== '__office' ? `${T('선박|Vessel')}: <b>${esc(v)}</b>` : `<span class="warn">${T('위 [선박]을 먼저 고르세요|Choose the vessel above first')}</span>`) : `${T('사무실 PIN|Office PIN')} <input id="clPin" type="password" inputmode="numeric" autocomplete="off" style="width:140px">`} · ${T('PC 이름|PC')}: ${pc ? `<b>${esc(pc)}</b>` : `<span class="warn">${T('위 [이 PC 이름]을 먼저 입력|Set the PC name above first')}</span>`}</div>
+     <div class="bs"><button class="btn p" id="clReg" ${CLR.busy ? 'disabled' : ''}>☁ ${T('서버에 등록|Register')}</button></div>
+     <div class="h" style="margin-top:6px;color:var(--mut);font-size:12.5px">${role === 'ship' ? T('등록 후 사무실에서 승인하면 동기화가 시작됩니다.|Sync starts after the office approves this device.') : T('PIN이 맞으면 바로 연결됩니다. 사무실 기기는 선박 기기를 승인·해제할 수 있습니다.|Connects at once with the right PIN. Office devices approve and revoke ship devices.')}</div>${CLR.err ? `<div class="err">⚠ ${esc(CLR.err)}</div>` : ''}`; return; }
+  const tag = `<span class="tag ${m.status}">${m.status === 'approved' ? T('✓ 연결됨|✓ Connected') : m.status === 'pending' ? T('⏳ 사무실 승인 대기|⏳ Waiting for office approval') : T('⛔ 해제됨|⛔ Revoked')}</span>`;
+  let o = `<div class="st">${tag} ${m.role === 'office' ? '🏢 ' + T('사무실|Office') : '🚢 ' + esc(m.ship)} · ${esc(m.pc)}</div>`;
+  if (m.status === 'approved') o += `<div class="st" style="margin-top:4px;color:var(--mut)">${T('자료는 각 도구(PMS·위험성 관리)를 열어 둔 동안 자동으로 주고받습니다. 도구 화면의 [⌂ 앱 홈] 단추 옆 표시: ☁✓ 정상 · ☁⚠ 오류 · ☁⏳ 승인 대기.|Records sync while each tool is open. The mark next to [⌂ App home] in each tool: ☁✓ OK · ☁⚠ error · ☁⏳ waiting.')}</div>`;
+  if (m.status === 'pending') o += `<div class="st" style="margin-top:4px;color:var(--mut)">${T('사무실 담당자에게 승인을 요청하세요 (사무실 앱 → 서버 동기화 → 기기 목록).|Ask the office to approve (office app → Server sync → Devices).')}</div>`;
+  if (m.status === 'revoked') o += `<div class="st" style="margin-top:4px;color:var(--mut)">${T('이 기기는 서버 동기화가 해제되었습니다. 다시 쓰려면 사무실에 문의하세요.|Server sync was revoked for this device. Contact the office.')}</div>`;
+  o += `<div class="bs"><button class="btn s" id="clRef">🔄 ${T('상태 새로 고침|Refresh')}</button>${m.status === 'approved' && m.role === 'office' ? `<button class="btn s" id="clDev">🖥 ${T('기기 목록·승인|Devices & approval')}</button><button class="btn s" id="clBak">💾 ${T('서버 자료 백업 받기|Download server backup')}</button>` : ''}<button class="btn s" id="clOut">${T('이 기기 연결 끊기|Disconnect this device')}</button></div>`;
+  if (CLR.devs){ const D = CLR.devs, np = D.filter(d => d.status === 'pending').length;
+    o += `<div class="st" style="margin-top:10px"><b>${T('등록된 기기|Devices')}</b> ${D.length}${np ? ` · <span class="warn">${T('승인 대기|pending')} ${np}</span>` : ''}</div><table class="tb"><tr><th>${T('구분|Role')}</th><th>${T('선박|Vessel')}</th><th>${T('PC 이름|PC')}</th><th>${T('상태|Status')}</th><th class="hm">${T('마지막 접속|Last seen')}</th><th></th></tr>`
+     + D.map(d => `<tr><td>${d.role === 'office' ? '🏢' : '🚢'}</td><td>${d.role === 'office' ? T('사무실|Office') : esc(d.ship)}</td><td>${esc(d.pc_name)}${d.id === m.id ? ` <span class="ok">(${T('이 기기|this')})</span>` : ''}</td><td><span class="tag ${d.status}">${{pending: T('대기|Pending'), approved: T('승인|Approved'), revoked: T('해제|Revoked')}[d.status]}</span></td><td class="hm">${ago(d.last_seen || d.created_at)}</td><td>${d.id === m.id ? '' : (d.status !== 'approved' ? `<button class="btn s p" data-cld="${d.id}" data-st="approved">${T('승인|Approve')}</button> ` : '') + (d.status === 'approved' ? `<button class="btn s" data-cld="${d.id}" data-st="revoked">${T('해제|Revoke')}</button> ` : '') + (d.status !== 'approved' ? `<button class="btn s" data-cld="${d.id}" data-st="delete">${T('삭제|Delete')}</button>` : '')}</td></tr>`).join('') + `</table><div class="h" style="color:var(--mut);font-size:12.5px;margin-top:6px">${T('하선·교체한 PC는 [해제]하세요. 해제된 기기는 서버 자료를 받거나 올릴 수 없습니다.|Revoke PCs that leave the ship; revoked devices cannot read or upload.')}</div>`; }
+  if (CLR.err) o += `<div class="err">⚠ ${esc(CLR.err)}</div>`;
+  el.innerHTML = o; }
+const clErr = e => { const s = String(e && e.message || e); return /office pin/.test(s) ? T('사무실 PIN이 맞지 않습니다|Wrong office PIN') : /not approved/.test(s) ? T('승인되지 않은 기기입니다|Device not approved') : /Failed to fetch|abort|NetworkError/i.test(s) ? T('서버에 연결할 수 없습니다 — 인터넷을 확인하세요|Cannot reach the server — check the internet') : /function .* does not exist|Could not find the function/i.test(s) ? T('서버 설정(SQL)이 아직 실행되지 않았습니다|Server setup (SQL) has not been run yet') : s; };
+async function clDo(fn){ CLR.busy = true; CLR.err = ''; clPaint(); try { await fn(); } catch (e) { CLR.err = clErr(e); } CLR.busy = false; clPaint(); }
+async function clDevs(){ CLR.devs = await CL.rpc('sj_devices_list'); }
+async function saveFile(name, text){ const blob = new Blob([text], { type: 'application/json' });
+  if (window.showSaveFilePicker){ try { const h = await showSaveFilePicker({ suggestedName: name, types: [{ description: 'JSON', accept: { 'application/json': ['.json'] } }] }); const w = await h.createWritable(); await w.write(blob); await w.close(); return true; } catch (e) { if (e.name === 'AbortError') return false; } }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); return true; }
+document.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.clrole){ CLR.role = b.dataset.clrole; CLR.err = ''; clPaint(); }
+  else if (b.id === 'clReg'){ const pin0 = (document.getElementById('clPin') || {}).value; clDo(async () => { const role = CLR.role || (SJAPP.get('vessel') === '__office' ? 'office' : 'ship'), v = SJAPP.get('vessel') || '', pc = SJAPP.get('pcname') || '';
+    if (!pc) throw T('먼저 [이 PC 이름]을 입력하세요|Set the PC name first'); if (role === 'ship' && (!v || v === '__office')) throw T('먼저 [선박]을 고르세요|Choose the vessel first');
+    const pin = role === 'office' ? pin0 : null; if (role === 'office' && !pin) throw T('사무실 PIN을 입력하세요|Enter the office PIN');
+    await CL.register(role, role === 'office' ? '' : v, pc, pin); if (role === 'office') await clDevs(); }); }
+  else if (b.id === 'clRef') clDo(async () => { await CL.refresh(); if (CLR.devs) await clDevs(); });
+  else if (b.id === 'clDev') clDo(async () => { if (CLR.devs){ CLR.devs = null; return; } await clDevs(); });
+  else if (b.dataset.cld){ if (b.dataset.st === 'delete' && !confirm(T('이 기기 등록을 삭제할까요?|Delete this device?'))) return; if (b.dataset.st === 'revoked' && !confirm(T('이 기기의 서버 동기화를 해제할까요?|Revoke server sync for this device?'))) return; clDo(async () => { await CL.rpc('sj_device_set', { p_id: b.dataset.cld, p_status: b.dataset.st }); await clDevs(); }); }
+  else if (b.id === 'clBak') clDo(async () => { const rows = await CL.rpc('sj_backup', {}, 300e3) || [], out = [];
+    for (const r of rows){ let data = null; try { data = JSON.parse(await CL.ungz(r.body)); } catch (e) {} out.push({ tool: r.tool, name: r.name, ship: r.ship, pc: r.pc_name, savedAt: r.saved_at, data }); }
+    const d = new Date(), d8 = d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0');
+    await saveFile(`SEJUL_SERVER_BACKUP_${d8}.json`, JSON.stringify({ kind: 'SEJUL-SERVER-BACKUP', at: d.toISOString(), files: out })); });
+  else if (b.id === 'clOut'){ if (!confirm(T('이 기기의 서버 연결을 끊을까요? (이 PC의 자료는 그대로 남습니다. 다시 쓰려면 새로 등록·승인이 필요합니다)|Disconnect this device? (Local records stay. Re-registration and approval needed to reconnect)'))) return; ['sejul_cloud_key', 'sejul_cloud_me', 'sejul_cloud_pms_pushed', 'sejul_cloud_pms_seen', 'sejul_cloud_rsk_pushed', 'sejul_cloud_rsk_seen'].forEach(k => localStorage.removeItem(k)); CLR = { role: '', err: '', devs: null, busy: false }; clPaint(); } });
+const _paint0 = paint; paint = function(){ _paint0(); clPaint(); };
+/* 앱 홈을 열 때마다 상태 확인 (서버 쉼 방지 접속 기록 포함) */
+if (CL.me() && navigator.onLine) CL.refresh().then(async m => { if (m && m.role === 'office' && m.status === 'approved') { try { await clDevs(); } catch (e) {} } clPaint(); }).catch(() => {});
+setInterval(() => { if (CL.me() && navigator.onLine) CL.refresh().then(() => { if (!CLR.busy) clPaint(); }).catch(() => {}); }, 10 * 60e3);
 paint(); paintInst(); SJAPP.watchUpdate();
 navigator.serviceWorker && navigator.serviceWorker.ready.then(() => document.getElementById('swst').textContent = T('오프라인 사용 준비됨 ✓|Ready for offline use ✓'));
 </script></body></html>
