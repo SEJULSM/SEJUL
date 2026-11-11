@@ -37,10 +37,18 @@
 .sjr .sj-vb .sj-vi{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex:none}.sjr .sj-vb .sj-vi.s{background:#E8EDF7;color:#1B2F5B}.sjr .sj-vb .sj-vi.o{background:#FEF3D7;color:#8A5A00}
 .sjr .sj-vb .sj-vt{flex:1;min-width:0}.sjr .sj-vb .sj-vt small{display:block;font-size:11px;color:#A9B4CE}.sjr .sj-vb .sj-vt b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sjr .sj-vb select{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;color:#0F172A;background:#fff}.sjr .sj-vb select option{color:#0F172A;background:#fff}.sjr .sj-vbw{position:relative}
-.sjr .sj-it{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;color:#D5DCEB;font-size:14.5px;min-height:44px}
-.sjr .sj-it:hover{background:#1E3260;color:#fff}.sjr .sj-it .sj-ii{color:#A9B4CE;display:flex}.sjr .sj-it.on{background:#24396B;color:#fff;font-weight:700}.sjr .sj-it.on .sj-ii{color:#F2B705}
-.sjr .sj-it .sj-bd{margin-left:auto;background:#D92D20;color:#fff;border-radius:10px;padding:1px 8px;font-size:12px;font-weight:700}.sjr .sj-it .sj-bd.y{background:#F2B705;color:#14244A}
-.sjr .sj-it.soon{color:#6F7C9C;pointer-events:none}.sjr .sj-it.soon .sj-sn{margin-left:auto;border:1px solid #3A4E7C;color:#8F9BB8;border-radius:10px;padding:0 7px;font-size:11px}
+.sjr .sj-hd{font-size:11px;font-weight:800;letter-spacing:.12em;color:#7F8DB0;text-transform:uppercase;margin:12px 10px 4px;display:flex;align-items:center;gap:8px}.sjr .sj-hd::after{content:'';flex:1;height:1px;background:#2A3D6B}
+.sjr .sj-it{position:relative;display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:10px;color:#EEF2FA;font-size:15px;font-weight:600;min-height:46px}
+.sjr .sj-it .sj-lt{display:flex;flex-direction:column;line-height:1.2;min-width:0}.sjr .sj-it .sj-lt small{font-size:11.5px;font-weight:500;color:#9FB0D6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sjr .sj-it:not(.on):hover{background:#22396C}.sjr .sj-it .sj-ii{color:#9FB0D6;display:flex}
+.sjr .sj-it.on,.sjr .sj-vs.on{background:#fff;color:#13254D;font-weight:800;box-shadow:0 2px 10px rgba(0,0,0,.25)}.sjr .sj-it.on .sj-ii{color:#2F5496}.sjr .sj-it.on .sj-lt small{color:#4A5B80}
+.sjr .sj-it.on::before,.sjr .sj-vs.on::before{content:'';position:absolute;left:-14px;top:8px;bottom:8px;width:5px;border-radius:0 4px 4px 0;background:#F2B705}
+.sjr .sj-it .sj-bd,.sjr .sj-vs .sj-bd{margin-left:auto;background:#D92D20;color:#fff;border-radius:10px;padding:1px 8px;font-size:12px;font-weight:700}.sjr .sj-bd.y{background:#F2B705!important;color:#14244A!important}
+.sjr .sj-vl{display:flex;flex-direction:column;gap:2px;margin:2px 0 0 14px;padding-left:10px;border-left:2px solid #2A3D6B}
+.sjr .sj-vs{position:relative;display:flex;align-items:center;gap:9px;padding:5px 10px;border-radius:8px;color:#D5DCEB;font-size:13.5px;font-weight:600;min-height:31px;letter-spacing:.01em}.sjr .sj-vs:not(.on):hover{background:#22396C;color:#fff}.sjr .sj-vs.on::before{left:-25px}
+.sjr .sj-vs.cur{background:#2C4377;color:#fff;font-weight:800;box-shadow:inset 0 0 0 1.5px #F2B705}
+.sjr .sj-vs .sj-vn{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sjr .sj-dt{width:9px;height:9px;border-radius:50%;background:#56688F;flex:none}.sjr .sj-dt.r{background:#F04438}.sjr .sj-dt.y{background:#F2B705}.sjr .sj-dt.g{background:#3CCB7F}
+.sjr .sj-soon{display:flex;align-items:center;gap:6px;margin:10px 10px 0;font-size:11.5px;white-space:nowrap;color:#6F7C9C}.sjr .sj-soon span{border:1px solid #3A4E7C;border-radius:10px;padding:0 7px;font-size:11px;color:#8F9BB8}
 .sjr .sj-up .sj-ut{display:flex;flex-direction:column;line-height:1.25}.sjr .sj-up .sj-ut span{font-size:12.5px;color:#C9D2E6}.sjr .sj-up .sj-ut small{font-size:12px;color:#8F9BB8}.sjr .sj-up.has{background:#F2B705!important;color:#14244A!important}.sjr .sj-up.has .sj-ii,.sjr .sj-up.has .sj-ut span,.sjr .sj-up.has .sj-ut small{color:#14244A!important;font-weight:700}
 .sjr .sj-ft{margin-top:auto;display:flex;flex-direction:column;gap:6px;padding-top:10px}
 .sjr .sj-sy{display:flex;align-items:center;gap:9px;background:#0F1D3D;border-radius:12px;padding:10px 12px;font-size:12.5px;color:#C9D2E6}.sjr .sj-sy .sj-d{width:9px!important;height:9px!important;min-width:0!important;padding:0!important;border-radius:50%;background:#8F9BB8;flex:none}.sjr .sj-sy .sj-d.ok{background:#3CCB7F}.sjr .sj-sy .sj-d.warn{background:#F2B705}.sjr .sj-sy .sj-d.err{background:#F04438}
@@ -52,17 +60,23 @@
     let bp = '', br = '';
     if (sp && sp.ships){ if (off){ const n = Object.values(sp.ships).reduce((a, s) => a + (s.O || []).filter(x => x[0] !== 'cls').length, 0); bp = n ? `<span class="sj-bd y">${n}</span>` : ''; } else { const s = sp.ships[v]; bp = s && s.od ? `<span class="sj-bd">${s.od}</span>` : ''; } }
     if (sr && sr.v){ const n = Object.entries(sr.v).filter(([k]) => off || k === v).reduce((a, [, s]) => a + (off ? s.wait : s.draft + s.wait + s.stop), 0); br = n ? `<span class="sj-bd y">${n}</span>` : ''; }
-    const it = (k, href, label, icon, extra) => `<a class="sj-it ${act === k ? 'on' : ''}" href="${href}"><span class="sj-ii">${U.ic(icon)}</span><span>${label}</span>${extra || ''}</a>`;
-    const vbox = off
-      ? `<div class="sj-vbw"><div class="sj-vb"><span class="sj-vi o">${U.ic('bld', 17)}</span><span class="sj-vt"><small>${T('보는 선박', 'Viewing')}</small><b>${view ? U.esc(view) : T('선대 전체', 'Whole fleet')}</b></span>${U.ic('m6 9 6 6 6-6', 16)}<select data-sjview aria-label="${T('보는 선박', 'Viewing vessel')}"><option value="">${T('선대 전체', 'Whole fleet')}</option>${U.VES.map(n => `<option ${n === view ? 'selected' : ''}>${n}</option>`).join('')}</select></div></div>`
+    const it = (k, href, label, icon, extra, sub) => `<a class="sj-it ${act === k ? 'on' : ''}" href="${href}"><span class="sj-ii">${U.ic(icon)}</span><span class="sj-lt">${label}${sub ? `<small>${sub}</small>` : ''}</span>${extra || ''}</a>`;
+    const sec = t => `<div class="sj-hd">${t}</div>`;
+    /* 사무실: 선대 목록이 곧 선박 선택 (한 번 눌러 바로 그 선박) */
+    const fleet = () => { const ps = (sp && sp.ships) || {}, rs = (sr && sr.v) || {};
+      const row = n => { const a = ps[n], r = rs[n]; const dc = !a ? '' : a.od ? 'r' : a.d7 ? 'y' : 'g'; const k = (a ? (a.O || []).filter(x => x[0] !== 'cls').length : 0) + (r ? r.wait || 0 : 0);
+        return `<a class="sj-vs ${view === n ? (act === 'home' ? 'on' : act === 'pms' || act === 'rsk' ? 'cur' : '') : ''}" href="#" data-sjves="${U.esc(n)}" title="${U.esc(n)}"><span class="sj-dt ${dc}"></span><span class="sj-vn">${U.esc(n)}</span>${k ? `<span class="sj-bd y">${k}</span>` : ''}</a>`; };
+      return `${sec(T('선대', 'Fleet'))}<a class="sj-it sj-fl ${act === 'home' && !view ? 'on' : ''}" href="${base}index.html" data-sjves=""><span class="sj-ii">${U.ic('bld')}</span><span class="sj-lt">${T('선대 현황', 'Fleet overview')}<small>${T('전체 ' + U.VES.length + '척', 'All ' + U.VES.length + ' vessels')}</small></span></a><div class="sj-vl">${U.VES.map(row).join('')}</div>`; };
+    const vbox = off ? fleet()
       : `<div class="sj-vb"><span class="sj-vi s">${U.ic('ship', 17)}</span><span class="sj-vt"><b>${v ? U.esc(v) : T('선박 미설정', 'No vessel')}</b><small>${T('선박 기기', 'Ship device')}${pc ? ' · ' + U.esc(pc) : ''}</small></span></div>`;
+    const tsub = off ? (view ? U.esc(view) : T('선박을 고르세요', 'Pick a vessel')) : '';
     return `<nav class="sjr" aria-label="${T('도구 메뉴', 'Tools')}"><a class="sj-lg" href="${base}index.html"><i>S</i><span><b>${T('SEJUL 선박관리', 'SEJUL Fleet')}</b><small>FLEET APPS</small></span></a>${vbox}
-      ${it('home', base + 'index.html', off ? T('홈 · 선대 현황', 'Home · Fleet') : T('홈 · 오늘 할 일', 'Home · Today'), 'home')}
-      ${it('pms', base + 'tools/pms.html', T('계획정비', 'Maintenance'), 'pms', bp)}
-      ${it('rsk', base + 'tools/rsk.html', T('위험성 관리', 'Risk'), 'rsk', br)}
-      ${off ? it('devices', base + 'index.html#devices', T('기기 승인', 'Devices'), 'dev', '<span class="sj-bd y" data-sjpend hidden></span>') : ''}
-      <span class="sj-it soon"><span class="sj-ii">${U.ic('stw')}</span><span>${T('화물 호환성', 'Cargo compat.')}</span><span class="sj-sn">${T('준비 중', 'Soon')}</span></span>
-      <span class="sj-it soon"><span class="sj-ii">${U.ic('sms')}</span><span>${T('SMS 서식', 'SMS forms')}</span><span class="sj-sn">${T('준비 중', 'Soon')}</span></span>
+      ${off ? '' : it('home', base + 'index.html', T('홈 · 오늘 할 일', 'Home · Today'), 'home')}
+      ${sec(T('도구', 'Tools'))}
+      ${it('pms', base + 'tools/pms.html', T('계획정비', 'Maintenance'), 'pms', bp, tsub)}
+      ${it('rsk', base + 'tools/rsk.html', T('위험성 관리', 'Risk'), 'rsk', br, tsub)}
+      ${off ? sec(T('관리', 'Admin')) + it('devices', base + 'index.html#devices', T('기기 승인', 'Devices'), 'dev', '<span class="sj-bd y" data-sjpend hidden></span>') : ''}
+      <div class="sj-soon"><span>${T('준비 중', 'Soon')}</span> ${T('화물 호환성 · SMS 서식', 'Cargo compat. · SMS forms')}</div>
       <div class="sj-ft"><a class="sj-it sj-up" href="#" data-sjupd><span class="sj-ii">${U.ic('M21 12a9 9 0 1 1-2.6-6.4L21 8M21 3v5h-5')}</span><span class="sj-ut"><span>${T('앱 버전', 'App version')} v${U.esc(String(C.ver || '').replace(/^(\d{4})\.(\d\d)\.(\d\d)\.(\d\d)(\d\d)$/, '$1.$2.$3 $4:$5'))}</span><small>${T('업데이트 확인', 'Check for updates')}</small></span></a>${it('settings', base + 'index.html#settings', T('설정', 'Settings'), 'set')}<a class="sj-sy" id="sjSync" href="${base}index.html#settings/sync"><span class="sj-d"></span><span class="sj-t">${T('서버 동기화', 'Server sync')}</span></a></div></nav>`; };
   /* 동기화 표시 (레일 아래) */
   U.syncPaint = function () { const el = document.getElementById('sjSync'); if (!el) return; const T = U.T, m = U.me(), s = (window.SJCLOUD && SJCLOUD.state) || {};
@@ -80,6 +94,9 @@
   document.addEventListener('click', async e => { const a = e.target.closest && e.target.closest('[data-sjupd]'); if (!a) return; e.preventDefault();
     if (C.updHas && C.updNow && await C.updNow()) return; U.updPaint(U.T('확인 중…', 'Checking…')); const r = C.updCheck ? await C.updCheck() : 'none';
     U.updPaint(r === 'latest' ? U.T('최신 버전입니다 ✓', 'Up to date ✓') : r === 'offline' ? U.T('오프라인 — 나중에 다시', 'Offline — try later') : r === 'has' ? '' : U.T('업데이트 확인', 'Check for updates')); });
+  /* 선대 목록에서 선박 고르기 (사무실) */
+  document.addEventListener('click', e => { const a = e.target.closest && e.target.closest('[data-sjves]'); if (!a) return; const n = a.dataset.sjves; C.set('view', n);
+    if (!n && a.getAttribute('href') !== 'index.html') return; e.preventDefault(); if (U.onView) U.onView(n); }, true);
   /* 보는 선박 바꾸기 (사무실) */
   document.addEventListener('change', e => { const s = e.target.closest && e.target.closest('[data-sjview]'); if (!s) return; C.set('view', s.value); if (U.onView) U.onView(s.value); });
 })();

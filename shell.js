@@ -35,12 +35,41 @@ body{background:var(--sjx-bg)!important;font-family:'Pretendard','Noto Sans KR',
 }
 #top .sj-lang,#top .sj-fs,#top .sj-site,#top .sj-ves,header.top #lang,header.top #fsst,header.top .siteSw,header.top #ves,
 .mtmode,.mtr:has([data-a=siteSet]),.mtr:has([data-a=lang]),#mtab [data-act^=lang],.sj-sheet [data-act^=lang],.sj-sheet [data-sjsite],[data-act=shipChange],
-.sj-card:has([data-sjconf=dpaName]),[data-act=opsReply],[data-act=opsOpen],[data-act=openShipData],[data-a=dqCopyK],[data-a=dqCopy],[data-a=dqEml],#modal details.dqtxt,#modal .dqres .lbl,#modal .dqres .code,.sj-card.wipe,[data-a=resetAll],[data-a=pcNameReset],#top .sj-nav [data-go=fleet],#top .sj-nav [data-go=settings],#mtab [data-go=fleet],#sjFoot [data-go=fleet],#mtab [data-go=settings],.sj-sheet [data-go=settings],#top .sj-nav>[data-go=fleet],#top .sj-nav>[data-go=settings],#mtab [data-go=settings],.sj-sheet [data-go=settings],.sj-card.wipe,.resetbox,[data-a=delAll],[data-a=resetAll],.sj-card:has(#npw),.card:has(> .grid input[data-b=dpaName]),label:has(> select[data-b=vessel]),.f:has(> select[data-b=vessel]),.f:has(input[data-b=vesselOther]){display:none!important}
+.sj-card:has([data-sjconf=dpaName]),[data-act=spXlsx],.morebar:has([data-invmore]),[data-act=opsReply],[data-act=opsOpen],[data-act=openShipData],[data-a=dqCopyK],[data-a=dqCopy],[data-a=dqEml],#modal details.dqtxt,#modal .dqres .lbl,#modal .dqres .code,.sj-card.wipe,[data-a=resetAll],[data-a=pcNameReset],#top .sj-nav [data-go=fleet],#top .sj-nav [data-go=settings],#mtab [data-go=fleet],#sjFoot [data-go=fleet],#mtab [data-go=settings],.sj-sheet [data-go=settings],#top .sj-nav>[data-go=fleet],#top .sj-nav>[data-go=settings],#mtab [data-go=settings],.sj-sheet [data-go=settings],.sj-card.wipe,.resetbox,[data-a=delAll],[data-a=resetAll],.sj-card:has(#npw),.card:has(> .grid input[data-b=dpaName]),label:has(> select[data-b=vessel]),.f:has(> select[data-b=vessel]),.f:has(input[data-b=vesselOther]){display:none!important}
 .sjx-home{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:9px;background:#ffffff1f;color:#fff;text-decoration:none;font-size:17px;flex:none;margin-right:4px}
 .sjx-card{border:1px solid var(--sjx-line);border-radius:14px;background:#fff;padding:14px 16px;margin-bottom:14px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
 .sjx-card .tx{flex:1;min-width:220px;font-size:13.5px;color:#3B4352;line-height:1.55}.sjx-card b{color:var(--sjx-ink);font-size:14.5px}
 .sjx-pick{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:16px}.sjx-pick button{text-align:left;background:#fff;border:1px solid var(--sjx-line);border-radius:14px;padding:16px;font:inherit;cursor:pointer;min-height:64px}.sjx-pick button:hover{border-color:#9AA6B8}.sjx-pick b{display:block;font-size:16px}.sjx-pick small{color:var(--sjx-mut)}.sjx-empty{background:#fff;border:1px solid var(--sjx-line);border-radius:16px;padding:28px;margin:8px 0;font-size:14.5px;line-height:1.7;color:#3B4352}.sjx-empty h2{margin:0 0 6px;font-size:20px;color:var(--sjx-ink)}
 .sjx-srv{border:2px solid #1B2F5B;background:#F3F6FB;border-radius:14px;padding:14px 16px;margin:8px 0;font-size:14.5px;line-height:1.65;color:#1D2433}.sjx-srv b{font-size:16px}.sjx-srv .btn{margin-top:8px}
+.sjx-dd{position:relative;display:inline-block}.sjx-dd>summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:6px;user-select:none}.sjx-dd>summary::-webkit-details-marker{display:none}
+.sjx-ddm{position:absolute;z-index:60;top:calc(100% + 6px);left:0;min-width:260px;background:#fff;border:1px solid var(--sjx-line);border-radius:12px;box-shadow:0 12px 30px #0f172a26;padding:6px;display:flex;flex-direction:column;gap:2px}
+.sjx-ddm>*{width:100%;justify-content:flex-start!important;text-align:left;border:0!important;background:none!important;box-shadow:none!important;border-radius:8px!important;padding:10px 12px!important;margin:0!important}.sjx-ddm>*:hover{background:#F1F3F6!important}
+.sjx-ddm .sjx-ddh{font-size:12px;color:var(--sjx-mut);padding:6px 12px 2px!important;pointer-events:none}
+.sjx-ph{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:2px 0 14px}.sjx-ph h1{margin:0!important;font-size:24px!important;flex:1;min-width:220px;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}.sjx-ph .sjx-act{display:flex;gap:8px;flex-wrap:wrap}
+.sjx-fc{background:#fff;border:1px solid var(--sjx-line);border-radius:14px;padding:12px 16px;margin:0 0 14px;display:flex;flex-direction:column;gap:10px}.sjx-fc>*{margin:0!important}.sjx-fc>*+*{border-top:1px dashed #E3E6EB;padding-top:10px!important}
+#main .hsub,#main p.hsub{color:var(--sjx-mut)!important;font-size:13.5px!important;margin:-6px 0 14px!important}
+#main .btn.prt9,#main [data-act=ckBlankMenu],#main .btn.or,#main .btn.warn:not(.danger){background:#fff!important;border:1.5px solid #2F5496!important;color:#2F5496!important;font-weight:700!important;font-size:14.5px!important;padding:8px 16px!important;border-radius:9px!important;margin:0!important;box-shadow:none!important}
+#main .btn{border-radius:9px}#main .btn.pri{background:#2F5496;border-color:#2F5496}
+#main .chips .chip,#main .chip{border:1.5px solid #c3cbd9!important;background:#fff!important;border-radius:20px!important;padding:6px 14px!important;font-size:14px!important;color:#1d2433!important;box-shadow:none!important}
+#main .chip b{display:inline-block;min-width:20px;text-align:center;background:#EEF2F8;color:#2F5496;border-radius:10px;padding:0 7px;margin-left:4px;font-size:12.5px}
+#main .chip.on{background:#2F5496!important;border-color:#2F5496!important;color:#fff!important}#main .chip.on b{background:rgba(255,255,255,.22);color:#fff}
+#main .viewsw{background:#fff;border:1px solid var(--sjx-line);border-radius:12px;padding:4px;display:inline-flex!important;gap:2px!important;margin:0 0 14px!important}#main .viewsw .lb{padding:0 8px;color:var(--sjx-mut);font-size:13px}
+#main .viewsw button{border:0!important;border-radius:9px!important;background:transparent!important;color:#3B4352!important;font-weight:600!important;padding:8px 14px!important}#main .viewsw button.on{background:#2F5496!important;color:#fff!important}
+#main .kpis{gap:10px!important}#main .kp{align-items:flex-start!important;text-align:left!important;min-width:120px!important;padding:12px 14px!important;border:1px solid var(--sjx-line)!important;border-left:4px solid #CBD2DC!important;border-radius:12px!important;background:#fff!important;box-shadow:none!important}
+#main .kp b{font-size:26px!important}#main .kp span{font-size:12.5px!important;color:var(--sjx-mut)!important}#main .kp.od{border-left-color:#C62828!important}#main .kp.d7{border-left-color:#C99700!important}#main .kp.d30{border-left-color:#9AA6B8!important}#main .kp.cr{border-left-color:#E8A400!important;background:#fff!important}#main .kp.dn{border-left-color:#2E7D32!important}
+#main .card,#main .tw{border-radius:14px!important;border-color:var(--sjx-line)!important;box-shadow:none!important}
+.vesbar{display:none!important}
+.sjx-fc{padding:6px 18px!important;gap:0!important}.sjx-fc>.sjx-row{display:grid;grid-template-columns:96px 1fr;gap:12px;align-items:center;padding:12px 0!important}.sjx-fc>.sjx-row+.sjx-row{border-top:1px dashed #E3E6EB}
+.sjx-lb{font-weight:700;font-size:14.5px;color:#1d2433;display:flex;align-items:center;gap:6px}.sjx-rc{min-width:0}.sjx-rc>*{margin:0!important}
+#main .sjx-fc input[type=search],#main .sjx-fc input[type=text]{border:1.5px solid #2F5496!important;border-radius:10px!important;min-height:40px}
+#main .sjx-seg{display:inline-flex!important;flex-wrap:wrap;gap:0!important;border:1.5px solid #2F5496;border-radius:10px;overflow:hidden;background:#fff}
+#main .sjx-seg .chip{border:0!important;border-radius:0!important;border-right:1px solid #E3E6EB!important;padding:9px 14px!important;color:#5B6474!important;font-weight:600}
+#main .sjx-seg .chip:last-child{border-right:0!important}#main .sjx-seg .chip.on{background:#2F5496!important;color:#fff!important}
+#main .sjx-seg .chip::before{content:'';display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--dot,#B8C0CC);margin-right:6px;vertical-align:1px}#main .sjx-seg .chip.on::before{background:#fff}
+.sjx-rc>.dfsub>span.small{display:none}
+.sjx-cnt{font-weight:700;font-size:15px;margin:2px 0 8px;color:#1d2433}
+@media (max-width:760px){.sjx-fc>.sjx-row{grid-template-columns:1fr;gap:6px}}
+#main .opsp{box-shadow:none!important;border:1px solid var(--sjx-line)!important;border-left:4px solid #C62828!important;border-radius:14px!important}
 .sjx-card a{background:var(--sjx-navy);color:#fff;text-decoration:none;border-radius:9px;padding:8px 14px;font-weight:700;font-size:13.5px}`;
   const st = document.createElement('style'); st.textContent = css; (document.head || document.documentElement).appendChild(st);
   /* 도구가 앱 설정(선박·사무실)을 적용할 때까지 내용 숨김 — 예전 모양·다른 선박이 잠깐 보이는 것 방지 */
@@ -59,6 +88,10 @@ body{background:var(--sjx-bg)!important;font-family:'Pretendard','Noto Sans KR',
   const appCard = cls => `<div class="${cls} sjx-card"><span class="tx"><b>${T('앱 공통 설정', 'App settings')}</b><br>${T('기기 종류(선박/사무실)·선박·PC 이름·언어·회사 정보(DPA)·서버 동기화·백업 폴더는 앱 [설정]에서 한 번에 관리합니다. 이 화면에는 이 도구에만 필요한 설정만 있습니다.', 'Device type, vessel, PC name, language, company (DPA), sync and backup folder are managed once in app Settings. Only settings for this tool are here.')}</span><a href="../index.html#settings">${T('앱 설정 열기', 'Open app settings')}</a></div>`;
   const noData = (v, tool) => `<div class="sjx-empty"><h2>${U.esc(v)}</h2>${T(`아직 이 선박의 ${tool} 자료를 받지 못했습니다.<br>선박 기기가 앱에 등록되고 사무실이 [기기 승인]을 하면, 선박에서 입력한 자료가 자동으로 들어옵니다.`, `No ${tool} data from this vessel yet. It arrives once a ship device is registered and approved.`)}<div style="margin-top:14px"><a href="../index.html#devices" style="font-weight:700">${T('기기 승인 화면으로 →', 'Go to device approval →')}</a></div></div>`;
   document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-sjpick]'); if (!b) return; C.set('view', b.dataset.sjpick); if (U.onView) U.onView(b.dataset.sjpick); }, true);
+  document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-invcat],[data-invlow],[data-invexp]'); if (!b || typeof SPF === 'undefined') return; SPF.lim = 1e6;
+    if (b.dataset.invcat === '') { SPF.q = ''; SPF.low = false; SPF.exp = false; SPF.tab = 'items'; const q = document.getElementById('spq'); if (q) q.value = ''; } }, true);
+  document.addEventListener('input', e => { if (e.target && e.target.id === 'spq' && typeof SPF !== 'undefined') setTimeout(() => SPF.lim = 1e6, 0); }, true);
+  document.addEventListener('click', e => { if (!(e.target.closest && e.target.closest('.sjx-dd'))) document.querySelectorAll('details.sjx-dd[open]').forEach(d => d.open = false); });
   const fire = attrs => { const b = document.createElement('button'); b.hidden = true; Object.entries(attrs).forEach(([k, v]) => b.setAttribute('data-' + k, v)); document.body.appendChild(b); b.click(); b.remove(); };
   let sumT; const sumSoon = X => { clearTimeout(sumT); sumT = setTimeout(() => { try { X.sum(); railRefresh(); } catch (e) { console.warn('sum', e); } }, 1500); };
 
@@ -66,9 +99,10 @@ body{background:var(--sjx-bg)!important;font-family:'Pretendard','Noto Sans KR',
   const PMS = {
     ok: () => typeof pmsApplyObj === 'function' && typeof SJ !== 'undefined' && typeof ACT !== 'undefined' && typeof shipStats === 'function',
     hook() {
-      try { FOLDER_ASKED = true; } catch (e) { } try { folderGate = function () { }; } catch (e) { }
+      try { FOLDER_ASKED = true; } catch (e) { } try { folderGate = function () { }; } catch (e) { } try { SPF.lim = 1e6; } catch (e) { }
       try { const sm = setupMissing9; setupMissing9 = () => sm().filter(x => !['fs', 'pc', 'vessel'].includes(x[0])); } catch (e) { }
       try { pmsFolderCard = () => appCard('sj-card'); } catch (e) { }
+      try { vesBar = () => ''; } catch (e) { }
       try { const t0 = pmsTabs; pmsTabs = () => t0().filter(k => k !== 'fleet' && k !== 'settings'); } catch (e) { }
       /* 복구: 예전 '전체 초기화'로 막힌 기본 선박 자료(SUNNY QUEEN·KTS WHITE)와 서버 자료를 다시 받음 */
       let fix = false;
@@ -76,7 +110,34 @@ body{background:var(--sjx-bg)!important;font-family:'Pretendard','Noto Sans KR',
       try { if (SY.adopt === '9999') { SY.adopt = ''; fix = true; } } catch (e) { }
       if (fix || localStorage.getItem('sejul_restore_pms')) { ['sejul_cloud_pms_seen', 'sejul_cloud_pms_pushed', 'sejul_restore_pms'].forEach(k => localStorage.removeItem(k)); C.restoring = true; }
     },
-    after() { if (MODE !== 'admin') return; const main = document.getElementById('main'); if (!main) return; const view = C.get('view') || '';
+    /* 가져오기·내보내기 버튼을 한 곳으로 묶기 (인벤토리·결함·검교정·작업 목록) */
+    group() { const main = document.getElementById('main'); if (!main) return;
+      const G = [['imp', '📥 ' + T('가져오기', 'Import'), ['spImport', 'impaImport', 'importCompany', 'ckImport', 'calImport', 'importMaster', 'eqImport', 'sfiImport'], T('엑셀·목록 파일에서 불러오기', 'Load from Excel / list files')],
+                 ['exp', '📤 ' + T('내보내기', 'Export'), ['invErpXlsx', 'defXlsx', 'calXlsx'], T('ERP 업로드·보고용 엑셀', 'Excel for ERP upload / reports')]];
+      for (const [k, label, acts, hint] of G) { const bs = acts.map(a => main.querySelector(`[data-act="${a}"]`)).filter(b => b && !b.closest('.sjx-dd'));
+        if (!bs.length) continue; const d = document.createElement('details'); d.className = 'sjx-dd'; d.dataset.k = k;
+        d.innerHTML = `<summary class="${bs[0].className.replace(/\b(pri|danger|g)\b/g, '')}">${label} ▾</summary><div class="sjx-ddm"><span class="sjx-ddh">${hint}</span></div>`;
+        bs[0].parentNode.insertBefore(d, bs[0]); const m = d.querySelector('.sjx-ddm'); bs.forEach(b => m.appendChild(b)); }
+      document.querySelectorAll('details.sjx-dd[open]').forEach(d => { if (!d.matches(':hover')) d.open = false; }); },
+    /* 위험성 관리와 같은 화면 짜임: 제목줄(오른쪽에 동작) → 필터 카드 → 목록 */
+    layout() { const main = document.getElementById('main'); if (!main || main.dataset.sjx === route() + ':' + main.childElementCount) return;
+      main.querySelectorAll('.banner').forEach(b => { if (/회신 파일|공유 폴더|reply file|shared folder/i.test(b.textContent)) b.remove(); });
+      const h1 = [...main.children].find(e => e.tagName === 'H1'); if (h1 && !h1.closest('.sjx-ph')) { const ph = document.createElement('div'); ph.className = 'sjx-ph'; h1.parentNode.insertBefore(ph, h1); ph.appendChild(h1); const act = document.createElement('div'); act.className = 'sjx-act'; ph.appendChild(act);
+        const pr = h1.querySelector('[data-act=prt9]'); if (pr) { pr.innerHTML = '🖨 ' + T('출력', 'Print'); act.appendChild(pr); }
+        ['defNew', 'spNew', 'eqAdd', 'calAdd', 'clsNew'].forEach(a => { const b = main.querySelector(`.toolbar [data-act="${a}"]`); if (b) { b.classList.add('pri'); act.appendChild(b); } }); }
+      const FC = ['sfibar', 'toolbar', 'chips', 'tabs9', 'caltabs', 'dfsub']; let run = [];
+      const flush = () => { if (run.length) { const fc = document.createElement('div'); fc.className = 'sjx-fc'; run[0].parentNode.insertBefore(fc, run[0]); run.forEach(e => fc.appendChild(e)); } run = []; };
+      [...main.children].forEach(e => { const ok = FC.some(c => e.classList && e.classList.contains(c)) && !e.closest('.sjx-fc') && e.querySelector('button,input,select'); if (ok) run.push(e); else flush(); }); flush();
+      /* 줄마다 이름 (위험성 평가 목록과 같게) + 상태 줄은 이어 붙인 선택 버튼 */
+      const r = route(), lab = e => { const c = e.classList; if (c.contains('toolbar')) return e.querySelector('input') ? '🔎 ' + T('검색', 'Search') : T('작업', 'Actions'); if (c.contains('sfibar')) return T('SFI 분류', 'SFI group');
+          if (c.contains('dfsub')) return T('진행 단계', 'Step'); if (c.contains('tabs9') || c.contains('caltabs')) return T('보기', 'View'); if (c.contains('chips')) return r === 'spares' ? T('구분', 'Category') : T('상태', 'Status'); return T('필터', 'Filter'); };
+      const DOT = { od: '#E57373', d7: '#E3C26B', d30: '#C9B26B', nd: '#B8C0CC', ok: '#8BC34A', all: '#B8C0CC', def: '#E57373', low: '#E57373', crit: '#E8A400' };
+      main.querySelectorAll('.sjx-fc').forEach(fc => [...fc.children].forEach(e => { if (e.classList.contains('sjx-row')) return; const w = document.createElement('div'); w.className = 'sjx-row'; w.innerHTML = `<span class="sjx-lb">${lab(e)}</span><div class="sjx-rc"></div>`; fc.insertBefore(w, e); w.lastChild.appendChild(e);
+        if ((e.classList.contains('chips') || e.classList.contains('tabs9') || e.classList.contains('caltabs')) && e.querySelectorAll('button').length <= 8 && !e.classList.contains('dfsub')) { e.classList.add('sjx-seg'); e.querySelectorAll('button').forEach(b => { b.classList.add('chip'); const k = Object.values(b.dataset).join(' '); const m = Object.keys(DOT).find(x => new RegExp('\\b' + x + '\\b').test(k)); if (m) b.style.setProperty('--dot', DOT[m]); }); } }));
+      /* 목록 위 'N건' */
+      const fc = main.querySelector('.sjx-fc'), tw = fc && fc.nextElementSibling; if (tw && tw.classList && tw.classList.contains('tw') && !main.querySelector('.sjx-cnt')) { let n = [...tw.querySelectorAll('tbody tr')].filter(t => !t.classList.contains('pgrp') && !t.hidden && t.querySelectorAll('td').length >= 3).length; const ac = fc.querySelector('.sjx-seg .chip.on, .sjx-seg .chip.active, .sjx-seg [aria-pressed="true"]'); const an = ac && (ac.textContent.match(/(\d[\d,]*)\s*$/) || [])[1]; if (n && an && +an.replace(/,/g, '') > n) n = +an.replace(/,/g, ''); if (n) tw.insertAdjacentHTML('beforebegin', `<div class="sjx-cnt">${n.toLocaleString()}${T('건', ' items')}</div>`); }
+      main.dataset.sjx = route() + ':' + main.childElementCount; },
+    after() { try { PMS.group(); } catch (e) { } try { PMS.layout(); } catch (e) { console.warn('layout', e); } if (MODE !== 'admin') return; const main = document.getElementById('main'); if (!main) return; const view = C.get('view') || '';
       if (!view || route() === 'fleet') { const S = (U.sum('pms') || {}).ships || {};
         main.innerHTML = `<div class="sjx-empty"><h2>${T('선박을 고르세요', 'Choose a vessel')}</h2>${T('사무실 기기는 선박을 하나 골라 그 선박의 계획정비를 봅니다 (왼쪽 위 [보는 선박]으로도 바꿉니다). 선대 전체 현황은 <a href="../index.html">앱 홈</a>에 있습니다.', 'Pick one vessel (or use Viewing at top left). The fleet overview is on the <a href="../index.html">app home</a>.')}<div class="sjx-pick">${U.VES.map(v => `<button data-sjpick="${U.esc(v)}"><b>${U.esc(v)}</b><small>${OFFICE.ships[v] ? (S[v] ? T(`기한 초과 ${S[v].od} · 미결 결함 ${S[v].def}`, `Overdue ${S[v].od} · defects ${S[v].def}`) : T('자료 있음', 'Has data')) : T('아직 받은 자료 없음', 'No data yet')}</small></button>`).join('')}</div></div>`; return; }
       if (!OFFICE.ships[view]) main.innerHTML = noData(view, T('계획정비', 'Maintenance')); },
