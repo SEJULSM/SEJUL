@@ -92,7 +92,7 @@
       if (!SHIP || /^__/.test(SHIP.ship.name)) return []; if (m.role === 'ship' && SHIP.ship.name !== m.ship) return [];
       return [{ name: `PMS_${fs(SHIP.ship.name)}_${s}.json`, ship: SHIP.ship.name, core: SHIP, obj: Object.assign(wrapShipData(SHIP), base) }]; },
     apply(o) { if (MODE !== 'admin' && o.type === 'office' && SHIP && !(o.office.ships || {})[SHIP.ship.name]) return 0; return pmsApplyObj(o); },
-    async after(n) { SY.base = {}; trackAll(); await KV.set('ship', SHIP); await KV.set('office', OFFICE); try { resetHistory(); } catch (e) { } if (pmsBusy()) { SY.pending += n; renderTop(); } else { render(); toast(L(`서버에서 변경 ${n}건을 받아 합쳤습니다`, `Merged ${n} changes from the server`)); } } };
+    async after(n) { SY.base = {}; trackAll(); await KV.set('ship', SHIP); await KV.set('office', OFFICE); try { resetHistory(); } catch (e) { } if (pmsBusy()) { SY.pending += n; renderTop(); } else { render(); toast(L('🔄 최신 자료로 갱신됨', '🔄 Updated with the latest data')); } } };
   const RSK = { tool: 'rsk', pc: () => fsPcLabel(),
     files(m) { const base = { kind: 'SEJUL-RSK-DATA', app: APP_VER, pc: fsPc(), pcName: fsPcLabel() };
       if (DB.settings.site === 'office') { if (m.role !== 'office') return []; const V = [...new Set(['ras', 'ptws', 'mocs', 'rirs'].flatMap(k => (DB[k] || []).map(x => x.vessel)).filter(Boolean))];
@@ -101,7 +101,7 @@
       const v = vesselName(); if (!v || /^__/.test(v) || (m.role === 'ship' && v !== m.ship)) return [];
       return [{ name: fsName(), ship: v, core: DB, obj: Object.assign({ vessel: v, data: DB }, base) }]; },
     apply(j) { return j && j.data ? fsMerge(migrate(j.data)) : 0; },
-    async after(n) { _save0(); try { applyStd && applyStd(); } catch (e) { } if (fsTyping() || MODAL) { FS.pending = (FS.pending || 0) + n; fsBadge(); } else { render(); toast(t(`서버에서 변경 ${n}건을 받아 합쳤습니다`, `Merged ${n} changes from the server`)); } } };
+    async after(n) { _save0(); try { applyStd && applyStd(); } catch (e) { } if (fsTyping() || MODAL) { FS.pending = (FS.pending || 0) + n; fsBadge(); } else { render(); toast(t('🔄 최신 자료로 갱신됨', '🔄 Updated with the latest data')); } } };
   const boot = () => { let A = null;
     if (typeof pmsApplyObj === 'function' && typeof SJ !== 'undefined') { A = PMS; if (typeof doSave === 'function' && !doSave.__cl) { const d0 = doSave; doSave = async function () { const r = await d0.apply(this, arguments); C.onSave && C.onSave(); return r; }; doSave.__cl = 1; } }
     else if (typeof fsMerge === 'function' && typeof DB !== 'undefined') { A = RSK; if (typeof save === 'function' && !save.__cl) { const s0 = save; save = function () { const r = s0.apply(this, arguments); C.onSave && C.onSave(); return r; }; save.__cl = 1; } }

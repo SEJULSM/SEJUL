@@ -3,7 +3,7 @@
    도구 코드는 그대로 두고 저장 키만 연결하므로, 도구를 따로(HTML 파일) 써도 동작은 같음. */
 (function () {
   const C = window.SJAPP = window.SJAPP || {};
-  C.ver = '2026.11.11.1652';
+  C.ver = '2026.11.11.1720';
   C.inApp = true;
   /* 도구별 키 ↔ 공통 키 */
   const MAP = {
@@ -14,6 +14,9 @@
   const get = k => { try { return rawGet.call(ls, k); } catch (e) { return null; } };
   const put = (k, v) => { try { rawSet.call(ls, k, v); } catch (e) { } };
   C.get = k => get('sejul_common_' + k);
+  /* 글자 크기 (설정 → 글자 크기) — 앱 홈·모든 도구 공통 */
+  C.applyZoom = () => { const z = +get('sejul_common_zoom') || 1; document.documentElement.style.zoom = z === 1 ? '' : String(z); };
+  try { C.applyZoom(); } catch (e) { }
   C.set = (k, v) => { put('sejul_common_' + k, v); (MAP[k] || []).forEach(t => put(t, v)); };
   /* 1) 시작할 때: 공통 → 도구 키 (공통 값이 없으면 도구 값에서 공통을 채움) */
   for (const [k, ts] of Object.entries(MAP)) { const v = C.get(k); if (v) ts.forEach(t => put(t, v)); else { const tv = ts.map(get).find(Boolean); if (tv) C.set(k, tv); } }

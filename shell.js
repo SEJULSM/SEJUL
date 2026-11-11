@@ -11,6 +11,7 @@
   C.company = () => { let o = {}; try { o = JSON.parse(C.get('company') || '{}') || {}; } catch (e) { } Object.keys(CO0).forEach(k => { if (!o[k]) o[k] = CO0[k]; }); return o; };
   C.mode = () => U.role() === 'office' && U.officeOK() ? 'office' : 'ship';
   const TOOL = /rsk\.html/.test(location.pathname) ? 'rsk' : 'pms';
+  const BG = new URLSearchParams(location.search).has('bg'); C.bg = BG;   /* 앱 홈이 요약만 만들려고 보이지 않게 연 창 */
 
   /* ---------- 디자인 ---------- */
   const css = U.css + `
@@ -70,27 +71,59 @@ body{background:var(--sjx-bg)!important;font-family:'Pretendard','Noto Sans KR',
 .sjx-cnt{font-weight:700;font-size:15px;margin:2px 0 8px;color:#1d2433}
 @media (max-width:760px){.sjx-fc>.sjx-row{grid-template-columns:1fr;gap:6px}}
 #main .opsp{box-shadow:none!important;border:1px solid var(--sjx-line)!important;border-left:4px solid #C62828!important;border-radius:14px!important}
-.sjx-card a{background:var(--sjx-navy);color:#fff;text-decoration:none;border-radius:9px;padding:8px 14px;font-weight:700;font-size:13.5px}`;
+.sjx-card a{background:var(--sjx-navy);color:#fff;text-decoration:none;border-radius:9px;padding:8px 14px;font-weight:700;font-size:13.5px}
+.sjx-hero{display:flex;align-items:center;gap:18px;background:#fff;border:1px solid var(--sjx-line);border-left:6px solid #C62828;border-radius:16px;padding:18px 22px;margin:4px 0 18px}.sjx-hero.ok{border-left-color:#2E7D32}.sjx-hero .tx{flex:1;min-width:0}.sjx-hero small{display:block;color:var(--sjx-mut);font-size:13.5px;font-weight:600}.sjx-hero b{display:block;font-size:22px;margin:4px 0 4px;color:var(--sjx-ink)}.sjx-hero em{font-style:normal}.sjx-hero em.r{color:#C62828}.sjx-hero em.y{color:#B26A00}.sjx-hero span{color:var(--sjx-mut);font-size:14px}.sjx-hero .btn{white-space:nowrap;font-size:16px!important;padding:12px 18px!important;background:#1B2F5B!important;color:#fff!important;border-radius:12px!important}
+@media (max-width:640px){.sjx-hero{flex-direction:column;align-items:stretch;padding:16px}.sjx-hero b{font-size:19px}}
+#main .kpu{font-size:12.5px!important}#main .small,#main small{font-size:max(12.5px,.85em)}
+/* 입력 창(팝업) — 위험성 관리와 같은 짜임 */
+#mback .modal{border-radius:18px!important;box-shadow:0 24px 60px rgba(15,23,42,.28)!important}
+#mback .modal .mh{padding:18px 24px!important;font-size:19px!important;font-weight:800!important;background:#fff!important;border-bottom:1px solid var(--sjx-line)!important}
+#mback .modal .mb{padding:20px 24px!important}#mback .modal .mf{background:#F7F8FA!important;border-top:1px solid var(--sjx-line)!important;padding:12px 24px!important}
+#mback .modal .mb label{font-weight:700;color:#334155}
+#mback .modal .mb :is(input:not([type=radio]):not([type=checkbox]),select,textarea){border:1.5px solid #CBD2DC!important;border-radius:10px!important;min-height:42px;font-size:15px!important}
+#mback .modal .mb :is(input,select,textarea):focus{border-color:#2F5496!important;box-shadow:0 0 0 3px rgba(47,84,150,.15)!important;outline:0!important}
+#mback .modal .dfh{background:#F3F6FB;border:0!important;border-left:5px solid #1B2F5B!important;border-radius:8px;padding:9px 14px!important;margin:18px 0 12px!important;font-size:16px!important}
+@media (max-width:640px){#mback .modal{border-radius:18px 18px 0 0!important}#mback .modal .mh,#mback .modal .mb{padding-left:16px!important;padding-right:16px!important}}
+/* 이전/다음 막대 없앰 (위 탭·왼쪽 메뉴로 이동) · 실행 취소 단추는 저장 알림의 [되돌리기]로 · 위험성 관리 '설정' 탭은 앱 설정으로 */
+#sjFoot{display:none!important}#top .sj-tool[data-act=undo],#top .sj-tool[data-act=redo]{display:none!important}#nav [data-v=settings],#mtab [data-v=settings]{display:none!important}
+#toasts .toast button:not(.tx){white-space:nowrap;flex:none;background:#F2B705!important;color:#14244A!important;border:0!important;border-radius:8px!important;font-weight:800!important;padding:5px 12px!important}
+@media (max-width:899px){
+ html body #top .sjbar,html body header.top .bar,html body #mtab,html body #mtsheet{display:none!important}
+ html body #top.sj-top,html body header.top{top:54px!important}html.sj-hasupd #top.sj-top,html.sj-hasupd header.top{top:100px!important}
+ html body #top .sj-nav,html body header.top .nav,html body header.top #nav{display:flex!important;flex-wrap:nowrap!important;overflow-x:auto!important;background:#fff!important;border-bottom:1px solid #E3E6EB!important;padding:0 6px!important;scrollbar-width:none;box-shadow:none!important;gap:0!important}
+ #top .sj-nav::-webkit-scrollbar,header.top .nav::-webkit-scrollbar{display:none}
+ #top .sj-nav>button,header.top .nav>button{flex:0 0 auto!important;white-space:nowrap;color:#5B6474!important;background:transparent!important;border:0!important;border-bottom:3px solid transparent!important;border-radius:0!important;padding:13px 12px 10px!important;font-size:15px!important;font-weight:600!important;box-shadow:none!important}
+ #top .sj-nav>button.on,header.top .nav>button.on{color:#14244A!important;border-bottom-color:#14244A!important;font-weight:800!important}
+ #top .sj-nav .sj-site{display:none!important}
+ html body #toasts{top:auto!important;bottom:84px!important;left:10px!important;right:10px!important}html body{padding-top:54px!important;padding-bottom:84px!important}html.sj-hasupd body{padding-top:100px!important}html body #foot{bottom:66px!important}#drawer{bottom:66px!important}#selbar{bottom:66px!important}
+}`;
   const st = document.createElement('style'); st.textContent = css; (document.head || document.documentElement).appendChild(st);
   /* 도구가 앱 설정(선박·사무실)을 적용할 때까지 내용 숨김 — 예전 모양·다른 선박이 잠깐 보이는 것 방지 */
-  const wait = document.createElement('style'); wait.id = 'sjxWait'; wait.textContent = 'body>*:not(.sjr){visibility:hidden!important}body{background:#F3F4F6!important}'; (document.head || document.documentElement).appendChild(wait);
-  C.ready = () => { const w = document.getElementById('sjxWait'); if (w) w.remove(); };
+  const wait = document.createElement('style'); wait.id = 'sjxWait'; wait.textContent = 'body>*:not(.sjr):not(.sjmob){visibility:hidden!important}body{background:#F3F4F6!important}'; (document.head || document.documentElement).appendChild(wait);
+  /* 불러오는 동안 보이는 화면 (빈 화면 대신) */
+  if (!BG) { const l = document.createElement('div'); l.id = 'sjxLoad'; const nm = TOOL === 'pms' ? T('계획정비', 'Maintenance') : T('위험성 관리', 'Risk');
+    l.innerHTML = `<style>#sjxLoad{position:fixed;inset:0;z-index:890;background:#F3F4F6;display:flex;align-items:center;justify-content:center;font-family:'Pretendard','Noto Sans KR','Malgun Gothic',system-ui,sans-serif}@media (min-width:900px){#sjxLoad{left:248px}}@media (max-width:899px){#sjxLoad{top:54px;bottom:66px}}#sjxLoad .b{text-align:center;color:#1B2F5B}#sjxLoad i{display:block;width:44px;height:44px;margin:0 auto 16px;border-radius:50%;border:4px solid #D7DEEA;border-top-color:#1B2F5B;animation:sjxsp .8s linear infinite}#sjxLoad b{display:block;font-size:18px}#sjxLoad small{display:block;margin-top:6px;color:#5B6474;font-size:14px}@keyframes sjxsp{to{transform:rotate(360deg)}}</style><div class="b"><i></i><b>${nm} ${T('불러오는 중…', 'loading…')}</b><small>${T('처음 열 때는 몇 초 걸릴 수 있습니다', 'The first open can take a few seconds')}</small></div>`;
+    document.documentElement.appendChild(l); }
+  C.ready = () => { const w = document.getElementById('sjxWait'); if (w) w.remove(); const l = document.getElementById('sjxLoad'); if (l) l.remove(); };
   setTimeout(C.ready, 5000);
   const early = () => { try { C.ensureBar(); } catch (e) { } };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', early); else setTimeout(early, 0);
 
   /* ---------- 왼쪽 메뉴 ---------- */
   C.ensureBar = function () {
-    let r = document.querySelector('.sjr'); if (!r) { const w = document.createElement('div'); w.innerHTML = U.rail(TOOL, '../'); document.body.appendChild(w.firstElementChild); U.syncPaint(); U.updPaint(); C.updBar && C.updBar(); }
+    let r = document.querySelector('.sjr'); if (!r) { document.querySelectorAll('.sjmob').forEach(x => x.remove()); const w = document.createElement('div'); w.innerHTML = U.rail(TOOL, '../'); [...w.children].forEach(x => document.body.appendChild(x)); U.syncPaint(); U.updPaint(); C.updBar && C.updBar(); }
     const bar = document.querySelector('#top .sjbar, header.top .bar'); /* 휴대폰: 머리글에 ⌂ */
     if (bar && !bar.querySelector('.sjx-home')) { const a = document.createElement('a'); a.className = 'sjx-home'; a.href = '../index.html'; a.title = T('앱 홈', 'App home'); a.textContent = '⌂'; bar.insertBefore(a, bar.firstChild); } };
-  const railRefresh = () => { const r = document.querySelector('.sjr'); if (r) r.remove(); C.ensureBar(); };
+  const railRefresh = () => { const open = document.querySelector('.sjs:not([hidden])'); document.querySelectorAll('.sjr,.sjmob').forEach(x => x.remove()); C.ensureBar(); if (open) { const sh = document.querySelector('.sjs'); if (sh) sh.hidden = false; } };
   const appCard = cls => `<div class="${cls} sjx-card"><span class="tx"><b>${T('앱 공통 설정', 'App settings')}</b><br>${T('기기 종류(선박/사무실)·선박·PC 이름·언어·회사 정보(DPA)·서버 동기화·백업 폴더는 앱 [설정]에서 한 번에 관리합니다. 이 화면에는 이 도구에만 필요한 설정만 있습니다.', 'Device type, vessel, PC name, language, company (DPA), sync and backup folder are managed once in app Settings. Only settings for this tool are here.')}</span><a href="../index.html#settings">${T('앱 설정 열기', 'Open app settings')}</a></div>`;
   const noData = (v, tool) => `<div class="sjx-empty"><h2>${U.esc(v)}</h2>${T(`아직 이 선박의 ${tool} 자료를 받지 못했습니다.<br>선박 기기가 앱에 등록되고 사무실이 [기기 승인]을 하면, 선박에서 입력한 자료가 자동으로 들어옵니다.`, `No ${tool} data from this vessel yet. It arrives once a ship device is registered and approved.`)}<div style="margin-top:14px"><a href="../index.html#devices" style="font-weight:700">${T('기기 승인 화면으로 →', 'Go to device approval →')}</a></div></div>`;
   document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-sjpick]'); if (!b) return; C.set('view', b.dataset.sjpick); if (U.onView) U.onView(b.dataset.sjpick); }, true);
   document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-invcat],[data-invlow],[data-invexp]'); if (!b || typeof SPF === 'undefined') return; SPF.lim = 1e6;
     if (b.dataset.invcat === '') { SPF.q = ''; SPF.low = false; SPF.exp = false; SPF.tab = 'items'; const q = document.getElementById('spq'); if (q) q.value = ''; } }, true);
   document.addEventListener('input', e => { if (e.target && e.target.id === 'spq' && typeof SPF !== 'undefined') setTimeout(() => SPF.lim = 1e6, 0); }, true);
+  /* 이름 없는 빈 선택 칸에 '— 선택 —' 표시 (팝업 포함) */
+  const fixSel = () => document.querySelectorAll('select').forEach(sl => { const o = sl.options[0]; if (o && o.value === '' && !o.text.trim()) o.text = T('— 선택 —', '— Select —'); });
+  let fsT; new MutationObserver(() => { clearTimeout(fsT); fsT = setTimeout(fixSel, 120); }).observe(document.documentElement, { childList: true, subtree: true });
   document.addEventListener('click', e => { if (!(e.target.closest && e.target.closest('.sjx-dd'))) document.querySelectorAll('details.sjx-dd[open]').forEach(d => d.open = false); });
   const fire = attrs => { const b = document.createElement('button'); b.hidden = true; Object.entries(attrs).forEach(([k, v]) => b.setAttribute('data-' + k, v)); document.body.appendChild(b); b.click(); b.remove(); };
   let sumT; const sumSoon = X => { clearTimeout(sumT); sumT = setTimeout(() => { try { X.sum(); railRefresh(); } catch (e) { console.warn('sum', e); } }, 1500); };
@@ -102,6 +135,11 @@ body{background:var(--sjx-bg)!important;font-family:'Pretendard','Noto Sans KR',
       try { FOLDER_ASKED = true; } catch (e) { } try { folderGate = function () { }; } catch (e) { } try { SPF.lim = 1e6; } catch (e) { }
       try { const sm = setupMissing9; setupMissing9 = () => sm().filter(x => !['fs', 'pc', 'vessel'].includes(x[0])); } catch (e) { }
       try { pmsFolderCard = () => appCard('sj-card'); } catch (e) { }
+      /* 저장할 때마다 알림에 [↶ 되돌리기] (위쪽 실행 취소 단추 대신) */
+      try { const c0 = commit; let lc = 0, lu = 0; ['pointerdown', 'keydown'].forEach(ev => document.addEventListener(ev, () => lu = Date.now(), true)); commit = function () { const r = c0.apply(this, arguments); if (Date.now() - lu < 4000) lc = Date.now(); setTimeout(() => { if (Date.now() - lc < 1500 && !document.querySelector('#toasts .toast')) toast(T('저장했습니다', 'Saved'), true); }, 120); return r; };
+        toast = function (msg, withUndo) { const box = document.getElementById('toasts'); if (!box) return; if (withUndo && !lu) return; box.innerHTML = ''; const u = (withUndo || Date.now() - lc < 1500) && Date.now() - lu < 6000; const t = document.createElement('div'); t.className = 'toast';
+          t.innerHTML = `<span>${U.esc(msg)}</span>` + (u ? `<button>↶ ${T('되돌리기', 'Undo')}</button>` : '') + `<button class="tx" title="${T('닫기', 'Close')}">✕</button>`;
+          if (u) t.querySelector('button').onclick = () => { try { undo(); } catch (e) { } t.remove(); }; t.querySelector('.tx').onclick = () => t.remove(); box.appendChild(t); setTimeout(() => t.remove(), u ? 6000 : 3000); }; } catch (e) { }
       try { vesBar = () => ''; } catch (e) { }
       try { const t0 = pmsTabs; pmsTabs = () => t0().filter(k => k !== 'fleet' && k !== 'settings'); } catch (e) { }
       /* 복구: 예전 '전체 초기화'로 막힌 기본 선박 자료(SUNNY QUEEN·KTS WHITE)와 서버 자료를 다시 받음 */
@@ -137,10 +175,11 @@ body{background:var(--sjx-bg)!important;font-family:'Pretendard','Noto Sans KR',
       /* 목록 위 'N건' */
       const fc = main.querySelector('.sjx-fc'), tw = fc && fc.nextElementSibling; if (tw && tw.classList && tw.classList.contains('tw') && !main.querySelector('.sjx-cnt')) { let n = [...tw.querySelectorAll('tbody tr')].filter(t => !t.classList.contains('pgrp') && !t.hidden && t.querySelectorAll('td').length >= 3).length; const ac = fc.querySelector('.sjx-seg .chip.on, .sjx-seg .chip.active, .sjx-seg [aria-pressed="true"]'); const an = ac && (ac.textContent.match(/(\d[\d,]*)\s*$/) || [])[1]; if (n && an && +an.replace(/,/g, '') > n) n = +an.replace(/,/g, ''); if (n) tw.insertAdjacentHTML('beforebegin', `<div class="sjx-cnt">${n.toLocaleString()}${T('건', ' items')}</div>`); }
       main.dataset.sjx = route() + ':' + main.childElementCount; },
-    after() { try { PMS.group(); } catch (e) { } try { PMS.layout(); } catch (e) { console.warn('layout', e); } if (MODE !== 'admin') return; const main = document.getElementById('main'); if (!main) return; const view = C.get('view') || '';
+    after() { try { if (MODE === 'admin' && OFFICE.wiped) { OFFICE.wiped = false; if (typeof ensureVessels === 'function') ensureVessels(); KV.set('office', OFFICE); ['sejul_cloud_pms_seen', 'sejul_cloud_pms_pushed'].forEach(k => localStorage.removeItem(k)); setTimeout(() => { try { if (window.SJCLOUD && SJCLOUD.A) SJCLOUD.sync(SJCLOUD.A, true); } catch (e) { } }, 1500); setTimeout(() => { try { render(); } catch (e) { } }, 0); } } catch (e) { }
+      try { const main = document.getElementById('main'); if (main) { main.querySelectorAll('select').forEach(sl => { const e = [...sl.options].filter(o => o.value === ''); if (e.length > 1) { const sel = sl.value === ''; e.slice(1).forEach(o => o.remove()); if (sel) sl.selectedIndex = [...sl.options].indexOf(e[0]); } });   /* 이름 없는 빈 선택 항목 정리 */ } } catch (e) { } try { PMS.group(); } catch (e) { } try { PMS.layout(); } catch (e) { console.warn('layout', e); } try { PMS.hero(); } catch (e) { } if (MODE !== 'admin') return; const main = document.getElementById('main'); if (!main) return; const view = C.get('view') || '';
       if (!view || route() === 'fleet') { const S = (U.sum('pms') || {}).ships || {};
         main.innerHTML = `<div class="sjx-empty"><h2>${T('선박을 고르세요', 'Choose a vessel')}</h2>${T('사무실 기기는 선박을 하나 골라 그 선박의 계획정비를 봅니다 (왼쪽 위 [보는 선박]으로도 바꿉니다). 선대 전체 현황은 <a href="../index.html">앱 홈</a>에 있습니다.', 'Pick one vessel (or use Viewing at top left). The fleet overview is on the <a href="../index.html">app home</a>.')}<div class="sjx-pick">${U.VES.map(v => `<button data-sjpick="${U.esc(v)}"><b>${U.esc(v)}</b><small>${OFFICE.ships[v] ? (S[v] ? T(`기한 초과 ${S[v].od} · 미결 결함 ${S[v].def}`, `Overdue ${S[v].od} · defects ${S[v].def}`) : T('자료 있음', 'Has data')) : T('아직 받은 자료 없음', 'No data yet')}</small></button>`).join('')}</div></div>`; return; }
-      if (!OFFICE.ships[view]) main.innerHTML = noData(view, T('계획정비', 'Maintenance')); },
+      if (!OFFICE.ships[view] && typeof newDB === 'function') { try { const nd = newDB(view); if (nd.master) nd.master.adminHash = OFFICE.adminHash; OFFICE.ships[view] = nd; OFFICE.sel = view; setTimeout(() => { try { render(); } catch (e) { } }, 0); } catch (e) { main.innerHTML = noData(view, T('계획정비', 'Maintenance')); } } },
     apply() { let ch = 0; const co = C.company();
       Object.entries(co).forEach(([k, v]) => { if (SJ.conf('pms')[k] !== v) SJ.confSet('pms', k, v); });
       const want = C.mode();
@@ -155,6 +194,13 @@ body{background:var(--sjx-bg)!important;font-family:'Pretendard','Noto Sans KR',
         setTimeout(() => { const m = document.querySelector('#mback .modal:last-child'), ok = m && m.querySelector('.mf button:last-child'); if (ok && /선박|vessel/i.test(m.textContent || '')) ok.click(); }, 60); }
       if (ch) render(); },
     view(v) { if (MODE !== 'admin') return; if (!v) { location.href = '../index.html'; return; } if (OFFICE.ships[v]) OFFICE.sel = v; location.hash = '#/home'; render(); },
+    /* 계획정비 홈 맨 위: 오늘 할 일 한 줄 + 바로 실시 입력 */
+    hero() { if (route() !== 'home') return; const main = document.getElementById('main'); if (!main || main.querySelector('.sjx-hero')) return;
+      const db = MODE === 'admin' ? OFFICE.ships[C.get('view') || ''] : SHIP; if (!db) return; const c = shipStats(db).c, n = (c.od || 0) + (c.d7 || 0); if (!c.n) { const h = document.createElement('div'); h.className = 'sjx-hero ok'; h.style.borderLeftColor = '#B8C0CC'; h.innerHTML = `<div class="tx"><small>${T('오늘 할 일', 'Today')} · ${U.esc(db.ship && db.ship.name || '')}</small><b>${T('아직 등록된 작업이 없습니다', 'No jobs registered yet')}</b><span>${T('선박 기기가 승인되면 선박의 계획정비 자료가 자동으로 들어옵니다.', 'Vessel data arrives automatically once a ship device is approved.')}</span></div>`; const h1 = main.querySelector('h1'), ph = (h1 && (h1.closest('.sjx-ph') || h1)) || main.firstElementChild; if (ph) ph.insertAdjacentElement('afterend', h); return; }
+      const h = document.createElement('div'); h.className = 'sjx-hero' + (n ? '' : ' ok');
+      h.innerHTML = `<div class="tx"><small>${T('오늘 할 일', 'Today')} · ${U.esc(db.ship && db.ship.name || '')}</small><b>${n ? `${T('기한 초과', 'Overdue')} <em class="r">${c.od}</em> · ${T('7일 이내', '≤ 7 days')} <em class="y">${c.d7}</em>` : '✅ ' + T('급한 작업이 없습니다', 'Nothing urgent')}</b><span>${n ? T('작업을 누르고 실시 기록을 입력하면 목록에서 빠집니다.', 'Open a job and record it to clear it.') : T('30일 이내 작업과 기록 없는 작업은 작업 목록에서 봅니다.', 'See upcoming jobs in the job list.')}</span></div>
+        <button class="btn pri big" data-v9due="${n ? 'od' : 'd30'}">${n ? T('바로 실시 입력 →', 'Record now →') : T('작업 목록 보기 →', 'Job list →')}</button>`;
+      const h1 = main.querySelector('h1'), ph = (h1 && (h1.closest('.sjx-ph') || h1)) || main.firstElementChild; if (ph) ph.insertAdjacentElement('afterend', h); else main.prepend(h); },
     sum() { const ships = MODE === 'admin' ? OFFICE.ships : (SHIP ? { [SHIP.ship.name]: SHIP } : {}), out = {};
       for (const [n, db] of Object.entries(ships)) { try { const { c } = shipStats(db), td = typeof opsTodo === 'function' ? opsTodo(db) : { O: [], S: [] };
         out[n] = { od: c.od, d7: c.d7, d30: c.d30, nd: c.nd, cri: c.cri, def: c.def, defA: c.defA, low: c.low, n: c.n, E: c.E, S: td.S.slice(0, 15), O: td.O.slice(0, 15),
@@ -240,12 +286,12 @@ body{background:var(--sjx-bg)!important;font-family:'Pretendard','Noto Sans KR',
     C.ensureBar(); setInterval(C.ensureBar, 1000); setInterval(U.syncPaint, 20e3); setTimeout(C.ready, 150);
     U.onView = v => { try { X.view(v); } catch (e) { } railRefresh(); };
     /* PTW 만료 30분 전 — 이 기기에서 위험성 관리를 열어 둔 동안 (인터넷 없어도) */
-    if (X === RSK) setInterval(() => { try { if (!('Notification' in window) || Notification.permission !== 'granted' || DB.settings.site === 'office') return; const pf = SJCLOUD.prefs ? SJCLOUD.prefs() : {}; if ((pf.types || {}).ptw === false) return; if (pf.quiet && !pf.ptw) { const d = new Date(), m = d.getHours() * 60 + d.getMinutes(), f = pf.from, t2 = pf.to; if (f !== t2 && (f < t2 ? m >= f && m < t2 : m >= f || m < t2)) return; } const v = vesselName(), now = Date.now(); let seen = {}; try { seen = JSON.parse(localStorage.getItem('sejul_ptw_alerted') || '{}'); } catch (e) { }
+    if (X === RSK && !BG) setInterval(() => { try { if (!('Notification' in window) || Notification.permission !== 'granted' || DB.settings.site === 'office') return; const pf = SJCLOUD.prefs ? SJCLOUD.prefs() : {}; if ((pf.types || {}).ptw === false) return; if (pf.quiet && !pf.ptw) { const d = new Date(), m = d.getHours() * 60 + d.getMinutes(), f = pf.from, t2 = pf.to; if (f !== t2 && (f < t2 ? m >= f && m < t2 : m >= f || m < t2)) return; } const v = vesselName(), now = Date.now(); let seen = {}; try { seen = JSON.parse(localStorage.getItem('sejul_ptw_alerted') || '{}'); } catch (e) { }
       (DB.ptws || []).forEach(p => { if (p.vessel !== v || ptwStatus(p)[0] !== 'act' || !p.to) return; const e = new Date(p.to).getTime(), k = p.id + ':' + p.to; if (seen[k] || e - now > 30 * 60e3 || now - e > 10 * 60e3) return; seen[k] = now;
         navigator.serviceWorker && navigator.serviceWorker.ready.then(reg => reg.showNotification(v + ' — ' + T('PTW 곧 만료', 'Permit expiring'), { body: (p.no || 'PTW') + ' ' + (p.desc || p.location || '') + ' — ' + String(p.to).slice(11, 16) + T(' 만료', ' expires'), tag: 'ptw-' + p.id, icon: '../icon-192.png', data: { url: 'tools/rsk.html' } })); });
       localStorage.setItem('sejul_ptw_alerted', JSON.stringify(seen)); } catch (e) { } }, 60e3);
     /* 앱 홈에서 누른 항목으로 이동 */
-    const q = new URLSearchParams(location.search).get('go'); if (q) { setTimeout(() => { try { const o = JSON.parse(q); if (o.view && typeof MODE !== 'undefined' && MODE === 'admin' && OFFICE.ships[o.view]) { OFFICE.sel = o.view; } if (o.hash) location.hash = o.hash; if (o.attrs) setTimeout(() => fire(o.attrs), 300); } catch (e) { } history.replaceState(null, '', location.pathname + location.hash); }, 900); }
+    const q = BG ? null : new URLSearchParams(location.search).get('go'); if (q) { setTimeout(() => { try { const o = JSON.parse(q); if (o.view && typeof MODE !== 'undefined' && MODE === 'admin' && OFFICE.ships[o.view]) { OFFICE.sel = o.view; } if (o.hash) location.hash = o.hash; if (o.attrs) setTimeout(() => fire(o.attrs), 300); } catch (e) { } history.replaceState(null, '', location.pathname + location.hash); }, 900); }
     addEventListener('storage', e => { if (/^sejul_common_(vessel|role|lang|company|pcname)$/.test(e.key || '')) { try { X.apply(); } catch (er) { } railRefresh(); } });
     addEventListener('pageshow', () => { try { X.apply(); } catch (er) { } railRefresh(); }); };
   if (document.readyState === 'complete') setTimeout(boot, 50); else addEventListener('load', () => setTimeout(boot, 50));
