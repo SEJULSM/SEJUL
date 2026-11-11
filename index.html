@@ -31,7 +31,7 @@ footer{text-align:center;color:var(--mut);font-size:12px;padding:20px}
 <header><img src="icon-192.png" alt=""><div><h1 data-t="SEJUL 선박관리 앱|SEJUL Fleet Apps"></h1><small>SEJUL SHIP MANAGEMENT CO., LTD.</small></div><span class="sp"></span>
   <span class="pill" id="net"></span><span class="pill" id="ves"></span><div class="lang"><button data-lang="ko">한국어</button><button data-lang="en">English</button></div></header>
 <main>
-  <div id="inst" class="note" hidden></div>
+  <div class="note" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap" id="instTop"><span data-t="📥 이 앱을 PC에 설치하면 바탕화면 아이콘으로 열리고, 인터넷 없이도 씁니다.|📥 Install this app to open it from the desktop and use it offline."></span><button class="btn g" onclick="document.getElementById('cInst').click()" data-t="⬇ 이 PC에 설치|⬇ Install"></button></div><div id="inst" class="note" hidden></div>
   <h2 data-t="도구|Tools"></h2>
   <div class="tools">
     <a class="tool" href="tools/pms.html"><span class="ic">🔧</span><b data-t="계획정비 (PMS)|Planned Maintenance"></b><span class="en" data-t="PMS · SFI · 점검표 · 결함 · 인벤토리 · 선급 검사|PMS · SFI · Checklists · Defects · Inventory · Class surveys"></span><p data-t="SFI 계통 장비·작업, 정기 점검표, 결함 보고·수리 신청, 예비품·청구, 검교정·선급 검사|SFI equipment & jobs, checklists, defects, spares & requisitions, calibration & class surveys"></p><span class="v">PMS 2.3.0 (v19)</span></a>
@@ -45,7 +45,7 @@ footer{text-align:center;color:var(--mut);font-size:12px;padding:20px}
     <div class="row"><label data-t="이 PC 이름|This PC"></label><div><div class="chips" id="cPcP"></div><div style="display:flex;gap:6px;margin-top:6px"><input id="cPc" placeholder="예: 개인 PC - 1항사 홍길동" style="flex:1"><button class="btn" id="cPcS" data-t="저장|Save"></button></div></div><div class="h" data-t="같은 폴더·서버를 쓰는 여러 PC를 구분합니다.|Tells several PCs apart."></div></div>
     <div class="row"><label data-t="데이터 폴더|Data folder"></label><div><span class="st" id="cDirSt"></span> <button class="btn p" id="cDir" data-t="📁 폴더 선택|📁 Choose folder"></button></div><div class="h" data-t="한 번 고르면 PMS·위험성 관리 모두 이 폴더에 저장합니다 (선교·CCR·ECR 공유 폴더 권장).|Both tools save to this folder (a shared folder is recommended)."></div></div>
     <div class="row"><label data-t="서버 동기화|Server sync"></label><div><span class="st warn" data-t="준비 중 — 회사 서버 연결 후 사용|Coming — after the company server is set up"></span></div><div class="h" data-t="인터넷이 되면 선박↔사무실 자료를 자동으로 주고받습니다. 지금은 공유 폴더·사무실 회신 파일로 주고받습니다.|Automatic ship↔office sync when online. For now, shared folder and reply files."></div></div>
-    <div class="row"><label data-t="앱|App"></label><div><span class="st">v2026.11.11.1139</span> <button class="btn" id="cUpd" data-t="업데이트 확인|Check for updates"></button> <button class="btn g" id="cInst" hidden data-t="⬇ 이 PC에 설치|⬇ Install on this PC"></button> <span class="st" id="cUpdSt"></span></div></div>
+    <div class="row"><label data-t="앱|App"></label><div><span class="st">v2026.11.11.1252</span> <button class="btn" id="cUpd" data-t="업데이트 확인|Check for updates"></button> <button class="btn g" id="cInst" data-t="⬇ 이 PC에 설치|⬇ Install on this PC"></button> <span class="st" id="cUpdSt"></span></div></div>
   </div>
   <div class="note" data-t="📶 한 번 설치하면 인터넷 없이 선박에서 그대로 쓸 수 있습니다. 인터넷이 연결되면 새 버전을 자동으로 받습니다. 입력한 자료는 이 PC(와 고른 폴더)에만 저장되고, 앱 주소(서버)로는 올라가지 않습니다.|📶 Once installed, works offline on board. Updates download automatically when online. Your records stay on this PC (and the chosen folder)."></div>
 </main>
@@ -67,10 +67,19 @@ document.addEventListener('click', async e => { const b = e.target.closest('butt
   else if (b.id === 'cPcS'){ const v = document.getElementById('cPc').value.trim(); if (v){ SJAPP.set('pcname', v); paint(); } }
   else if (b.id === 'cDir'){ if (!window.showDirectoryPicker) return alert(T('이 브라우저는 폴더 저장을 지원하지 않습니다 — Chrome·Edge를 쓰세요.|Use Chrome or Edge for folder saving.')); try { const h = await showDirectoryPicker({ id: 'sejul', mode: 'readwrite' }); await h.requestPermission({ mode: 'readwrite' }); await SJAPP.dirSet(h); dirSt(); } catch (err) {} }
   else if (b.id === 'cUpd'){ const s = document.getElementById('cUpdSt'); s.textContent = T('확인 중…|Checking…'); try { const r = await navigator.serviceWorker.getRegistration(); await r.update(); setTimeout(() => s.textContent = r.waiting || r.installing ? T('새 버전을 받는 중 — 곧 안내가 뜹니다|Downloading new version') : T('최신 버전입니다|Up to date'), 1500); } catch (err) { s.textContent = T('오프라인 — 나중에 다시|Offline — try later'); } }
-  else if (b.id === 'cInst' && window.__bip){ __bip.prompt(); __bip = null; b.hidden = true; } });
+  else if (b.id === 'cInst'){ if (window.__bip){ __bip.prompt(); const r = await __bip.userChoice.catch(() => ({})); __bip = null; if (r.outcome === 'accepted') paintInst(); } else instHelp(); } });
+const standalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+function paintInst(){ const b = document.getElementById('cInst'), n = document.getElementById('inst'); if (standalone()){ b.hidden = true; document.getElementById('instTop').hidden = true; n.hidden = false; n.innerHTML = '✅ ' + T('설치된 앱으로 실행 중입니다. 인터넷 없이도 열립니다.|Running as an installed app — works offline.'); } }
+function instHelp(){ const ua = navigator.userAgent, edge = /Edg\//.test(ua), chrome = /Chrome\//.test(ua) && !edge && !/OPR|Whale|SamsungBrowser/.test(ua), ios = /iPhone|iPad/.test(ua), n = document.getElementById('inst'); n.hidden = false;
+  n.innerHTML = '<b>⬇ ' + T('설치 방법|How to install') + '</b><br>' + (ios ? T('iPhone·iPad: Safari 아래쪽 [공유 ⬆] → [홈 화면에 추가]|iPhone/iPad: Safari Share → Add to Home Screen')
+   : edge ? T('Edge: 주소창 오른쪽 [앱 설치 ⊕] 아이콘 → [설치]. 아이콘이 없으면 오른쪽 위 [···] → [앱] → [이 사이트를 앱으로 설치]|Edge: address bar install icon, or ··· → Apps → Install this site as an app')
+   : chrome ? T('Chrome: 주소창 오른쪽 [설치 ⊕(모니터 모양)] 아이콘 → [설치]. 아이콘이 없으면 오른쪽 위 [⋮] → [전송, 저장, 공유] → [페이지를 앱으로 설치…]|Chrome: address bar install icon, or ⋮ → Cast, save and share → Install page as app')
+   : T('설치는 Chrome 또는 Edge에서 됩니다. 이 주소를 Chrome·Edge로 열어 주세요.|Please open this address in Chrome or Edge to install.'))
+   + '<br><span style="color:#5b6577">' + T('설치 아이콘은 페이지를 연 뒤 몇 초 지나야 나타날 수 있습니다. 이미 설치했다면 바탕화면·시작 메뉴의 SEJUL 아이콘으로 여세요.|The install icon may take a few seconds to appear. If already installed, open SEJUL from the desktop / Start menu.') + '</span>'; }
+addEventListener('appinstalled', () => { const n = document.getElementById('inst'); n.hidden = false; n.innerHTML = '✅ ' + T('설치되었습니다 — 바탕화면·시작 메뉴의 SEJUL 아이콘으로 여세요.|Installed — open SEJUL from the desktop / Start menu.'); document.getElementById('cInst').hidden = true; });
 document.getElementById('cVes').onchange = e => { SJAPP.set('vessel', e.target.value); paint(); };
 addEventListener('online', net); addEventListener('offline', net);
-addEventListener('beforeinstallprompt', e => { e.preventDefault(); window.__bip = e; document.getElementById('cInst').hidden = false; });
-paint(); SJAPP.watchUpdate();
+addEventListener('beforeinstallprompt', e => { e.preventDefault(); window.__bip = e; });
+paint(); paintInst(); SJAPP.watchUpdate();
 navigator.serviceWorker && navigator.serviceWorker.ready.then(() => document.getElementById('swst').textContent = T('오프라인 사용 준비됨 ✓|Ready for offline use ✓'));
 </script></body></html>
