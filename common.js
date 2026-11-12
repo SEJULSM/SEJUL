@@ -3,7 +3,7 @@
    도구 코드는 그대로 두고 저장 키만 연결하므로, 도구를 따로(HTML 파일) 써도 동작은 같음. */
 (function () {
   const C = window.SJAPP = window.SJAPP || {};
-  C.ver = '2026.11.12.1358';
+  C.ver = '2026.11.12.1625';
   C.inApp = true;
   /* 도구별 키 ↔ 공통 키 */
   const MAP = {
@@ -40,9 +40,9 @@
     try { if (typeof DB !== 'undefined' && DB.settings && DB.settings.vessel && DB.settings.vessel !== v && !C.get('vessel')) C.set('vessel', DB.settings.vessel); } catch (e) { } };
   /* 5) 앱 홈으로 버튼 */
   C.homeBtn = function () { if (document.getElementById('sjAppHome')) return; const a = document.createElement('a'); a.id = 'sjAppHome'; a.href = '../index.html'; a.title = '앱 홈 · App home'; a.innerHTML = '<b>⌂</b><span>앱 홈</span>'; document.body.appendChild(a); };
-  const css = `#sjAppHome{position:fixed;left:8px;bottom:84px;z-index:9998;display:flex;align-items:center;gap:4px;background:#1F3864;color:#fff;text-decoration:none;border-radius:20px;padding:6px 12px 6px 9px;font:600 13px/1 'Noto Sans KR',sans-serif;box-shadow:0 3px 10px #0004;opacity:.88}#sjAppHome:hover{opacity:1}#sjAppHome b{font-size:16px;color:#F5B800}#sjAppHome .cl{font-style:normal;font-size:12px}
+  const css = `#sjAppHome{position:fixed;left:8px;bottom:84px;z-index:9998;display:flex;align-items:center;gap:4px;background:var(--sj-navy,#14244A);color:var(--sj-on,#FFFFFF);text-decoration:none;border-radius:20px;padding:6px 12px 6px 9px;font:600 13px/1 'Noto Sans KR',sans-serif;box-shadow:0 3px 10px #0004;opacity:.88}#sjAppHome:hover{opacity:1}#sjAppHome b{font-size:16px;color:var(--sj-amb-fg,#8A6400)}#sjAppHome .cl{font-style:normal;font-size:12px}
   @media (max-width:760px){#sjAppHome{left:auto;right:8px;top:6px;bottom:auto;padding:5px 9px;font-size:0}#sjAppHome b{font-size:16px}}
-  #sjUpd{position:fixed;left:0;right:0;top:0;z-index:10000;background:#F2B705;color:#14244A;padding:10px 18px;font:14.5px 'Noto Sans KR','Malgun Gothic',sans-serif;box-shadow:0 2px 10px #0003;display:flex;gap:14px;align-items:center;justify-content:center;flex-wrap:wrap}#sjUpd button{background:#14244A;color:#fff;border:0;border-radius:8px;padding:7px 16px;font-weight:700;cursor:pointer;font:inherit;font-weight:700}html.sj-hasupd body{padding-top:46px!important}html.sj-hasupd #top.sj-top,html.sj-hasupd .sjr{top:46px!important}`;
+  #sjUpd{position:fixed;left:0;right:0;top:0;z-index:10000;background:var(--sj-amb,#E0A100);color:var(--sj-tx,#1A2233);padding:10px 18px;font:14.5px 'Noto Sans KR','Malgun Gothic',sans-serif;box-shadow:0 2px 10px #0003;display:flex;gap:14px;align-items:center;justify-content:center;flex-wrap:wrap}#sjUpd button{background:var(--sj-navy,#14244A);color:var(--sj-on,#FFFFFF);border:0;border-radius:8px;padding:7px 16px;font-weight:700;cursor:pointer;font:inherit;font-weight:700}html.sj-hasupd body{padding-top:46px!important}html.sj-hasupd #top.sj-top,html.sj-hasupd .sjr{top:46px!important}`;
   const st = document.createElement('style'); st.textContent = css; (document.head || document.documentElement).appendChild(st);
   /* 6) 새 버전 알림 (서비스 워커) */
   C.updHas = false;
@@ -78,7 +78,7 @@
     /* 다른 창이 업데이트를 적용하면: 이 창도 안전할 때 새로 고침 (입력 중이면 기다림) */
     let rl = false; navigator.serviceWorker.addEventListener('controllerchange', () => { if (rl) return; rl = true; const go = () => { if (window.top !== window || C.updSafe() || document.visibilityState !== 'visible') location.reload(); else setTimeout(go, 3000); }; go(); });
     /* 업데이트 직후 한 번 알림 */
-    try { if (sessionStorage.getItem('sejul_upd_done') && window.top === window) { sessionStorage.removeItem('sejul_upd_done'); const show = () => { if (!document.body) return setTimeout(show, 300); const t = document.createElement('div'); t.id = 'sjUpdOk'; t.textContent = ((C.get('lang') || 'ko') === 'en' ? '✅ Updated to v' : '✅ 최신 버전으로 업데이트되었습니다 — v') + C.ver; t.style.cssText = 'position:fixed;left:50%;bottom:90px;transform:translateX(-50%);z-index:10001;background:#14244A;color:#fff;padding:10px 18px;border-radius:12px;font:600 14px "Noto Sans KR",sans-serif;box-shadow:0 6px 20px #0004'; document.body.appendChild(t); setTimeout(() => t.remove(), 5000); }; setTimeout(show, 800); } } catch (e) { } };
+    try { if (sessionStorage.getItem('sejul_upd_done') && window.top === window) { sessionStorage.removeItem('sejul_upd_done'); const show = () => { if (!document.body) return setTimeout(show, 300); const t = document.createElement('div'); t.id = 'sjUpdOk'; t.textContent = ((C.get('lang') || 'ko') === 'en' ? '✅ Updated to v' : '✅ 최신 버전으로 업데이트되었습니다 — v') + C.ver; t.style.cssText = 'position:fixed;left:50%;bottom:90px;transform:translateX(-50%);z-index:10001;background:var(--sj-navy,#14244A);color:var(--sj-on,#FFFFFF);padding:10px 18px;border-radius:12px;font:600 14px "Noto Sans KR",sans-serif;box-shadow:0 6px 20px #0004'; document.body.appendChild(t); setTimeout(() => t.remove(), 5000); }; setTimeout(show, 800); } } catch (e) { } };
   /* 도구 페이지: 불러온 뒤 연결 */
   if (!C.isHub) { const go = () => { C.hookTools(); if (!C.shell) { C.homeBtn(); setTimeout(C.applyVessel, 1500); } C.watchUpdate(); setTimeout(C.hookTools, 2500); };
     if (document.readyState === 'complete') setTimeout(go, 300); else window.addEventListener('load', () => setTimeout(go, 300)); }
