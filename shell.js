@@ -151,8 +151,15 @@ html body #top .sj-nav>button[data-go=help],html body #top .sj-nav>button[data-g
  html body #toasts{top:auto!important;bottom:84px!important;left:10px!important;right:10px!important}html body{padding-top:54px!important;padding-bottom:84px!important}html.sj-hasupd body{padding-top:100px!important}html body #foot{bottom:66px!important}#drawer{bottom:66px!important}#selbar{bottom:66px!important}
 }`;
   css += `
-.sjei{display:inline-flex;vertical-align:-3px;margin-right:6px;flex:none}.sjei svg{width:1.05em;height:1.05em;min-width:15px;min-height:15px}
-h1 .sjei,h2 .sjei,h3 .sjei{color:#2F5496}h1 .sjei svg,h2 .sjei svg{width:.95em;height:.95em}
+.sjei{display:inline-flex;vertical-align:-3px;margin-right:6px;flex:none}
+.sjei svg,.sjx-prt svg{stroke-width:2.3}.sjx-prt svg{color:#2F6FD6}
+button:not(.on)>.sjtb-ic.k-home{color:#1B2F5B}button:not(.on)>.sjtb-ic.k-jobs,button:not(.on)>.sjtb-ic.k-due{color:#2F6FD6}button:not(.on)>.sjtb-ic.k-ck{color:#1E9E55}button:not(.on)>.sjtb-ic.k-defects{color:#E0661B}button:not(.on)>.sjtb-ic.k-spares{color:#9C5BD8}
+button:not(.on)>.sjtb-ic.k-raList{color:#2F6FD6}button:not(.on)>.sjtb-ic.k-ptwList{color:#E0661B}button:not(.on)>.sjtb-ic.k-mocList{color:#0E8A7E}button:not(.on)>.sjtb-ic.k-rirList{color:#D93025}button:not(.on)>.sjtb-ic.k-register{color:#5B6B8C}button:not(.on)>.sjtb-ic.k-dpa{color:#1E9E55}
+.sjei-print,.sjei-clip,.sjei-file,.sjei-book,.sjei-fold,.sjei-tree,.sjei-chart,.sjei-pc,.sjei-link{color:#2F6FD6}.sjei-imp,.sjei-dn{color:#0E8A7E}.sjei-exp,.sjei-up,.sjei-send{color:#7C4DDB}
+.sjei-edit,.sjei-cal,.sjei-clk,.sjei-hour{color:#C26A00}.sjei-ok{color:#1E9E55}.sjei-warn,.sjei-fire{color:#E0661B}.sjei-ban,.sjei-del,.sjei-x{color:#D93025}.sjei-star{color:#E8A400}.sjei-star svg{fill:#FFD54F}
+.sjei-wr,.sjei-gear,.sjei-key,.sjei-lab{color:#5B6B8C}.sjei-box,.sjei-pill{color:#9C5BD8}.sjei-srch,.sjei-info,.sjei-bulb{color:#2F6FD6}.sjei-lock{color:#8A6200}.sjei-ship,.sjei-bld,.sjei-bank,.sjei-home,.sjei-user{color:#1B2F5B}.sjei-shld{color:#D93025}.sjei-ref,.sjei-undo{color:#0E8A7E}.sjei-bell{color:#E0A100}.sjei-tgt{color:#D93025}.sjei-cam,.sjei-att,.sjei-save{color:#5B6B8C}.sjei-pause{color:#7C4DDB}
+.on>.sjei,.pri>.sjei,.btn.p>.sjei,.btn.pri>.sjei,.btn.grn>.sjei,.btn.danger>.sjei,.btn.r>.sjei,[class*=" on"]>.sjei,.sel>.sjei,button.on .sjei{color:inherit!important}.on>.sjei svg,.pri>.sjei svg,.btn.p>.sjei svg{fill:none!important}.sjei svg{width:1.05em;height:1.05em;min-width:15px;min-height:15px}
+h1 .sjei svg,h2 .sjei svg{width:.95em;height:.95em}
 .badge .sjei,.tag .sjei,.chip .sjei{margin-right:3px}.badge .sjei svg,.tag .sjei svg{min-width:12px;min-height:12px;width:.95em;height:.95em}
 .sjen{font-size:.8em;font-weight:400;color:#7A8499;margin-left:3px}.en{font-weight:400}#main .regtabs .en,#main .prto .en{color:#7A8499}
 .sjx-prt{display:inline-flex!important;align-items:center;gap:6px}.sjx-prt>summary{display:inline-flex!important;align-items:center;gap:6px}.sjx-prt svg{flex:none}
@@ -229,7 +236,7 @@ details.sjx-prt .sjx-ddm{left:auto;right:0}
       if (!nav.querySelector('.sjtb-id')) nav.insertAdjacentHTML('afterbegin', `<span class="sjtb-id ${pms ? 'pms' : 'rsk'}"><i>${U.ic(pms ? 'pms' : 'rsk', 17)}</i>${pms ? T('계획정비', 'Maintenance') : T('위험성 관리', 'Risk')}</span>`);
       const btns = [...nav.querySelectorAll(':scope>button, :scope>.sjtb-more .sjtb-mm>button')];
       btns.forEach(b => { const k = key(b); if (!k) return; if (k === 'dpa' && /승인 코드/.test(b.textContent)) b.textContent = T('DPA·회사 승인', 'Approvals'); if (pms && k === 'home' && /선박 현황|Vessel/.test(b.textContent)) b.textContent = T('홈', 'Home');
-        if (!b.querySelector('.sjtb-ic') && TBI[k]) b.insertAdjacentHTML('afterbegin', `<span class="sjtb-ic">${U.ic(TBI[k], 16)}</span>`);
+        if (!b.querySelector('.sjtb-ic') && TBI[k]) b.insertAdjacentHTML('afterbegin', `<span class="sjtb-ic k-${k}">${U.ic(TBI[k], 16)}</span>`);
         b.querySelectorAll('.sjtb-n').forEach(x => x.remove()); const c = CNT[k]; if (c && c[0]) b.insertAdjacentHTML('beforeend', `<span class="sjtb-n ${c[1]}">${c[0]}</span>`); });
       if (!pms) { let more = nav.querySelector('.sjtb-more'); const mv = btns.filter(b => ['rirList', 'register'].includes(key(b)));
         if (mv.length) { if (!more) { more = document.createElement('details'); more.className = 'sjtb-more'; more.innerHTML = `<summary>${T('더보기', 'More')} ▾</summary><div class="sjtb-mm"></div>`; nav.appendChild(more); more.addEventListener('click', e => { if (e.target.closest('.sjtb-mm>button')) more.open = false; }); }
