@@ -102,6 +102,14 @@ body{background:var(--sjx-bg)!important;font-family:'Pretendard','Noto Sans KR',
  .sjx-pcnote{display:block!important}
 }
 .sjx-pcnote{display:none;font-size:12.5px;color:#5B6474;background:#EEF3FB;border-radius:10px;padding:8px 12px;margin:0 0 12px}
+/* 도구 자체 큰 머리말(계획정비 시스템 · 위험성 관리 도구) 숨김 — 왼쪽 메뉴·홈 머리말이 대신함 */
+html body #top .sjbar,html body header.top .bar{display:none!important}
+.sjh-crew{margin:0 0 12px}.sjh-crew>*{margin:0!important}
+#main>.sjh,.sjh{padding-top:4px}
+/* 목록 표 — 홈·SFI 화면과 같은 흰 카드 · 옅은 머리줄 */
+#main .tw{background:#fff;border:1px solid var(--sjx-line);border-radius:14px}
+#main table.g thead th,#main table.g>tr:first-child>th{background:#F7F8FA!important;color:#5B6474!important;font-weight:700!important;font-size:12.5px!important;border-bottom:1px solid #E3E6EB!important;text-transform:none}
+#main table.g tbody tr:hover>td{background:#F7F9FC}
 /* 이전/다음 막대 없앰 (위 탭·왼쪽 메뉴로 이동) · 실행 취소 단추는 저장 알림의 [되돌리기]로 · 위험성 관리 '설정' 탭은 앱 설정으로 */
 #sjFoot{display:none!important}#top .sj-tool[data-act=undo],#top .sj-tool[data-act=redo]{display:none!important}#nav [data-v=settings],#mtab [data-v=settings]{display:none!important}
 #toasts .toast button:not(.tx){white-space:nowrap;flex:none;background:#F2B705!important;color:#14244A!important;border:0!important;border-radius:8px!important;font-weight:800!important;padding:5px 12px!important}
@@ -176,7 +184,7 @@ body{background:var(--sjx-bg)!important;font-family:'Pretendard','Noto Sans KR',
         bs[0].parentNode.insertBefore(d, bs[0]); const m = d.querySelector('.sjx-ddm'); bs.forEach(b => m.appendChild(b)); }
       document.querySelectorAll('details.sjx-dd[open]').forEach(d => { if (!d.matches(':hover')) d.open = false; }); },
     /* 위험성 관리와 같은 화면 짜임: 제목줄(오른쪽에 동작) → 필터 카드 → 목록 */
-    layout() { const main = document.getElementById('main'); if (!main || main.dataset.sjx === route() + ':' + main.childElementCount) return;
+    layout() { const main = document.getElementById('main'); if (!main || main.querySelector(':scope>.sjx-mark')) return;   /* 다시 그려지면 표시가 사라짐 → 다시 정리 */
       main.querySelectorAll('.banner').forEach(b => { if (/회신 파일|공유 폴더|reply file|shared folder/i.test(b.textContent)) b.remove(); });
       const h1 = [...main.children].find(e => e.tagName === 'H1'); if (h1 && !h1.closest('.sjx-ph')) { const ph = document.createElement('div'); ph.className = 'sjx-ph'; h1.parentNode.insertBefore(ph, h1); ph.appendChild(h1); const act = document.createElement('div'); act.className = 'sjx-act'; ph.appendChild(act);
         const pr = h1.querySelector('[data-act=prt9]'); if (pr) { pr.innerHTML = '🖨 ' + T('출력', 'Print'); act.appendChild(pr); }
@@ -193,9 +201,9 @@ body{background:var(--sjx-bg)!important;font-family:'Pretendard','Noto Sans KR',
       /* 목록 위 'N건' */
       const fc = main.querySelector('.sjx-fc'), tw = fc && fc.nextElementSibling; if (tw && tw.classList && tw.classList.contains('tw') && !main.querySelector('.sjx-cnt')) { let n = [...tw.querySelectorAll('tbody tr')].filter(t => !t.classList.contains('pgrp') && !t.hidden && t.querySelectorAll('td').length >= 3).length; const ac = fc.querySelector('.sjx-seg .chip.on, .sjx-seg .chip.active, .sjx-seg [aria-pressed="true"]'); const an = ac && (ac.textContent.match(/(\d[\d,]*)\s*$/) || [])[1]; if (n && an && +an.replace(/,/g, '') > n) n = +an.replace(/,/g, ''); if (n) tw.insertAdjacentHTML('beforebegin', `<div class="sjx-cnt">${n.toLocaleString()}${T('건', ' items')}</div>`); }
       if (!main.querySelector('.sjx-pcnote')) { const ph2 = main.querySelector('.sjx-ph'); if (ph2 && ['ck', 'cal', 'cls', 'spares', 'defects', 'jobs', 'due'].includes(route())) ph2.insertAdjacentHTML('afterend', `<div class="sjx-pcnote">📱 ${T('휴대폰 화면은 입력 위주로 간단히 보입니다 — 출력·엑셀·품목/장비 등록은 PC·노트북에서 하세요.', 'Phone view is simplified for data entry — printing, Excel and registration are on PC.')}</div>`); }
-      main.dataset.sjx = route() + ':' + main.childElementCount; },
+      main.dataset.sjx = route(); const mk = document.createElement('i'); mk.className = 'sjx-mark'; mk.hidden = true; main.appendChild(mk); },
     after() { try { if (MODE === 'admin' && OFFICE.wiped) { OFFICE.wiped = false; if (typeof ensureVessels === 'function') ensureVessels(); KV.set('office', OFFICE); ['sejul_cloud_pms_seen', 'sejul_cloud_pms_pushed'].forEach(k => localStorage.removeItem(k)); setTimeout(() => { try { if (window.SJCLOUD && SJCLOUD.A) SJCLOUD.sync(SJCLOUD.A, true); } catch (e) { } }, 1500); setTimeout(() => { try { render(); } catch (e) { } }, 0); } } catch (e) { }
-      try { const main = document.getElementById('main'); if (main) { main.querySelectorAll('select').forEach(sl => { const e = [...sl.options].filter(o => o.value === ''); if (e.length > 1) { const sel = sl.value === ''; e.slice(1).forEach(o => o.remove()); if (sel) sl.selectedIndex = [...sl.options].indexOf(e[0]); } });   /* 이름 없는 빈 선택 항목 정리 */ } } catch (e) { } try { PMS.group(); } catch (e) { } try { PMS.layout(); } catch (e) { console.warn('layout', e); } try { PMS.hero(); } catch (e) { } if (MODE !== 'admin') return; const main = document.getElementById('main'); if (!main) return; const view = C.get('view') || '';
+      try { const main = document.getElementById('main'); if (main) { main.querySelectorAll('select').forEach(sl => { const e = [...sl.options].filter(o => o.value === ''); if (e.length > 1) { const sel = sl.value === ''; e.slice(1).forEach(o => o.remove()); if (sel) sl.selectedIndex = [...sl.options].indexOf(e[0]); } });   /* 이름 없는 빈 선택 항목 정리 */ } } catch (e) { } try { PMS.group(); } catch (e) { } try { PMS.layout(); } catch (e) { console.warn('layout', e); } try { PMS.home(); } catch (e) { console.warn('home', e); } if (MODE !== 'admin') return; const main = document.getElementById('main'); if (!main) return; const view = C.get('view') || '';
       if (!view || route() === 'fleet') { const S = (U.sum('pms') || {}).ships || {};
         main.innerHTML = `<div class="sjx-empty"><h2>${T('선박을 고르세요', 'Choose a vessel')}</h2>${T('사무실 기기는 선박을 하나 골라 그 선박의 계획정비를 봅니다 (왼쪽 위 [보는 선박]으로도 바꿉니다). 선대 전체 현황은 <a href="../index.html">앱 홈</a>에 있습니다.', 'Pick one vessel (or use Viewing at top left). The fleet overview is on the <a href="../index.html">app home</a>.')}<div class="sjx-pick">${U.VES.map(v => `<button data-sjpick="${U.esc(v)}"><b>${U.esc(v)}</b><small>${OFFICE.ships[v] ? (S[v] ? T(`기한 초과 ${S[v].od} · 미결 결함 ${S[v].def}`, `Overdue ${S[v].od} · defects ${S[v].def}`) : T('자료 있음', 'Has data')) : T('아직 받은 자료 없음', 'No data yet')}</small></button>`).join('')}</div></div>`; return; }
       if (!OFFICE.ships[view] && typeof newDB === 'function') { try { const nd = newDB(view); if (nd.master) nd.master.adminHash = OFFICE.adminHash; OFFICE.ships[view] = nd; OFFICE.sel = view; setTimeout(() => { try { render(); } catch (e) { } }, 0); } catch (e) { main.innerHTML = noData(view, T('계획정비', 'Maintenance')); } } },
@@ -213,6 +221,31 @@ body{background:var(--sjx-bg)!important;font-family:'Pretendard','Noto Sans KR',
         setTimeout(() => { const m = document.querySelector('#mback .modal:last-child'), ok = m && m.querySelector('.mf button:last-child'); if (ok && /선박|vessel/i.test(m.textContent || '')) ok.click(); }, 60); }
       if (ch) render(); },
     view(v) { if (MODE !== 'admin') return; if (!v) { location.href = '../index.html'; return; } if (OFFICE.ships[v]) OFFICE.sel = v; location.hash = '#/home'; render(); },
+    /* 계획정비 홈 — 앱 공통 홈 틀 (머리말 · 오늘 할 일 · 숫자 카드 · 처리할 일 · 빠른 작업 · 접어 둔 도구별 칸) */
+    home() { if (route() !== 'home') return; const main = document.getElementById('main'); if (!main || main.querySelector(':scope>.sjh')) return;
+      const off = MODE === 'admin', db = off ? OFFICE.ships[C.get('view') || OFFICE.sel] : SHIP; if (!db) return;
+      try { PMS.sum(); } catch (e) { } const v = db.ship.name, sp = U.sum('pms'), s = sp && sp.ships && sp.ships[v], H = U.H, c = shipStats(db).c;
+      const d = k => ({ d: { v9due: k } }), hh = k => ({ d: { sjgo: k } });
+      const items = U.items(v, '../').filter(x => x.k !== 'r');
+      const quick = H.quick(off ? [{ d: { sjgo: 'defects' }, bg: '#FDECEC', fg: '#C62828', ic: 'M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z', t: T('결함 확인·서명', 'Review defects'), sub: T('선박이 보낸 결함 보고', 'Defect reports from the ship') },
+        { d: { sjgo: 'spares' }, bg: '#E8F5EE', fg: '#2E7D32', ic: 'M3 7h18M6 7v13h12V7M9 11h6', t: T('청구서 처리', 'Requisitions'), sub: T('접수 · 발주 · 취소', 'Ack · order · cancel') },
+        { d: { act: 'monthlyReport' }, bg: '#EEF3FB', fg: '#1B2F5B', ic: 'M7 3h7l5 5v13H7zM14 3v5h5', t: T('월간 이행 보고서', 'Monthly report'), sub: T('출력', 'Print') }]
+        : [{ d: { v9due: 'od' }, bg: '#EEF3FB', fg: '#1B2F5B', ic: 'M20 6 9 17l-5-5', t: T('작업 실시 입력', 'Record a job'), sub: T('기한 초과부터', 'Overdue first') },
+        { d: { act: 'defNew' }, bg: '#FDECEC', fg: '#C62828', ic: 'M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z', t: T('결함 등록', 'Report a defect'), sub: T('결함 보고서 STEP 1~7', 'Defect report steps 1–7') },
+        { d: { sjgo: 'ck' }, bg: '#FFF4D6', fg: '#8A5A00', ic: 'M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11', t: T('점검표 입력', 'Checklists'), sub: T('회사 서식 9종', 'Company forms') },
+        { d: { act: 'reqNew' }, bg: '#E8F5EE', fg: '#2E7D32', ic: 'M3 7h18M6 7v13h12V7M9 11h6', t: T('청구서 작성', 'New requisition'), sub: T('예비품 · 선용품', 'Spares · stores') },
+        { d: { act: 'monthlyReport' }, bg: '#F1F3F7', fg: '#475467', ic: 'M7 3h7l5 5v13H7zM14 3v5h5', t: T('월간 이행 보고서', 'Monthly report'), sub: T('출력', 'Print') }]);
+      const keep = { sfi: [...main.querySelectorAll('.sech,.sfitiles')], grp: [...main.querySelectorAll('.homeg')] };
+      const w = document.createElement('div'); w.className = 'sjh';
+      w.innerHTML = H.page({ kicker: U.esc(v) + ' · ' + new Date().toLocaleDateString(T('ko-KR', 'en-GB'), { month: 'long', day: 'numeric', weekday: 'short' }), title: T('계획정비', 'Planned maintenance'), actions: off ? '' : H.btn('＋ ' + T('결함 등록', 'Report defect'), { d: { act: 'defNew' } }) + ' ' + H.btn(T('📝 실시 입력', '📝 Record job'), d('od'), true) })
+        + U.pmsHero(s, v, d, off) + U.pmsKpis(s, d, hh)
+        + H.cols(H.card(T('처리할 일', 'To do') + ` <small>${T('결함 · 청구 · 선급 검사 · 재고', 'defects · requisitions · class · stock')}</small>`, H.rows(items)), H.card(T('빠른 작업', 'Quick actions'), quick))
+        + (keep.sfi.length ? H.extra('🗂 ' + T('SFI 분류 바로가기', 'SFI shortcuts'), '', 'sjhSfi') : '') + (keep.grp.length ? H.extra('🔔 ' + T('담당자별 작업 알림 · 최근 기록 · 미결 결함', 'By rank · recent · open defects'), '', 'sjhGrp') : '')
+        + H.foot(`${T('기준일', 'As of')} ${today()} · ${T('작업', 'Jobs')} ${c.n} · ${T('마스터', 'Master')} v${(db.master && db.master.version) || 0}`);
+      const put = (id, nodes) => { const x = w.querySelector('#' + id + ' .in'); if (x) nodes.forEach(n => x.appendChild(n)); };
+      put('sjhSfi', keep.sfi.filter(n => !n.classList.contains('sech'))); put('sjhGrp', keep.grp);
+      try { const k = 'sejul_home_open', o = JSON.parse(localStorage.getItem(k) || '{}'); w.querySelectorAll('details.sjh-x').forEach(dt => { if (o[dt.id]) dt.open = true; dt.addEventListener('toggle', () => { o[dt.id] = dt.open; localStorage.setItem(k, JSON.stringify(o)); }); }); } catch (e) { }
+      main.innerHTML = ''; main.appendChild(w); },
     /* 계획정비 홈 맨 위: 오늘 할 일 한 줄 + 바로 실시 입력 */
     hero() { if (route() !== 'home') return; const main = document.getElementById('main'); if (!main || main.querySelector('.sjx-hero')) return;
       const db = MODE === 'admin' ? OFFICE.ships[C.get('view') || ''] : SHIP; if (!db) return; const c = shipStats(db).c, n = (c.od || 0) + (c.d7 || 0); if (!c.n) { const h = document.createElement('div'); h.className = 'sjx-hero ok'; h.style.borderLeftColor = '#B8C0CC'; h.innerHTML = `<div class="tx"><small>${T('오늘 할 일', 'Today')} · ${U.esc(db.ship && db.ship.name || '')}</small><b>${T('아직 등록된 작업이 없습니다', 'No jobs registered yet')}</b><span>${T('선박 기기가 승인되면 선박의 계획정비 자료가 자동으로 들어옵니다.', 'Vessel data arrives automatically once a ship device is approved.')}</span></div>`; const h1 = main.querySelector('h1'), ph = (h1 && (h1.closest('.sjx-ph') || h1)) || main.firstElementChild; if (ph) ph.insertAdjacentElement('afterend', h); return; }
@@ -225,18 +258,55 @@ body{background:var(--sjx-bg)!important;font-family:'Pretendard','Noto Sans KR',
         out[n] = { od: c.od, d7: c.d7, d30: c.d30, nd: c.nd, cri: c.cri, def: c.def, defA: c.defA, low: c.low, n: c.n, E: c.E, S: td.S.slice(0, 15), O: td.O.slice(0, 15),
           D: td.O.filter(x => x[0] === 'def').slice(0, 30).map(x => [x[1], x[2], x[3]]),
           R: (typeof RQS === 'function' ? RQS(db) : []).filter(r => r.st === 'sent').slice(0, 30).map(r => [r.id, r.no + (r.kind === 'rep' ? ' (수리 repair)' : '') + ' · ' + (r.items || []).length + '건', r.urg === 'u' ? 'u' : 'n']) }; } catch (e) { } }
-      localStorage.setItem('sejul_sum_pms', JSON.stringify({ at: Date.now(), mode: MODE, ships: out })); },
+      localStorage.setItem('sejul_sum_pms', JSON.stringify({ at: Date.now(), mode: MODE, ships: out }));
+      /* 앱 전체 검색용 목록 (장비 · 작업 · 결함 · 품목) */
+      try { const ix = {}; for (const [n, db] of Object.entries(ships)) { const cut = x => String(x || '').slice(0, 70);
+          ix[n] = { e: eqList(db).map(e => [e.id, cut(e.name), e.sfi, cut(e.maker)]), j: db.master.jobs.map(j => [j.code, cut(j.desc), j.eq, j.pid || '']),
+            d: (typeof DFS === 'function' ? DFS(db) : []).map(d => [d.id, d.no || '', cut(d.title), d.st === 'closed' ? 1 : 0]), s: spItems(db).map(i => [i.id, cut(i.name), cut(i.pno), i.impa || '']),
+            r: (typeof RQS === 'function' ? RQS(db) : []).filter(r => !(MODE === 'admin' && r.st === 'draft')).map(r => [r.id, r.no || '', (r.items || []).slice(0, 3).map(x => cut(x.name)).join(', '), r.st]) }; }
+        const js = JSON.stringify({ at: Date.now(), v: ix }); if (localStorage.getItem('sejul_idx_pms_h') !== String(js.length)) { localStorage.setItem('sejul_idx_pms', js); localStorage.setItem('sejul_idx_pms_h', String(js.length)); } } catch (e) { console.warn('idx', e); } },
     hookRender() { const r0 = render; render = function () { try { const v = C.get('view') || ''; if (MODE === 'admin' && v && OFFICE.ships[v] && OFFICE.sel !== v) OFFICE.sel = v; } catch (e) { }   /* 사무실: 항상 왼쪽 메뉴에서 고른 선박 */
       const x = r0.apply(this, arguments); try { PMS.after(); } catch (e) { } sumSoon(PMS); return x; }; }
   };
   /* ---------- 위험성 관리 ---------- */
   const RSK = {
+    /* 위험성 관리 홈 — 앱 공통 홈 틀 */
+    home() { const H = U.H, off = DB.settings.site === 'office', vn = off ? (C.get('view') || '') : (typeof vesselName === 'function' ? vesselName() : '');
+      const cnt = (arr, fn, k) => (arr || []).filter(x => { try { return fn(x)[0] === k; } catch (e) { return false; } }).length;
+      const mocw = (DB.mocs || []).filter(m => { try { return mocStatus(m)[0] === 'wait' && m.cls !== 'emg'; } catch (e) { return false; } }).length;
+      const r = { draft: cnt(DB.ras, raStatus, 'draft'), wait: cnt(DB.ras, raStatus, 'wait') + mocw, stop: cnt(DB.ras, raStatus, 'stop'), act: cnt(DB.ptws, ptwStatus, 'act'), moc: (DB.mocs || []).filter(m => !(m.close && m.close.apvDate)).length };
+      const cont = typeof contList === 'function' ? contList() : [], k = v => ({ d: { a: 'kpiGo', v } });
+      const hero = r.stop ? { tone: 'r', title: `${T('작업 중지', 'Stopped')} <em class="r">${r.stop}</em>${T('건 — 대책 보완 필요', ' — revise controls')}`, sub: T('잔여 위험 "불가" 평가가 있습니다. 대책을 보완하고 다시 평가하세요.', 'Residual risk is unacceptable — revise and re-assess.'), btn: Object.assign({ label: T('확인하기 →', 'Review →') }, k('raList:stop')) }
+        : off && r.wait ? { tone: 'y', title: `${T('회사 승인 대기', 'Awaiting approval')} <em class="y">${r.wait}</em>${T('건', '')}`, sub: T('선박이 보낸 위험성 평가·MoC 승인 요청입니다.', 'Approval requests from the ship.'), btn: { label: T('검토·결정 →', 'Review →'), d: { a: 'go', v: 'dpa' } } }
+        : cont.length ? { tone: 'b', title: `${T('진행 중인 작업', 'Work in progress')} <em>${cont.length}</em>${T('건', '')}`, sub: cont.slice(0, 2).map(([x]) => (x.no ? x.no + ' ' : '') + (x.title || '')).map(U.esc).join(' · '), btn: { label: T('이어서 하기 →', 'Continue →'), d: { a: 'contOpen' } } }
+        : r.wait ? { tone: 'y', title: `${T('DPA·회사 승인 대기', 'Awaiting approval')} <em class="y">${r.wait}</em>${T('건', '')}`, sub: T('승인되면 알림이 옵니다.', 'You will be notified when approved.'), btn: Object.assign({ label: T('보기 →', 'View →') }, k('raList:wait')) }
+        : off ? { tone: 'g', title: '✅ ' + T('승인 대기 중인 요청이 없습니다', 'No pending approvals'), sub: '' }
+        : { tone: 'g', title: '✅ ' + T('진행 중인 작업이 없습니다', 'No work in progress'), sub: T('작업 전에 위험성 평가 → TBM → 작업허가(PTW) 순서로 진행합니다.', 'Before work: RA → TBM → PTW.'), btn: { label: T('새 작업 시작 →', 'Start work →'), d: { a: 'newRA' } } };
+      hero.kicker = T('오늘 할 일', 'Today') + (vn ? ' · ' + U.esc(vn) : '');
+      let al = []; try { al = alerts(); } catch (e) { }
+      const rows = al.filter(x => x.l !== 'ok').map(x => { const [a, ...b] = String(x.m).split(' — '); return { bar: x.l === 'err' ? 'r' : x.l === 'warn' ? 'y' : '', t: a, sub: b.join(' — '), act: x.a ? T('열기', 'Open') : '', d: x.a ? Object.assign({ a: x.a }, x.d || {}) : null }; });
+      const kindL = { ra: T('위험성 평가', 'RA'), ptw: 'PTW', moc: 'MoC', rir: T('식별 보고', 'Risk ID') };
+      const rec = [...(DB.ras || []).map(x => ['ra', x, x.title, raStatus]), ...(DB.ptws || []).map(x => ['ptw', x, typeof ptwDesc === 'function' ? ptwDesc(x) : x.desc, ptwStatus]), ...(DB.mocs || []).map(x => ['moc', x, x.title, mocStatus]), ...(DB.rirs || []).map(x => ['rir', x, x.desc, null])].sort((a, b) => (b[1].updatedAt || 0) - (a[1].updatedAt || 0)).slice(0, 6)
+        .map(([kk, x, tt, fn]) => { let st = ''; try { st = fn ? fn(x)[1] : ''; } catch (e) { } return { t: `${kindL[kk]} ${x.no || ''} ${tt || ''}`, sub: [st, x.updatedAt ? new Date(x.updatedAt).toLocaleDateString() : ''].filter(Boolean).join(' · '), act: T('열기', 'Open'), d: { a: 'open', k: kk, id: x.id } }; });
+      const quick = H.quick((off ? [] : [{ d: { a: 'newRA' }, bg: '#EEF3FB', fg: '#1B2F5B', ic: 'M12 5v14M5 12h14', t: T('새 작업 시작 (위험성 평가)', 'Start work (RA)'), sub: T('작업 선택 → RA → TBM → PTW → 출력', 'RA → TBM → PTW → print') },
+        { d: { a: 'contOpen' }, bg: '#E8F5EE', fg: '#2E7D32', ic: 'M5 3l14 9-14 9z', t: T('진행 중 작업 이어서 하기', 'Continue work') + (cont.length ? ` (${cont.length})` : ''), sub: T('작성 중인 RA·PTW', 'Drafts and active permits') }])
+        .concat([{ d: { a: 'newMoC' }, bg: '#F1ECFA', fg: '#5B3FA0', ic: 'M4 4v6h6M20 20v-6h-6M20 9A8 8 0 0 0 5.6 5.6L4 10M4 15a8 8 0 0 0 14.4 3.4L20 14', t: T('변화관리(MoC) 제안', 'Management of Change'), sub: T('변화평가표 · 점검표 · 긴급 MoC', 'Change form · checklist') },
+          { d: { a: 'newRIR' }, bg: '#FFF4D6', fg: '#8A5A00', ic: 'M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z', t: T('위험성 식별 보고', 'Risk identification report'), sub: T('새 위험 발견 시 선장 보고', 'Report a new hazard') },
+          { d: { a: 'blankForms' }, bg: '#F1F3F7', fg: '#475467', ic: 'M6 9V3h12v6M6 18H4v-6h16v6h-2M8 14h8v7H8z', t: T('빈 양식 출력', 'Blank forms'), sub: T('F-RSK 6종 · F-SAF 7종', 'F-RSK ×6 · F-SAF ×7') }]));
+      let band = '', crewX = ''; try { if (!off) { const nC = (DB.settings.crew || []).length; if (nC) crewX = H.extra('👥 ' + T(`승무원 명단 (Crew List) · ${nC}명`, `Crew list · ${nC}`), crewCardHTML(), 'sjhCrew'); else band = crewCardHTML(); } } catch (e) { }
+      return `<div class="sjh">${H.page({ kicker: (vn ? U.esc(vn) + ' · ' : '') + (typeof today === 'function' ? today() : ''), title: off ? T('위험성 관리 · 회사 승인', 'Risk · approvals') : T('위험성 관리', 'Risk management'), actions: off ? H.btn(T('DPA·회사 승인 →', 'Approvals →'), { d: { a: 'go', v: 'dpa' } }, true) : H.btn('＋ ' + T('새 작업 시작', 'Start work'), { d: { a: 'newRA' } }, true) })}
+        ${band ? `<div class="sjh-crew">${band}</div>` : ''}${H.hero(hero)}${U.rskKpis(r, k)}
+        ${H.cols(H.card(T('확인 필요 항목', 'Action items'), H.rows(rows, { empty: '✅ ' + T('확인 필요 항목이 없습니다.', 'No action items.') })), H.card(T('빠른 작업', 'Quick actions'), quick))}
+        ${crewX}${H.card(T('최근 작업', 'Recent'), H.rows(rec, { empty: T('아직 작성한 문서가 없습니다.', 'No documents yet.') }))}
+        ${H.foot('RSK-P-01 R-0 · ' + (typeof APP_VER !== 'undefined' ? APP_VER : ''))}</div>`; },
+
     ok: () => typeof fsMerge === 'function' && typeof DB !== 'undefined' && typeof V !== 'undefined' && typeof A !== 'undefined' && typeof raStatus === 'function',
     hook() {
       try { const sm = setupMissing; setupMissing = () => sm().filter(x => !['fs', 'pc', 'vessel'].includes(x[0])); } catch (e) { }
       if (localStorage.getItem('sejul_restore_rsk')) { ['sejul_cloud_rsk_seen', 'sejul_cloud_rsk_pushed', 'sejul_restore_rsk'].forEach(k => localStorage.removeItem(k)); C.restoring = true; }
       try { fsCard = () => appCard('card') + '<div>'; pcNameHTML = () => ''; } catch (e) { }
       try { const h0 = V.home; V.home = () => h0().replace(/<div class="al (?:warn|err)" style="margin-bottom:14px"><span class="ic">(?:🔓|💾)[\s\S]*?<\/div>/, ''); } catch (e) { }
+      try { const h1 = V.home; V.home = () => { try { return RSK.home(); } catch (e) { console.warn('rsk home', e); return h1(); } }; } catch (e) { }
     },
     apply() { let ch = 0; const s = DB.settings, co = C.company();
       Object.entries(co).forEach(([k, v]) => { if (s[k] !== v) { s[k] = v; ch++; } });
@@ -284,7 +354,10 @@ body{background:var(--sjx-bg)!important;font-family:'Pretendard','Noto Sans KR',
       (DB.ptws || []).forEach(p => { if (st(ptwStatus, p) !== 'act') return; const b = g(p.vessel || '—'); b.act++; const e = p.to ? new Date(p.to) : null; if (e && !isNaN(e)) (b.ptw = b.ptw || []).push({ id: p.id, no: p.no || 'PTW', t: String(p.desc || p.location || '').slice(0, 60), end: e.toISOString() }); });
       (DB.ras || []).forEach(r => { const dec = r.apv && r.apv.dpaDecision; if (dec) (g(r.vessel || '—').dpa = g(r.vessel || '—').dpa || []).push({ id: r.id, no: r.no || '', t: String(r.title || '').slice(0, 60), dec }); });
       (DB.mocs || []).forEach(m => { if (!(m.close && m.close.apvDate)) g(m.vessel || '—').moc++; let ms = ''; try { ms = mocStatus(m)[0]; } catch (e) { } if (ms === 'wait' && m.cls !== 'emg') { const b = g(m.vessel || '—'); b.wait++; if (b.items.length < 12) b.items.push(['mocw', m.id, 'MoC ' + (m.no || '') + ' ' + (m.title || '')]); } });
-      localStorage.setItem('sejul_sum_rsk', JSON.stringify({ at: Date.now(), site: DB.settings.site, crew: (DB.settings.crew || []).length, v: by })); },
+      localStorage.setItem('sejul_sum_rsk', JSON.stringify({ at: Date.now(), site: DB.settings.site, crew: (DB.settings.crew || []).length, v: by }));
+      try { const ix = {}, cut = x => String(x || '').slice(0, 80), add = (k, x, t) => ((ix[x.vessel || '—'] = ix[x.vessel || '—'] || []).push([k, x.id, x.no || '', cut(t)]));
+        (DB.ras || []).forEach(x => add('ra', x, x.title)); (DB.ptws || []).forEach(x => add('ptw', x, x.desc || x.location)); (DB.mocs || []).forEach(x => add('moc', x, x.title)); (DB.rirs || []).forEach(x => add('rir', x, x.desc));
+        localStorage.setItem('sejul_idx_rsk', JSON.stringify({ at: Date.now(), v: ix })); } catch (e) { } },
     hookRender() { const r0 = render; render = function () { const v = C.get('view') || '', off = DB.settings.site === 'office', K = ['ras', 'ptws', 'mocs', 'rirs'], keep = {};
         if (off && v) K.forEach(k => { keep[k] = DB[k] || []; DB[k] = keep[k].filter(x => x.vessel === v); });   /* 사무실: 고른 선박만 보이게 (그리는 동안만) */
         let x; try { x = r0.apply(this, arguments); } finally { if (off && v) K.forEach(k => { const shown = DB[k]; DB[k] = keep[k].filter(y => y.vessel !== v || shown.includes(y)).concat(shown.filter(y => !keep[k].includes(y))); }); }
@@ -311,6 +384,12 @@ body{background:var(--sjx-bg)!important;font-family:'Pretendard','Noto Sans KR',
         navigator.serviceWorker && navigator.serviceWorker.ready.then(reg => reg.showNotification(v + ' — ' + T('PTW 곧 만료', 'Permit expiring'), { body: (p.no || 'PTW') + ' ' + (p.desc || p.location || '') + ' — ' + String(p.to).slice(11, 16) + T(' 만료', ' expires'), tag: 'ptw-' + p.id, icon: '../icon-192.png', data: { url: 'tools/rsk.html' } })); });
       localStorage.setItem('sejul_ptw_alerted', JSON.stringify(seen)); } catch (e) { } }, 60e3);
     /* 앱 홈에서 누른 항목으로 이동 */
+    /* 홈 카드: 도구 안 화면 이동 · 같은 도구로 가는 ?go 링크는 새로 열지 않고 바로 실행 */
+    document.addEventListener('click', e => { const f = e.target.closest && e.target.closest('[data-sjfn]'); if (!f || !/^(openEquip|openJob|openDefect)$/.test(f.dataset.sjfn)) return; e.preventDefault(); e.stopPropagation();   /* 검색 결과 → 그 항목 바로 열기 */
+      try { const fn = new Function('return typeof ' + f.dataset.sjfn + ' === "function" ? ' + f.dataset.sjfn + ' : null')(); if (fn) fn(f.dataset.arg); } catch (er) { console.warn(er); } }, true);
+    document.addEventListener('click', e => { const g = e.target.closest && e.target.closest('[data-sjgo]'); if (g) { e.preventDefault(); location.hash = '#/' + g.dataset.sjgo; return; }
+      const a = e.target.closest && e.target.closest('a[href*="?go="]'); if (!a) return; const u = new URL(a.href, location.href); if (u.pathname !== location.pathname) return; e.preventDefault();
+      try { const o = JSON.parse(u.searchParams.get('go')); if (o.hash) location.hash = o.hash; if (o.attrs) setTimeout(() => fire(o.attrs), o.hash ? 250 : 0); } catch (er) { } }, true);
     const q = BG ? null : new URLSearchParams(location.search).get('go'); if (q) { setTimeout(() => { try { const o = JSON.parse(q); if (o.view && typeof MODE !== 'undefined' && MODE === 'admin' && OFFICE.ships[o.view]) { OFFICE.sel = o.view; } if (o.hash) location.hash = o.hash; if (o.attrs) setTimeout(() => fire(o.attrs), 300); } catch (e) { } history.replaceState(null, '', location.pathname + location.hash); }, 900); }
     addEventListener('storage', e => { if (/^sejul_common_(vessel|role|lang|company|pcname)$/.test(e.key || '')) { try { X.apply(); } catch (er) { } railRefresh(); } });
     addEventListener('pageshow', () => { try { X.apply(); } catch (er) { } railRefresh(); }); };

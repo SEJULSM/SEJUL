@@ -3,7 +3,7 @@
    도구 코드는 그대로 두고 저장 키만 연결하므로, 도구를 따로(HTML 파일) 써도 동작은 같음. */
 (function () {
   const C = window.SJAPP = window.SJAPP || {};
-  C.ver = '2026.11.12.0803';
+  C.ver = '2026.11.12.0913';
   C.inApp = true;
   /* 도구별 키 ↔ 공통 키 */
   const MAP = {

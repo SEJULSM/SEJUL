@@ -53,7 +53,37 @@
 .sjr .sj-ft{margin-top:auto;display:flex;flex-direction:column;gap:6px;padding-top:10px}
 .sjr .sj-sy{display:flex;align-items:center;gap:9px;background:#0F1D3D;border-radius:12px;padding:10px 12px;font-size:13.5px;color:#C9D2E6}.sjr .sj-sy .sj-d{width:9px!important;height:9px!important;min-width:0!important;padding:0!important;border-radius:50%;background:#8F9BB8;flex:none}.sjr .sj-sy .sj-d.ok{background:#3CCB7F}.sjr .sj-sy .sj-d.warn{background:#F2B705}.sjr .sj-sy .sj-d.err{background:#F04438}
 @media (max-width:899px){.sjr{display:none!important}}
-@media print{.sjr,.sjmob{display:none!important}}
+@media print{.sjr,.sjmob,.sjq{display:none!important}}
+.sjr .sj-srch{display:flex;align-items:center;gap:10px;width:100%;margin:10px 0 2px;padding:9px 12px;border-radius:10px;border:1px solid #33508A;background:#1B2F5B;color:#C9D2E6;font:inherit;font-size:14px;cursor:pointer;text-align:left}.sjr .sj-srch:hover{background:#22396C;color:#fff}.sjr .sj-srch span{flex:1}.sjr .sj-srch kbd{font:inherit;font-size:11px;color:#8F9BB8;border:1px solid #3A4E7C;border-radius:5px;padding:0 5px}
+.sjm-sr{background:none;border:0;color:#fff;width:38px;height:38px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.sjq{position:fixed;inset:0;z-index:2000;font-family:'Pretendard','Noto Sans KR','Malgun Gothic','Apple SD Gothic Neo',system-ui,sans-serif}.sjq[hidden]{display:none}.sjq-bg{position:absolute;inset:0;background:rgba(15,23,42,.45)}
+.sjq-p{position:relative;margin:8vh auto 0;width:min(680px,94vw);max-height:78vh;display:flex;flex-direction:column;background:#fff;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.3);overflow:hidden}
+.sjq-i{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid #E3E6EB;color:#5B6474}.sjq-i input{flex:1;border:0;outline:0;font:inherit;font-size:17px;padding:6px 0;color:#0F172A;background:none}.sjq-x{border:0;background:#F1F3F7;border-radius:50%;width:32px;height:32px;cursor:pointer}
+.sjq-l{overflow:auto;padding:6px 0 10px}.sjq-g{font-size:12.5px;font-weight:800;color:#5B6474;padding:10px 18px 4px}.sjq-g span{color:#9AA3B2;font-weight:600}
+.sjq-r{display:block;width:100%;text-align:left;border:0;background:none;padding:9px 18px;cursor:pointer;font:inherit;color:#0F172A}.sjq-r:hover,.sjq-r.on{background:#EEF3FB}.sjq-r b{display:block;font-size:14.5px;font-weight:700}.sjq-r small{display:block;font-size:12.5px;color:#5B6474}.sjq-e{padding:24px 18px;color:#5B6474;font-size:14px;line-height:1.7}
+@media (max-width:640px){.sjq-p{margin:0;width:100vw;max-height:100vh;height:100vh;border-radius:0}}
+
+.sjh{max-width:1200px;color:#0F172A}.sjh *{box-sizing:border-box}.sjh a{text-decoration:none}.sjh button{font:inherit;color:inherit;text-align:inherit;background:none;border:0;margin:0;cursor:pointer}
+.sjh-hd{display:flex;align-items:flex-end;gap:10px;margin:2px 0 16px;flex-wrap:wrap}.sjh-hd small{display:block;color:#5B6474;font-size:13.5px;font-weight:600}.sjh-hd h1{margin:2px 0 0;font-size:26px;font-weight:800;color:#0F172A;letter-spacing:-.01em}.sjh .sp{flex:1}
+.sjh .sjh-btn,.sjh-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border-radius:11px;padding:9px 15px;font-weight:800;font-size:14.5px;border:1.5px solid #CBD2DC;background:#fff;color:#14244A!important;cursor:pointer;white-space:nowrap;font-family:inherit}.sjh-btn:hover{border-color:#2F5496}
+.sjh .sjh-btn.pri,.sjh-btn.pri{background:#1B2F5B;border-color:#1B2F5B;color:#fff!important}.sjh-btn.pri:hover{background:#24407A}.sjh-btn.big{font-size:16px;padding:12px 18px;border-radius:12px}.sjh-btn.s{padding:6px 12px;font-size:13.5px;border-radius:9px}
+.sjh-band{display:flex;align-items:center;gap:10px;border-radius:12px;padding:10px 14px;background:#FFF7E0;border:1px solid #F2D27A;color:#6B4A00;font-size:14px;margin:0 0 12px}.sjh-band>*{margin:0!important}
+.sjh-hero{display:flex;gap:18px;align-items:center;background:#fff;border:1px solid #E3E6EB;border-left:6px solid #C62828;border-radius:16px;padding:18px 22px;margin:0 0 14px}.sjh-hero.y{border-left-color:#E0A400}.sjh-hero.g{border-left-color:#2E7D32}.sjh-hero.n{border-left-color:#B8C0CC}.sjh-hero.b{border-left-color:#2F5496}
+.sjh-hero .sjh-tx{flex:1;min-width:0}.sjh-hero small{display:block;color:#5B6474;font-size:13.5px;font-weight:600}.sjh-hero b{display:block;font-size:22px;margin:4px 0;font-weight:800}.sjh-hero em{font-style:normal}.sjh-hero em.r{color:#C62828}.sjh-hero em.y{color:#B26A00}.sjh-hero .sjh-tx>span{color:#5B6474;font-size:14px}
+.sjh-k{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:0 0 16px}.sjh .sjh-k>.kc{display:block;width:100%;text-align:left!important;background:#fff;border:1px solid #E3E6EB;border-radius:14px;padding:14px 16px;color:inherit;cursor:pointer}.sjh .sjh-k>.kc:hover{border-color:#2F5496}
+.sjh-k b{display:block;font-size:30px;font-weight:800;line-height:1.1}.sjh-k span{color:#5B6474;font-size:13.5px;font-weight:600}.sjh-k .t-r b{color:#C62828}.sjh-k .t-y b{color:#B26A00}.sjh-k .t-b b{color:#2F5496}.sjh-k .zero b{color:#A3ABB8}
+.sjh-c{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(280px,1fr);gap:16px;align-items:start}
+.sjh-card{background:#fff;border:1px solid #E3E6EB;border-radius:16px;overflow:hidden;margin:0 0 16px}.sjh-card>h2{display:flex;align-items:center;gap:8px;margin:0;padding:14px 18px;font-size:16.5px;font-weight:800;border-bottom:1px solid #EEF0F3;color:#0F172A}.sjh-card>h2 small{font-size:13px;color:#5B6474;font-weight:600}
+.sjh-r{display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid #F0F2F5}.sjh-r:last-child{border-bottom:0}.sjh-r .sjh-bar{width:4px;align-self:stretch;border-radius:3px;flex:none}.sjh-r .sjh-bar.r{background:#E5484D}.sjh-r .sjh-bar.y{background:#F2B705}
+.sjh-r .sjh-tx{flex:1;min-width:0}.sjh-r .sjh-tx b{font-size:14.5px;font-weight:700;word-break:keep-all}.sjh-r .sjh-tx small{display:block;color:#5B6474;font-size:13px;margin-top:2px;word-break:keep-all}
+.sjh-r .sjh-tag{font-size:11.5px;font-weight:800;border-radius:6px;padding:1px 7px;margin-right:6px;background:#EEF3FB;color:#1B2F5B}.sjh-r .sjh-tag.r{background:#FDF0E7;color:#B4501A}.sjh-r .sjh-tag.c{background:#F1ECFA;color:#5B3FA0}
+.sjh-r .sjh-due{font-size:12.5px;font-weight:800;white-space:nowrap}.sjh-r .sjh-due.r{color:#C62828}.sjh-r .sjh-due.y{color:#B26A00}.sjh-r .sjh-due.g{color:#5B6474}
+.sjh-empty{padding:26px 18px;text-align:center;color:#5B6474;font-size:14.5px}
+.sjh .sjh-q .qi{display:flex;width:100%;text-align:left;background:#fff;gap:12px;align-items:center;padding:12px 18px;border-bottom:1px solid #F0F2F5;color:inherit;cursor:pointer}.sjh-q .qi:last-child{border-bottom:0}.sjh-q .qi:hover{background:#F7F9FC}.sjh-q .sjh-ic{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex:none}.sjh-q b{display:block;font-size:14.5px;font-weight:700}.sjh-q small{display:block;color:#5B6474;font-size:12.5px}
+.sjh-x{background:#fff;border:1px solid #E3E6EB;border-radius:16px;margin:0 0 16px}.sjh-x>summary{padding:14px 18px;font-weight:800;font-size:15.5px;cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px}.sjh-x>summary::-webkit-details-marker{display:none}.sjh-x>summary::after{content:'▾';margin-left:auto;color:#5B6474}.sjh-x[open]>summary::after{content:'▴'}.sjh-x>.sjh-in{padding:0 18px 18px}
+.sjh-ft{color:#9AA3B2;font-size:12px;text-align:right;margin:4px 0 24px}
+@media (max-width:899px){.sjh-hd>.sjh-btn{display:none}.sjh-card>h2{flex-wrap:wrap}.sjh-card>h2 .seg{flex-basis:100%;display:flex}.sjh-card>h2 .seg button{flex:1}.sjh .sjh-k>.kc{padding:10px 14px}.sjh-k b{font-size:24px}.sjh-c{grid-template-columns:1fr}.sjh-k{grid-template-columns:repeat(2,minmax(0,1fr))}.sjh-k>:first-child:nth-last-child(odd){grid-column:1/-1}.sjh-hero{flex-direction:column;align-items:stretch;padding:16px}.sjh-hero b{font-size:19px}.sjh-hd h1{font-size:22px}.sjh-r{padding:12px 14px;flex-wrap:wrap}.sjh-r .sjh-tx{flex-basis:calc(100% - 20px)}.sjh-r .sjh-due{margin-left:16px}.sjh-r .sjh-btn{margin-left:auto}}
+
 .sjmob{display:none}
 @media (max-width:899px){
  .sjmob{display:block;font-family:'Pretendard','Noto Sans KR','Malgun Gothic','Apple SD Gothic Neo',system-ui,sans-serif}.sjmob *{box-sizing:border-box}.sjmob a{text-decoration:none}.sjmob [hidden]{display:none!important}
@@ -86,7 +116,7 @@
     const vbox = off ? fleet()
       : `<div class="sj-vb"><span class="sj-vi s">${U.ic('ship', 17)}</span><span class="sj-vt"><b>${v ? U.esc(v) : T('선박 미설정', 'No vessel')}</b><small>${T('선박 기기', 'Ship device')}${pc ? ' · ' + U.esc(pc) : ''}</small></span></div>`;
     const tsub = off ? (view ? U.esc(view) : T('선박을 고르세요', 'Pick a vessel')) : '';
-    return `<nav class="sjr" aria-label="${T('도구 메뉴', 'Tools')}"><a class="sj-lg" href="${base}index.html"><i>S</i><span><b>${T('SEJUL 선박관리', 'SEJUL Fleet')}</b><small>FLEET APPS</small></span></a>${vbox}
+    return `<nav class="sjr" aria-label="${T('도구 메뉴', 'Tools')}"><a class="sj-lg" href="${base}index.html"><i>S</i><span><b>${T('SEJUL 선박관리', 'SEJUL Fleet')}</b><small>FLEET APPS</small></span></a><button class="sj-srch" data-sjsearch type="button">${U.ic('M21 21l-4.3-4.3M11 18a7 7 0 1 1 0-14 7 7 0 0 1 0 14z', 17)}<span>${T('검색', 'Search')}</span><kbd>Ctrl K</kbd></button>${vbox}
       ${off ? '' : it('home', base + 'index.html', T('홈 · 오늘 할 일', 'Home · Today'), 'home')}
       ${sec(T('도구', 'Tools'))}
       ${it('pms', base + 'tools/pms.html', T('계획정비', 'Maintenance'), 'pms', bp, tsub)}
@@ -94,6 +124,79 @@
       ${off ? sec(T('관리', 'Admin')) + it('devices', base + 'index.html#devices', T('기기 승인', 'Devices'), 'dev', '<span class="sj-bd y" data-sjpend hidden></span>') : ''}
       <div class="sj-soon"><span>${T('준비 중', 'Soon')}</span> ${T('화물 호환성 · SMS 서식', 'Cargo compat. · SMS forms')}</div>
       <div class="sj-ft"><a class="sj-it sj-up" href="#" data-sjupd><span class="sj-ii">${U.ic('M21 12a9 9 0 1 1-2.6-6.4L21 8M21 3v5h-5')}</span><span class="sj-ut"><span>${T('앱 버전', 'App version')} v${U.esc(String(C.ver || '').replace(/^(\d{4})\.(\d\d)\.(\d\d)\.(\d\d)(\d\d)$/, '$1.$2.$3 $4:$5'))}</span><small>${T('업데이트 확인', 'Check for updates')}</small></span></a>${it('settings', base + 'index.html#settings', T('설정', 'Settings'), 'set')}<a class="sj-sy" id="sjSync" href="${base}index.html#settings/sync"><span class="sj-d"></span><span class="sj-t">${T('서버 동기화', 'Server sync')}</span></a></div></nav>` + U.mob(act, base, { off, v, view, sp, sr, bp, br }); };
+  /* ================= 공통 홈 틀 (앱 홈 · 계획정비 홈 · 위험성 관리 홈이 같이 씀) ================= */
+  U.goHref = (base, tool, o) => (base || '') + 'tools/' + tool + '.html' + (o ? '?go=' + encodeURIComponent(JSON.stringify(o)) : '');
+  /* 링크(href) 또는 도구 안 동작(data-*) — 도구 안 동작은 button으로 (주소가 #으로 바뀌지 않게) */
+  const el = (o, cls, inner) => o.href ? `<a class="${cls}" href="${o.href}">${inner}</a>` : `<button type="button" class="${cls}" ${Object.entries(o.d || {}).map(([k, v]) => `data-${k}="${U.esc(v)}"`).join(' ')}>${inner}</button>`;
+  const tagL = () => ({ p: U.T('계획정비', 'PMS'), r: U.T('위험성', 'Risk'), c: U.T('선급', 'Class') });
+  U.H = {
+    page: o => `<div class="sjh-hd"><div><small>${o.kicker || ''}</small><h1>${o.title}</h1></div><span class="sp"></span>${o.actions || ''}</div>`,
+    btn: (label, o, pri) => el(o, 'sjh-btn ' + (pri ? 'pri' : ''), label),
+    band: html => html ? `<div class="sjh-band">${html}</div>` : '',
+    hero: o => `<div class="sjh-hero ${o.tone || 'n'}"><div class="sjh-tx"><small>${o.kicker || ''}</small><b>${o.title}</b><span>${o.sub || ''}</span></div>${o.btn ? el(o.btn, 'sjh-btn pri big', o.btn.label) : ''}</div>`,
+    kpis: arr => `<div class="sjh-k">${arr.map(k => el(k, 'kc ' + (k.tone ? 't-' + k.tone : '') + ' ' + (k.n ? '' : 'zero'), `<b>${k.n == null ? '—' : k.n}</b><span>${k.label}</span>`)).join('')}</div>`,
+    rows: (list, o) => { o = o || {}; const TL = tagL(); return list.length ? list.map(x => `<div class="sjh-r"><span class="sjh-bar ${x.bar || ''}"></span><span class="sjh-tx"><span>${o.tags && x.k ? `<span class="sjh-tag ${x.k}">${TL[x.k] || ''}</span>` : ''}<b>${U.esc(x.t)}</b></span>${x.sub ? `<small>${U.esc(x.sub)}</small>` : ''}</span>${x.due && x.due[1] ? `<span class="sjh-due ${x.due[0]}">${U.esc(x.due[1])}</span>` : ''}${x.act ? el(x, 'sjh-btn s', U.esc(x.act)) : ''}</div>`).join('') : `<div class="sjh-empty">${o.empty || '✅ ' + U.T('지금 처리할 일이 없습니다.', 'Nothing to do right now.')}</div>`; },
+    card: (title, inner, right) => `<section class="sjh-card"><h2>${title}<span class="sp"></span>${right || ''}</h2>${inner}</section>`,
+    quick: arr => `<div class="sjh-q">${arr.map(q => el(q, 'qi', `<span class="sjh-ic" style="background:${q.bg};color:${q.fg}">${U.ic(q.ic, 20)}</span><span><b>${q.t}</b><small>${q.sub || ''}</small></span>`)).join('')}</div>`,
+    extra: (title, inner, id) => `<details class="sjh-x" ${id ? `id="${id}"` : ''}><summary>${title}</summary><div class="sjh-in">${inner}</div></details>`,
+    cols: (main, side) => `<div class="sjh-c"><div>${main}</div><div>${side}</div></div>`,
+    foot: t => t ? `<div class="sjh-ft">${t}</div>` : ''
+  };
+  /* 선박 한 척의 '처리할 일' (요약에서) — base: 앱 홈 '' · 도구 '../' */
+  U.items = function (v, base) { const T = U.T, sp = U.sum('pms'), sr = U.sum('rsk'), out = [], g = (t, o) => U.goHref(base, t, o);
+    const s = sp && sp.ships && sp.ships[v];
+    if (s) { if (s.od) out.push({ k: 'p', bar: 'r', due: ['r', T('초과', 'Overdue')], t: T(`기한 초과 작업 ${s.od}건`, `${s.od} overdue jobs`), sub: (s.cri ? T(`중요장비 ${s.cri}건 포함 · `, `${s.cri} critical · `) : '') + T(`장비 ${(s.E || {}).od || 0}대`, `${(s.E || {}).od || 0} equipment`), act: T('목록 보기', 'View'), href: g('pms', { attrs: { v9due: 'od' } }) });
+      if (s.d7) out.push({ k: 'p', bar: 'y', due: ['y', T('7일 이내', '≤ 7 days')], t: T(`7일 안에 할 작업 ${s.d7}건`, `${s.d7} jobs due in 7 days`), sub: T(`장비 ${(s.E || {}).d7 || 0}대`, `${(s.E || {}).d7 || 0} equipment`), act: T('목록 보기', 'View'), href: g('pms', { attrs: { v9due: 'd7' } }) });
+      (s.S || []).forEach(([k, id, what, tx]) => out.push({ k: k === 'cls' ? 'c' : 'p', bar: k === 'cls' ? 'y' : '', due: ['g', ''], t: what, sub: tx, act: T('열기', 'Open'), href: g('pms', { attrs: { opsk: k, opsid: id } }) }));
+      if (s.def) out.push({ k: 'p', bar: s.defA ? 'r' : '', due: ['g', ''], t: T(`미결 결함 ${s.def}건`, `${s.def} open defects`), sub: s.defA ? T(`A등급 ${s.defA}건`, `${s.defA} grade A`) : T('결함 보고 진행 중', 'In progress'), act: T('결함', 'Defects'), href: g('pms', { hash: '#/defects' }) });
+      if (s.low) out.push({ k: 'p', bar: '', due: ['g', '—'], t: T(`재고 부족 ${s.low}품목`, `${s.low} items below minimum`), sub: T('최소 재고 아래 — 청구서에 담기', 'Below minimum stock — add to a requisition'), act: T('청구서', 'Requisition'), href: g('pms', { hash: '#/spares' }) }); }
+    const r = sr && sr.v && sr.v[v];
+    if (r) { const lab = { draft: T('작성 중 위험성 평가', 'Draft RA'), wait: T('DPA 승인 대기', 'Awaiting DPA'), stop: T('작업 중지 — 보완 필요', 'Stopped — revise'), mocw: T('MoC 회사 승인 대기', 'MoC awaiting approval') };
+      (r.items || []).forEach(([k, id, tx]) => out.push({ k: 'r', bar: k === 'stop' ? 'r' : k === 'wait' || k === 'mocw' ? 'y' : '', due: ['g', ''], t: lab[k] || k, sub: tx, act: T('열기', 'Open'), href: g('rsk', { attrs: k === 'mocw' ? { a: 'open', k: 'moc', id } : { a: 'open', k: 'ra', id } }) }));
+      if (r.act) out.push({ k: 'r', bar: 'y', due: ['y', T('작업 중', 'Active')], t: T(`작업 중 PTW ${r.act}건`, `${r.act} active permits`), sub: T('작업 종료 후 허가서 마감', 'Close permits after work'), act: T('보기', 'View'), href: g('rsk', { attrs: { a: 'kpiGo', v: 'ptwList:act' } }) }); }
+    return out; };
+  /* 계획정비 공통: 오늘 할 일 카드·숫자 카드 */
+  U.pmsHero = (s, v, d, off) => { const T = U.T, n = s ? (s.od || 0) + (s.d7 || 0) : 0;
+    return U.H.hero(!s || !s.n ? { tone: 'n', kicker: T('오늘 할 일', 'Today') + ' · ' + U.esc(v), title: s ? T('아직 등록된 작업이 없습니다', 'No jobs registered yet') : T('⏳ 자료를 모으는 중입니다', '⏳ Gathering data'), sub: s ? T('선박 기기가 승인되면 계획정비 자료가 자동으로 들어옵니다.', 'Vessel data arrives once a ship device is approved.') : T('잠시 후 자동으로 표시됩니다.', 'Shown automatically in a moment.') }
+      : { tone: n ? (s.od ? 'r' : 'y') : 'g', kicker: T('오늘 할 일', 'Today') + ' · ' + U.esc(v), title: n ? `${T('기한 초과', 'Overdue')} <em class="r">${s.od}</em> · ${T('7일 이내', '≤ 7 days')} <em class="y">${s.d7}</em>` : '✅ ' + T('급한 작업이 없습니다', 'Nothing urgent'), sub: n ? T('작업을 누르고 실시 기록을 입력하면 목록에서 빠집니다.', 'Open a job and record it to clear it.') : T('30일 이내 작업은 작업 목록에서 미리 볼 수 있습니다.', 'See upcoming jobs in the job list.'), btn: Object.assign({ label: n && !off ? T('바로 실시 입력 →', 'Record now →') : n ? T('기한 초과 작업 보기 →', 'View overdue →') : T('작업 목록 →', 'Job list →') }, d(n ? 'od' : 'd30')), ...(off && n ? { sub: T('실시 기록은 선박에서 입력합니다. 사무실은 진행 상황을 확인합니다.', 'Records are entered on board; the office monitors progress.') } : {}) }); };
+  U.pmsKpis = (s, d, h) => { const T = U.T; return U.H.kpis([{ n: s && s.od, label: T('기한 초과', 'Overdue'), tone: 'r', ...d('od') }, { n: s && s.d7, label: T('7일 이내', '≤ 7 days'), tone: 'y', ...d('d7') }, { n: s && s.d30, label: T('30일 이내', '≤ 30 days'), ...d('d30') }, { n: s && s.def, label: T('미결 결함', 'Open defects'), tone: s && s.defA ? 'r' : '', ...h('defects') }, { n: s && s.low, label: T('재고 부족', 'Low stock'), ...h('spares') }]); };
+  U.rskKpis = (r, d) => { const T = U.T; r = r || {}; return U.H.kpis([{ n: r.draft, label: T('작성 중 위험성 평가', 'Draft RA'), ...d('raList:draft') }, { n: r.wait, label: T('DPA·회사 승인 대기', 'Awaiting approval'), tone: 'y', ...d('raList:wait') }, { n: r.stop, label: T('작업 중지(불가)', 'Stopped'), tone: 'r', ...d('raList:stop') }, { n: r.act, label: T('작업 중 PTW', 'Active PTW'), tone: 'b', ...d('ptwList:act') }, { n: r.moc, label: T('진행 중 MoC', 'Open MoC'), ...d('mocList:open') }]); };
+
+  /* ================= 앱 전체 검색 (Ctrl+K · /) ================= */
+  U.search = (function () { let box, res = [], sel = 0;
+    const base = () => /\/tools\//.test(location.pathname) ? '../' : '';
+    const idx = k => { try { return JSON.parse(localStorage.getItem('sejul_idx_' + k) || 'null'); } catch (e) { return null; } };
+    const vessels = () => { const off = U.role() === 'office', v = off ? (C.get('view') || '') : (C.get('vessel') || ''); const all = new Set([...Object.keys((idx('pms') || {}).v || {}), ...Object.keys((idx('rsk') || {}).v || {})]); return off ? [...(v ? [v] : []), ...[...all].filter(x => x !== v && x !== '—').sort()] : [v]; };
+    function find(q) { const T = U.T, Q = q.trim().toLowerCase(); if (Q.length < 2) return []; const P = (idx('pms') || {}).v || {}, R = (idx('rsk') || {}).v || {}, out = [], hit = (...a) => a.join(' ').toLowerCase().includes(Q);
+      const rskK = { ra: T('위험성 평가', 'RA'), ptw: 'PTW', moc: 'MoC', rir: T('식별 보고', 'Risk ID') };
+      vessels().forEach(v => { const p = P[v] || {}, r = R[v] || [];
+        (p.e || []).forEach(([id, n, sfi, mk]) => { if (hit(id, n, sfi, mk)) out.push({ g: 'e', v, t: n, s: `${sfi} · ${id}${mk ? ' · ' + mk : ''}`, tool: 'pms', o: { hash: '#/jobs', attrs: { sjfn: 'openEquip', arg: id } } }); });
+        (p.j || []).forEach(([c, d, eq, pid]) => { if (hit(c, d, pid)) out.push({ g: 'j', v, t: d, s: `${pid || c} · ${eq || ''}`, tool: 'pms', o: { attrs: { sjfn: 'openJob', arg: c } } }); });
+        (p.d || []).forEach(([id, no, t, cl]) => { if (hit(no, t)) out.push({ g: 'd', v, t: (no ? no + ' ' : '') + t, s: cl ? T('종결', 'Closed') : T('진행 중', 'Open'), tool: 'pms', o: { hash: '#/defects', attrs: { sjfn: 'openDefect', arg: id } } }); });
+        (p.s || []).forEach(([id, n, pno, im]) => { if (hit(n, pno, im)) out.push({ g: 's', v, t: n, s: [pno, im ? 'IMPA ' + im : ''].filter(Boolean).join(' · '), tool: 'pms', o: { hash: '#/spares', attrs: { act: 'spEdit', id } } }); });
+        (p.r || []).forEach(([id, no, it, st]) => { if (hit(no, it)) out.push({ g: 'q', v, t: no, s: it, tool: 'pms', o: { hash: '#/spares' } }); });
+        r.forEach(([k, id, no, t]) => { if (hit(no, t, rskK[k])) out.push({ g: 'r', v, t: `${rskK[k]} ${no} ${t}`, s: '', tool: 'rsk', o: { attrs: { a: 'open', k, id } } }); }); });
+      return out; }
+    const GL = () => ({ e: U.T('장비', 'Equipment'), j: U.T('작업', 'Jobs'), d: U.T('결함', 'Defects'), s: U.T('인벤토리 품목', 'Inventory'), q: U.T('청구서', 'Requisitions'), r: U.T('위험성 관리', 'Risk') });
+    function paint() { const T = U.T, q = box.querySelector('input').value, L = find(q), G = GL(), off = U.role() === 'office', cur = off ? C.get('view') : C.get('vessel'); res = [];
+      const by = {}; L.forEach(x => (by[x.g] = by[x.g] || []).push(x));
+      const html = Object.keys(G).filter(g => by[g]).map(g => { const a = by[g], shown = a.slice(0, 6); return `<div class="sjq-g">${G[g]} <span>${a.length}</span></div>` + shown.map(x => { res.push(x); return `<button class="sjq-r ${res.length - 1 === sel ? 'on' : ''}" data-sjqi="${res.length - 1}"><b>${U.esc(x.t)}</b><small>${U.esc(x.s)}${off && x.v !== cur ? ` · 🚢 ${U.esc(x.v)}` : ''}</small></button>`; }).join(''); }).join('');
+      box.querySelector('.sjq-l').innerHTML = q.trim().length < 2 ? `<div class="sjq-e">${T('두 글자 이상 입력하세요 — 장비·작업·결함·품목·청구서·위험성 평가·PTW를 한 번에 찾습니다.', 'Type 2+ characters — searches equipment, jobs, defects, items, requisitions, RA and PTW.')}${(idx('pms') || idx('rsk')) ? '' : '<br>' + T('⏳ 검색 목록을 만드는 중입니다 — 잠시 후 다시 시도하세요.', '⏳ Building the search list — try again shortly.')}</div>` : html || `<div class="sjq-e">${T('찾는 항목이 없습니다.', 'No results.')}</div>`; }
+    function goRes(x) { if (!x) return; const off = U.role() === 'office'; if (off && x.v && C.get('view') !== x.v) C.set('view', x.v); close();
+      const here = new RegExp('/tools/' + x.tool + '\\.html').test(location.pathname);
+      if (here && !(off && x.v)) { if (x.o.hash) location.hash = x.o.hash; if (x.o.attrs) setTimeout(() => { const b = document.createElement('button'); b.hidden = true; Object.entries(x.o.attrs).forEach(([k, v]) => b.setAttribute('data-' + k, v)); document.body.appendChild(b); b.click(); b.remove(); }, x.o.hash ? 300 : 0); return; }
+      location.href = U.goHref(base(), x.tool, Object.assign({}, x.o, off ? { view: x.v } : {})); }
+    function open() { if (!box) { box = document.createElement('div'); box.className = 'sjq'; box.innerHTML = `<div class="sjq-bg"></div><div class="sjq-p" role="dialog" aria-label="${U.T('앱 전체 검색', 'Search')}"><div class="sjq-i">${U.ic('M21 21l-4.3-4.3M11 18a7 7 0 1 1 0-14 7 7 0 0 1 0 14z', 20)}<input type="search" placeholder="${U.T('장비 · 작업 · 결함 · 품목 · 청구서 · 위험성 평가 찾기', 'Search equipment, jobs, defects, items, RA…')}" autocomplete="off"><button class="sjq-x" aria-label="${U.T('닫기', 'Close')}">✕</button></div><div class="sjq-l"></div></div>`;
+        document.body.appendChild(box); const inp = box.querySelector('input');
+        inp.addEventListener('input', () => { sel = 0; paint(); });
+        inp.addEventListener('keydown', e => { if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); sel = Math.max(0, Math.min(res.length - 1, sel + (e.key === 'ArrowDown' ? 1 : -1))); box.querySelectorAll('.sjq-r').forEach((b, i) => b.classList.toggle('on', i === sel)); const on = box.querySelector('.sjq-r.on'); if (on) on.scrollIntoView({ block: 'nearest' }); } else if (e.key === 'Enter') goRes(res[sel]); else if (e.key === 'Escape') close(); });
+        box.addEventListener('click', e => { const r = e.target.closest('[data-sjqi]'); if (r) return goRes(res[+r.dataset.sjqi]); if (e.target.closest('.sjq-bg,.sjq-x')) close(); }); }
+      box.hidden = false; sel = 0; paint(); setTimeout(() => box.querySelector('input').focus(), 30); }
+    function close() { if (box) box.hidden = true; }
+    document.addEventListener('click', e => { if (e.target.closest && e.target.closest('[data-sjsearch]')) { e.preventDefault(); open(); } });
+    document.addEventListener('keydown', e => { const k = (e.key || '').toLowerCase(); if ((e.ctrlKey || e.metaKey) && k === 'k') { e.preventDefault(); open(); } else if (k === '/' && !(e.target.closest && e.target.closest('input,textarea,select,[contenteditable]'))) { e.preventDefault(); open(); } });
+    return { open, close }; })();
+
   /* 좁은 화면(태블릿 세로·휴대폰): 위 막대(선박 칩) + 아래 공통 탭 + 선박 고르기 시트 */
   U.fleetRows = function (act, base, view, sp, sr, cls) { const T = U.T, ps = (sp && sp.ships) || {}, rs = (sr && sr.v) || {};
     return `<a class="${cls} fl ${act === 'home' && !view ? 'on' : ''}" href="${base}index.html" data-sjves=""><span class="sj-dt b">${U.ic('bld', 15)}</span><span class="sj-vn">${T('선대 현황', 'Fleet overview')} <small>· ${T('전체 ' + U.VES.length + '척', 'all ' + U.VES.length)}</small></span></a>` + U.VES.map(n => { const a = ps[n], r = rs[n]; const dc = !a || !a.n ? '' : a.od ? 'r' : a.d7 ? 'y' : 'g'; const k = (a ? (a.O || []).filter(x => x[0] !== 'cls').length : 0) + (r ? r.wait || 0 : 0);
@@ -103,7 +206,7 @@
     const tab = (k, href, label, ic, bd) => `<a class="${act === k ? 'on' : ''}" href="${href}">${U.ic(ic, 22)}<span>${label}</span>${bd || ''}</a>`;
     return `<div class="sjmob"><header class="sjm"><a class="sjm-lg" href="${base}index.html" aria-label="${T('앱 홈', 'App home')}"><i>S</i></a>
       ${off ? `<button class="sjm-v" data-sjsheet type="button">${U.ic('bld', 17)}<b>${U.esc(name)}</b>${U.ic('m6 9 6 6 6-6', 16)}</button>` : `<span class="sjm-v">${U.ic('ship', 17)}<b>${U.esc(name)}</b></span>`}
-      <span class="sjm-sp"></span><a class="sjm-up" href="#" data-sjupd hidden>⬆ ${T('업데이트', 'Update')}</a><a class="sjm-sy" href="${base}index.html#settings/sync" aria-label="${T('동기화', 'Sync')}"><span class="sj-d"></span></a></header>
+      <span class="sjm-sp"></span><button class="sjm-sr" data-sjsearch type="button" aria-label="${T('검색', 'Search')}">${U.ic('M21 21l-4.3-4.3M11 18a7 7 0 1 1 0-14 7 7 0 0 1 0 14z', 21)}</button><a class="sjm-up" href="#" data-sjupd hidden>⬆ ${T('업데이트', 'Update')}</a><a class="sjm-sy" href="${base}index.html#settings/sync" aria-label="${T('동기화', 'Sync')}"><span class="sj-d"></span></a></header>
       <nav class="sjb">${tab('home', base + 'index.html', off ? T('선대', 'Fleet') : T('홈', 'Home'), off ? 'bld' : 'home')}${tab('pms', base + 'tools/pms.html', T('계획정비', 'PMS'), 'pms', bp)}${tab('rsk', base + 'tools/rsk.html', T('위험성', 'Risk'), 'rsk', br)}${off ? tab('devices', base + 'index.html#devices', T('기기', 'Devices'), 'dev', '<span class="sj-bd y" data-sjpend hidden></span>') : ''}${tab('settings', base + 'index.html#settings', T('설정', 'Settings'), 'set')}</nav>
       ${off ? `<div class="sjs" hidden><div class="sjs-bg" data-sjsheet></div><div class="sjs-p" role="dialog" aria-label="${T('선박 고르기', 'Choose vessel')}"><div class="sjs-h"><b>${T('선박 고르기', 'Choose vessel')}</b><button type="button" data-sjsheet aria-label="${T('닫기', 'Close')}">✕</button></div>${U.fleetRows(act, base, view, sp, sr, 'sjs-r')}</div></div>` : ''}</div>`; };
   /* 동기화 표시 (레일 아래) */
