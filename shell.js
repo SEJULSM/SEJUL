@@ -310,7 +310,10 @@ html body #top .sj-nav>button[data-go=help],html body #top .sj-nav>button[data-g
       for (const [n, db] of Object.entries(ships)) { try { const { c } = shipStats(db), td = typeof opsTodo === 'function' ? opsTodo(db) : { O: [], S: [] };
         out[n] = { od: c.od, d7: c.d7, d30: c.d30, nd: c.nd, cri: c.cri, def: c.def, defA: c.defA, low: c.low, n: c.n, E: c.E, S: td.S.slice(0, 15), O: td.O.slice(0, 15),
           D: td.O.filter(x => x[0] === 'def').slice(0, 30).map(x => [x[1], x[2], x[3]]),
-          R: (typeof RQS === 'function' ? RQS(db) : []).filter(r => r.st === 'sent').slice(0, 30).map(r => [r.id, r.no + (r.kind === 'rep' ? ' (수리 repair)' : '') + ' · ' + (r.items || []).length + '건', r.urg === 'u' ? 'u' : 'n']) }; } catch (e) { } }
+          R: (typeof RQS === 'function' ? RQS(db) : []).filter(r => r.st === 'sent').slice(0, 30).map(r => [r.id, r.no + (r.kind === 'rep' ? ' (수리 repair)' : '') + ' · ' + (r.items || []).length + '건', r.urg === 'u' ? 'u' : 'n']),
+          /* 작업 연기: P = 승인 대기(사무실 알림) / Q = 최근 30일 결정(선박 알림) */
+          P: (db.ppr || []).filter(r => r.st === 'req').slice(0, 30).map(r => [r.id, r.no + ' ' + String(r.desc || '').slice(0, 50) + ' → ' + r.due + (r.cri ? ' (CRI)' : '')]),
+          Q: (db.ppr || []).filter(r => (r.st === 'ok' || r.st === 'rej') && Date.now() - (r.upd || 0) < 30 * 864e5).slice(-30).map(r => [r.id, r.no + ' ' + String(r.desc || '').slice(0, 50) + (r.st === 'ok' ? ' → ' + (r.dDue || r.due) : ' — ' + String(r.dNote || '').slice(0, 60)), r.st]) }; } catch (e) { } }
       localStorage.setItem('sejul_sum_pms', JSON.stringify({ at: Date.now(), mode: MODE, ships: out }));
       /* 앱 전체 검색용 목록 (장비 · 작업 · 결함 · 품목) */
       try { const ix = {}; for (const [n, db] of Object.entries(ships)) { const cut = x => String(x || '').slice(0, 70);
@@ -321,7 +324,7 @@ html body #top .sj-nav>button[data-go=help],html body #top .sj-nav>button[data-g
     hookRender() { const r0 = render; render = function () { try { const v = C.get('view') || ''; if (MODE === 'admin' && v && OFFICE.ships[v] && OFFICE.sel !== v) OFFICE.sel = v; } catch (e) { }   /* 사무실: 항상 왼쪽 메뉴에서 고른 선박 */
       const x = r0.apply(this, arguments); try { PMS.after(); } catch (e) { } navDeco(); sumSoon(PMS); return x; };
       /* 저장·동기화 때 상단 줄만 다시 그려도(renderTop) 새 탭 모양 유지 — 예전 모양으로 깜빡이지 않게 */
-      try { if (typeof renderTop === 'function' && !renderTop.sjx) { const t0 = renderTop; renderTop = function () { const y = t0.apply(this, arguments); navDeco(); return y; }; renderTop.sjx = 1; } } catch (e) { } }
+      try { if (typeof renderTop === 'function' && !renderTop.sjx) { const t0 = renderTop; renderTop = function () { const y = t0.apply(this, arguments); navDeco(); sumSoon(PMS); return y; }; renderTop.sjx = 1; } } catch (e) { } }
   };
   /* ---------- 위험성 관리 ---------- */
   const RSK = {

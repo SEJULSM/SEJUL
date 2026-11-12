@@ -49,9 +49,10 @@
   C.sumPush = async function () { const m = C.me(); if (!m || m.status !== 'approved' || !navigator.onLine) return;
     const rd = k => { try { return JSON.parse(LS('sejul_sum_' + k) || 'null'); } catch (e) { return null; } }, sp = rd('pms'), sr = rd('rsk'), out = [];
     if (m.role === 'ship') { const v = m.ship, s = sp && sp.ships && sp.ships[v], r = sr && sr.v && sr.v[v];
-      if (s && sp.mode !== 'admin') out.push(['pms', v, { od: s.od || 0, d7: s.d7 || 0, d30: s.d30 || 0, cri: s.cri || 0, def: s.def || 0, defA: s.defA || 0, low: s.low || 0, D: s.D || [], R: s.R || [] }]);
+      if (s && sp.mode !== 'admin') out.push(['pms', v, { od: s.od || 0, d7: s.d7 || 0, d30: s.d30 || 0, cri: s.cri || 0, def: s.def || 0, defA: s.defA || 0, low: s.low || 0, D: s.D || [], R: s.R || [], P: s.P || [] }]);
       if (r && sr.site !== 'office') out.push(['rsk', v, { draft: r.draft || 0, waitN: r.wait || 0, stop: r.stop || 0, act: r.act || 0, moc: r.moc || 0, wait: (r.items || []).filter(x => x[0] === 'wait' || x[0] === 'mocw').map(x => [x[1], x[2]]), ptw: r.ptw || [] }]); }
     else if (sr && sr.site === 'office') Object.entries(sr.v || {}).forEach(([v, r]) => { if (v && v !== '—' && (r.dpa || []).length) out.push(['dpa', v, { list: r.dpa }]); });
+    if (m.role === 'office' && sp && sp.mode === 'admin') Object.entries(sp.ships || {}).forEach(([v, s]) => { if (v && (s.Q || []).length) out.push(['pmso', v, { list: s.Q }]); });   /* 사무실 → 선박: 작업 연기 승인·반려 */
     let h = {}; try { h = JSON.parse(LS('sejul_cloud_sum_h') || '{}'); } catch (e) { }
     for (const [tool, ship, data] of out) { const j = JSON.stringify(data), hk = tool + ':' + ship, hv = hash(j); if (h[hk] === hv) continue;
       try { await C.rpc('sj_summary_put', { p_ship: ship, p_tool: tool, p_data: data }); h[hk] = hv; } catch (e) { if (/does not exist|Could not find the function/i.test(e.message)) break; console.warn('sum', e.message); } }
