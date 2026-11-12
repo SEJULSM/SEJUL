@@ -1,7 +1,15 @@
 /* SEJUL 앱 서비스 워커 — 앱 파일을 PC에 보관해 인터넷 없이 실행, 인터넷이 되면 새 버전을 받아 둠 (데이터는 다루지 않음) */
-const CACHE = 'sejul-2026.11.12.1341';
-const FILES = ['./', './index.html', './common.js', './ui.js', './cloud.js', './shell.js', './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-maskable.png', './apple-touch-icon.png', './favicon.png', './tools/pms.html', './tools/rsk.html', './tools/inv.html', './tools/cert.html'];
-self.addEventListener('install', e => e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES.map(f => new Request(f, { cache: 'reload' }))))));
+const CACHE = 'sejul-2026.11.12.1358';
+const FILES = ['./', './index.html', './common.js', './ui.js', './cloud.js', './shell.js', './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-maskable.png', './apple-touch-icon.png', './favicon.png', './tools/pms.html', './tools/rsk.html'];
+/* 새 버전 받기: files.json(파일별 지문)을 보고 바뀐 파일만 내려받음 — 그대로인 파일은 이전 보관함에서 복사 (위성 통신량 절약) */
+self.addEventListener('install', e => e.waitUntil((async () => { const c = await caches.open(CACHE);
+  let man = null; try { man = await (await fetch('./files.json?t=' + Date.now(), { cache: 'no-store' })).json(); } catch (x) { }
+  if (!man || !man.files) return c.addAll(FILES.map(f => new Request(f, { cache: 'reload' })));
+  let old = null, oldMan = {}; for (const k of (await caches.keys()).filter(k => k.startsWith('sejul-') && k !== CACHE)) { try { const r = await (await caches.open(k)).match('./files.json'); if (r) { oldMan = (await r.json()).files || {}; old = await caches.open(k); break; } } catch (x) { } }
+  for (const [f, h] of Object.entries(man.files)) { let res = oldMan[f] === h && old ? await old.match(f) : null;
+    if (!res) { res = await fetch(new Request(f, { cache: 'reload' })); if (!res.ok) throw new Error('fetch ' + f); }
+    await c.put(f, res.clone()); if (f === './index.html') await c.put('./', res.clone()); }
+  await c.put('./files.json', new Response(JSON.stringify(man), { headers: { 'content-type': 'application/json' } })); })()));
 self.addEventListener('activate', e => e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k.startsWith('sejul-') && k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())));
 self.addEventListener('message', e => { if (e.data === 'skip') self.skipWaiting(); });
 self.addEventListener('fetch', e => { const r = e.request; if (r.method !== 'GET' || new URL(r.url).origin !== location.origin || /version\.json$/.test(new URL(r.url).pathname)) return;

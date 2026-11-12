@@ -10,7 +10,7 @@
   const CO0 = { dpaName: 'Noh You Seok', dpaPhone: '+82-10-6588-7959', dpaEmail: 'nohys@sejulsm.com', sqEmail: 'sjsm@sejulsm.com' };
   C.company = () => { let o = {}; try { o = JSON.parse(C.get('company') || '{}') || {}; } catch (e) { } Object.keys(CO0).forEach(k => { if (!o[k]) o[k] = CO0[k]; }); return o; };
   C.mode = () => U.role() === 'office' && U.officeOK() ? 'office' : 'ship';
-  const TOOL = /rsk\.html/.test(location.pathname) ? 'rsk' : 'pms', SUB = TOOL === 'rsk' ? 'rsk' : (window.SJ_SUB || 'pms');   /* 재고·구매(inv)·증서·검사(cert)는 계획정비와 같은 묶음·같은 자료 */
+  const TOOL = /rsk\.html/.test(location.pathname) ? 'rsk' : 'pms', SUB = TOOL === 'rsk' ? 'rsk' : (window.SJ_SUB = window.SJ_SUB || (['inv', 'cert'].includes(new URLSearchParams(location.search).get('sub')) ? new URLSearchParams(location.search).get('sub') : '')) || 'pms';   /* 재고·구매(inv)·증서·검사(cert)는 계획정비와 같은 묶음·같은 자료 */
   const SUBN = () => ({ pms: T('계획정비', 'Maintenance'), rsk: T('위험성 관리', 'Risk'), inv: T('재고·구매', 'Stores & purchasing'), cert: T('증서·검사', 'Certificates & surveys') })[SUB];
   const BG = new URLSearchParams(location.search).has('bg'); C.bg = BG;   /* 앱 홈이 요약만 만들려고 보이지 않게 연 창 */
 
@@ -491,6 +491,9 @@ html body .sjx-hid,html body header.top #nav>button.sjx-hid,html body #nav butto
         const first = vn === 'ptwList' ? 'printPtwLog' : vn === 'mocList' ? 'printMoCReg' : 'printRegShip'; R.sort((a, b) => (b[0] === first) - (a[0] === first));
         R.forEach(([fn, l]) => { if (!items.some(x => x[0] === l) && typeof A[fn] === 'function') items.push([l, () => A[fn]({}, null, null)]); }); }
       if (!items.length) return; const sp = ph.querySelector(':scope>.sp'), pri = ph.querySelector('.btn.p, .btn.big, .sjh-btn') || (sp && sp.nextElementSibling && sp.nextElementSibling.matches('.btn') ? sp.nextElementSibling : null); prtNode(ph, pri, items); },
+    /* 엑셀·PDF 라이브러리: 도구에 넣지 않고 앱 공용 파일(../lib)을 필요할 때만 불러옴 — 계획정비와 같이 씀, 업데이트 때 다시 받지 않음 */
+    libs() { try { needLib = async k => { const ld = n => new Promise((ok, no) => { if (document.querySelector(`script[data-sjlib="${n}"]`)) return ok(); const sc = document.createElement('script'); sc.src = '../lib/' + n; sc.dataset.sjlib = n; sc.onload = ok; sc.onerror = () => { sc.remove(); no(new Error(T('엑셀·PDF 기능을 불러오지 못했습니다 — 인터넷에 연결된 상태에서 한 번 열면 그 뒤로는 인터넷 없이도 됩니다', 'Could not load the Excel/PDF library — open once while online'))); }; document.head.appendChild(sc); });
+        if (k === 'xlsx' && !window.XLSX) await ld('xlsx.full.min.js'); if (k === 'pdf' && !window.pdfjsLib) { await ld('pdf.worker.min.js'); await ld('pdf.min.js'); } }; } catch (e) { console.warn('libs', e); } },
     hookRender() { if (!BG) { try { const s0 = save; save = function () { dvBump('rsk'); return s0.apply(this, arguments); }; } catch (e) { } }
       const r0 = render; render = function () { const v = C.get('view') || '', off = DB.settings.site === 'office', K = ['ras', 'ptws', 'mocs', 'rirs'], keep = {};
         if (off && v) K.forEach(k => { keep[k] = DB[k] || []; DB[k] = keep[k].filter(x => x.vessel === v); });   /* 사무실: 고른 선박만 보이게 (그리는 동안만) */
@@ -513,6 +516,7 @@ html body .sjx-hid,html body header.top #nav>button.sjx-hid,html body #nav butto
     if (C.restoring) setTimeout(() => { try { if (window.SJCLOUD && SJCLOUD.A) SJCLOUD.sync(SJCLOUD.A, true); } catch (e) { } }, 6000);
     if (X === RSK && /^#settings/.test(location.hash)) { try { A.go({ v: 'settings' }); } catch (e) { } }
     if (X === RSK) { try { RSK.approvals(); } catch (e) { console.warn('apv', e); } }
+    if (X === RSK) RSK.libs();
     X.hookRender(); try { render(); } catch (e) { } C.booted = 1;
     C.ensureBar(); setInterval(C.ensureBar, 1000); setInterval(U.syncPaint, 20e3); setTimeout(C.ready, 150);
     U.onView = v => { try { X.view(v); } catch (e) { } railRefresh(); };
