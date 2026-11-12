@@ -542,5 +542,48 @@ html body .sjx-hid,html body header.top #nav>button.sjx-hid,html body #nav butto
     const q = BG ? null : new URLSearchParams(location.search).get('go'); if (q) { setTimeout(() => { try { const o = JSON.parse(q); if (o.view && typeof MODE !== 'undefined' && MODE === 'admin' && OFFICE.ships[o.view]) { OFFICE.sel = o.view; } if (o.hash) location.hash = o.hash; if (o.attrs) setTimeout(() => fire(o.attrs), 300); } catch (e) { } history.replaceState(null, '', location.pathname + location.hash); }, 900); }
     addEventListener('storage', e => { if (/^sejul_common_(vessel|role|lang|company|pcname)$/.test(e.key || '')) { try { X.apply(); } catch (er) { } railRefresh(); } });
     addEventListener('pageshow', () => { try { X.apply(); } catch (er) { } railRefresh(); }); };
+  /* ===== 휴대폰 간단 화면 — 현장 기록 (작업 실시 완료 · 예비품 사용 · 대기 측정 · 서명) =====
+     작성·편집·출력·첨부는 PC·태블릿에서 (sjphone.css 가 해당 단추를 숨김). 여기는 휴대폰에서 고르기 쉬운 목록 창만 만듦 */
+  const PH = (() => { let box = null, st = null;
+    const ready = () => TOOL === 'pms' ? (typeof cur === 'function' && cur()) : (typeof DB !== 'undefined' && DB && DB.ras);
+    const wait = (f, n = 0) => { if (ready()) return f(); if (n > 60) return; setTimeout(() => wait(f, n + 1), 400); };
+    function sheet(o) { st = o; if (!box) { box = document.createElement('div'); box.className = 'sjph'; document.body.appendChild(box);
+        box.addEventListener('click', e => { if (e.target.closest('[data-phx]')) return close(); const f = e.target.closest('[data-phf]'); if (f) { st.f = f.dataset.phf; return paint(); }
+          const r = e.target.closest('[data-phi]'); if (r) { const id = r.dataset.phi; box.hidden = true; try { st.pick(id); } catch (er) { console.warn(er); } reopen(); } });
+        box.addEventListener('input', e => { if (e.target.matches('[data-phq]')) { st.q = e.target.value; paintList(); } }); }
+      st.f = st.f || (st.filters ? st.filters[0][0] : ''); st.q = '';
+      box.innerHTML = `<div class="sjph-h"><b>${st.title}</b><button type="button" data-phx aria-label="${T('닫기', 'Close')}">✕</button></div><div class="sjph-s">${st.search ? `<input type="search" data-phq placeholder="${st.search}" autocomplete="off">` : ''}${st.filters ? `<div class="sjph-f"></div>` : ''}${st.note ? `<small style="color:var(--sj-tx3,#6B7588)">${st.note}</small>` : ''}</div><div class="sjph-l" role="list"></div>`;
+      box.hidden = false; paint(); }
+    function paint() { const f = box.querySelector('.sjph-f'); if (f) f.innerHTML = st.filters.map(([k, l]) => `<button type="button" data-phf="${k}" class="${st.f === k ? 'on' : ''}">${l}</button>`).join(''); paintList(); }
+    function paintList() { let L = []; try { L = st.items(st.f, (st.q || '').trim().toLowerCase()); } catch (e) { console.warn(e); }
+      box.querySelector('.sjph-l').innerHTML = L.length ? L.slice(0, 200).map(x => `<button type="button" class="sjph-r" role="listitem" data-phi="${U.esc(x.id)}"><span class="tx"><b>${U.esc(x.t)}</b>${x.s ? `<small>${U.esc(x.s)}</small>` : ''}</span>${x.bd ? `<span class="bd ${x.bc || 'n'}">${U.esc(x.bd)}</span>` : ''}${U.ic('nx', 18)}</button>`).join('') + (L.length > 200 ? `<div class="sjph-e">${T('200건까지 보입니다 — 검색으로 좁히세요', 'First 200 shown — narrow with search')}</div>` : '')
+        : `<div class="sjph-e">${st.empty || T('해당 항목이 없습니다', 'Nothing here')}</div>`; }
+    /* 고른 뒤 열린 입력 창이 닫히면 목록으로 돌아옴 (방금 기록한 것은 목록에서 빠짐) */
+    function reopen() { if (st.stay === false) return; let n = 0; const iv = setInterval(() => { n++; const open = [...document.querySelectorAll('#mback .modal,.modal-bg .modal,.sgpanel-bg,.sjd:not([hidden])')].some(m => m.offsetParent || (m.style && m.style.display === 'flex'));
+        if (!open && n > 2) { clearInterval(iv); if (box && st) { box.hidden = false; paintList(); } } if (n > 1500) clearInterval(iv); }, 400); }
+    function close() { if (box) box.hidden = true; st = null; }
+    const has = (q, ...a) => !q || a.some(v => String(v || '').toLowerCase().includes(q));
+    const A = {
+      done() { const db = cur(), T0 = today(); sheet({ title: T('작업 실시 완료', 'Record a job'), search: T('장비·작업·코드 검색', 'Search equipment / job / code'), note: T('작업을 누르면 실시일·실시자·비고를 입력합니다', 'Tap a job to enter date, who and remarks'),
+        filters: [['due', T('기한 초과·7일', 'Overdue · 7 days')], ['d30', T('30일 이내', '≤30 days')], ['all', T('전체', 'All')]],
+        items: (f, q) => calcAll(cur()).filter(x => x.s && x.s.due && (f === 'all' || (f === 'due' ? x.s.days <= 7 : x.s.days <= 30)) && has(q, x.j.code, x.j.desc, x.j.mach)).sort((a, b) => (a.s.due < b.s.due ? -1 : 1))
+          .map(x => ({ id: x.j.code, t: x.j.desc, s: (x.j.mach || '') + ' · ' + x.j.code + ' · ' + T('기한', 'due') + ' ' + x.s.due, bd: x.s.days < 0 ? T('초과', 'over') + ' ' + (-x.s.days) + T('일', 'd') : x.s.days <= 7 ? x.s.days + T('일', 'd') : x.s.days + T('일', 'd'), bc: x.s.days < 0 ? 'od' : x.s.days <= 7 ? 'd7' : 'n' })),
+        empty: T('기한이 다가온 작업이 없습니다 ✓', 'Nothing due ✓'), pick: c => doneDialog([c]) }); },
+      use() { sheet({ title: T('예비품 사용 (재고 빼기)', 'Use spares'), search: T('품명·부품번호·장비 검색', 'Search name / part no. / equipment'), note: T('품목을 누르고 사용 수량을 입력합니다', 'Tap an item and enter the quantity used'),
+        items: (f, q) => { const db = cur(), rob = robMap(db); return SPS(db).items.filter(x => !x.del && (rob[x.id] || 0) > 0 && has(q, x.name, x.pno, x.eq, x.maker)).map(x => ({ id: x.id, t: x.name, s: [x.pno, x.eq].filter(Boolean).join(' · '), bd: 'ROB ' + (rob[x.id] || 0) + (x.unit ? ' ' + x.unit : ''), bc: (rob[x.id] || 0) < (x.min || 0) ? 'od' : 'ok' })).slice(0, 400); },
+        empty: T('검색어를 바꿔 보세요 (재고 0인 품목은 빠짐)', 'Try another search (items with 0 stock are hidden)'), pick: id => spTxForm(id, 'use') }); },
+      gas() { sheet({ title: T('대기 측정 기록 (작업허가)', 'Gas reading (permit)'), note: T('작업 중인 작업허가서를 누르면 측정 칸으로 갑니다', 'Tap an active permit to go to the readings'),
+        items: () => DB.ptws.filter(p => ptwStatus(p)[0] === 'act' && Array.isArray(p.gas)).map(p => ({ id: p.id, t: p.desc || p.title || p.no || 'PTW', s: [p.no, p.loc].filter(Boolean).join(' · '), bd: ptwStatus(p)[1], bc: 'ok' })),
+        empty: T('대기 측정이 필요한 작업 중 허가서가 없습니다', 'No active permit needs readings'), stay: false,
+        pick: id => { go({ name: 'ptw', id }); setTimeout(() => { const b = document.querySelector('[data-a=esGasAdd]') || document.querySelector('.al.err'); if (b) { b.scrollIntoView({ block: 'center' }); b.classList.add('sjph-hl'); } }, 500); } }); },
+      sign() { const need = (doc, slots) => slots.some(x => x.name && !x.wait && !sigOK(doc, x.key, x.name));
+        const L = [...DB.ras.filter(r => raStatus(r)[0] !== 'closed' && need(r, raSigSlots(r))).map(r => ['ra', r]), ...DB.ptws.filter(p => ptwStatus(p)[0] !== 'closed' && need(p, ptwSigSlots(p))).map(p => ['ptw', p])];
+        sheet({ title: T('서명하기', 'Sign'), note: T('서명할 칸이 남은 문서입니다 — 누르면 서명 창이 열립니다 (손가락으로 서명)', 'Documents with unsigned slots — tap to sign with your finger'),
+          items: () => L.filter(([k, d]) => k === 'ra' ? need(d, raSigSlots(d)) : need(d, ptwSigSlots(d))).map(([k, d]) => ({ id: k + ':' + d.id, t: (k === 'ra' ? T('위험성 평가', 'RA') + ' · ' + (d.title || '') : T('작업허가', 'Permit') + ' · ' + (d.desc || d.no || '')), s: (k === 'ra' ? raStatus(d) : ptwStatus(d))[1], bd: T('서명 필요', 'to sign'), bc: 'd7' })),
+          empty: T('서명할 문서가 없습니다 ✓', 'Nothing to sign ✓'), pick: id => { const [k, i] = id.split(':'); sigPanel([[k, i]]); } }); } };
+    document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-sjm]'); if (!b) return; e.preventDefault(); const k = b.dataset.sjm; if (A[k]) wait(() => A[k]()); }, true);
+    return { A, close }; })();
+  /* 휴대폰 간단 화면 안내 (도구마다 한 번) */
+  try { if (U.phone && U.phone() && !BG && !/[?&]go=/.test(location.search)) { const k = 'sejul_ph_tip_' + SUB; if (!sessionStorage.getItem(k)) { sessionStorage.setItem(k, '1'); setTimeout(() => { try { U.toast ? U.toast(T('휴대폰 간단 화면 — 보기·실시 입력·재고 사용·서명·승인. 작성·편집·출력은 PC·태블릿에서', 'Phone view — view, record, use stock, sign, approve. Writing & printing on PC / tablet')) : 0; } catch (e) { } }, 2500); } } } catch (e) { }
   if (document.readyState === 'complete') setTimeout(boot, 50); else addEventListener('load', () => setTimeout(boot, 50));
 })();
