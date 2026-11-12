@@ -1,6 +1,6 @@
 /* SEJUL 앱 서비스 워커 — 앱 파일을 PC에 보관해 인터넷 없이 실행, 인터넷이 되면 새 버전을 받아 둠 (데이터는 다루지 않음) */
-const CACHE = 'sejul-2026.11.12.1625';
-const FILES = ['./', './index.html', './common.js', './ui.js', './cloud.js', './shell.js', './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-maskable.png', './apple-touch-icon.png', './favicon.png', './logo.svg', './fonts/Pretendard-Regular.subset.woff2', './fonts/Pretendard-Bold.subset.woff2', './tools/pms.html', './tools/rsk.html'];
+const CACHE = 'sejul-2026.11.13.0822';
+const FILES = ['./', './index.html', './common.js', './ui.js', './cloud.js', './shell.js', './manifest.webmanifest', './sj2-icon-192.png', './sj2-icon-512.png', './sj2-icon-maskable.png', './sj2-apple-touch-icon.png', './sj2-favicon.png', './logo.svg', './fonts/Pretendard-Regular.subset.woff2', './fonts/Pretendard-Bold.subset.woff2', './tools/pms.html', './tools/rsk.html'];
 /* 새 버전 받기: files.json(파일별 지문)을 보고 바뀐 파일만 내려받음 — 그대로인 파일은 이전 보관함에서 복사 (위성 통신량 절약) */
 self.addEventListener('install', e => e.waitUntil((async () => { const c = await caches.open(CACHE);
   let man = null; try { man = await (await fetch('./files.json?t=' + Date.now(), { cache: 'no-store' })).json(); } catch (x) { }
@@ -17,6 +17,6 @@ self.addEventListener('fetch', e => { const r = e.request; if (r.method !== 'GET
 
 /* 알림(푸시) 받기 → 화면에 표시, 누르면 해당 화면 열기 */
 self.addEventListener('push', e => { let d = {}; try { d = e.data ? e.data.json() : {}; } catch (_) { d = { body: e.data && e.data.text() }; }
-  e.waitUntil(self.registration.showNotification(d.title || 'SEJUL', { body: d.body || '', tag: d.tag || undefined, renotify: !!d.tag, icon: 'icon-192.png', badge: 'favicon.png', data: { url: d.url || 'index.html' } })); });
+  e.waitUntil(self.registration.showNotification(d.title || 'SEJUL', { body: d.body || '', tag: d.tag || undefined, renotify: !!d.tag, icon: 'sj2-icon-192.png', badge: 'sj2-favicon.png', data: { url: d.url || 'index.html' } })); });
 self.addEventListener('notificationclick', e => { e.notification.close(); const url = new URL((e.notification.data && e.notification.data.url) || 'index.html', self.registration.scope).href;
   e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(cs => { for (const c of cs) { if (c.url.startsWith(self.registration.scope) && 'focus' in c) { c.navigate(url).catch(() => {}); return c.focus(); } } return self.clients.openWindow(url); })); });

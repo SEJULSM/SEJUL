@@ -457,9 +457,9 @@ html.sj-railmin .sjr .sj-vtg{display:none}html.sj-railmin .sjr .sj-flr{margin-to
     document.querySelectorAll('.sjm-sy .sj-d').forEach(d => { d.className = 'sj-d ' + c; d.parentNode.title = t; });
     el.querySelector('.sj-d').className = 'sj-d ' + c; el.querySelector('.sj-t').textContent = t; el.title = s.err ? s.err : ''; };
   /* 업데이트 표시 (왼쪽 메뉴) */
-  U.updPaint = function (msg) { document.querySelectorAll('.sjm-up').forEach(x => x.hidden = !C.updHas); const a = document.querySelector('.sjr [data-sjupd]'); if (!a) return; const has = !!C.updHas; a.classList.toggle('has', has); const sm = a.querySelector('small'); if (sm) sm.textContent = has ? U.T('⬆ 새 버전 — 눌러서 업데이트', '⬆ New version — tap to update') : (msg || U.T('업데이트 확인', 'Check for updates')); };
+  U.updPaint = function (msg) { const H = !!(C.updHas || C.updAvail); document.querySelectorAll('.sjm-up').forEach(x => x.hidden = !H); const a = document.querySelector('.sjr [data-sjupd]'); if (!a) return; const has = H; a.classList.toggle('has', has); const sm = a.querySelector('small'); if (sm) sm.textContent = has ? U.T('⬆ 새 버전 — 눌러서 업데이트', '⬆ New version — tap to update') : (msg || U.T('업데이트 확인', 'Check for updates')); };
   document.addEventListener('click', async e => { const a = e.target.closest && e.target.closest('[data-sjupd]'); if (!a) return; e.preventDefault();
-    if (C.updHas && C.updNow && await C.updNow()) return; U.updPaint(U.T('확인 중…', 'Checking…')); const r = C.updCheck ? await C.updCheck() : 'none';
+    if ((C.updHas || C.updAvail) && C.updNow && await C.updNow()) return; U.updPaint(U.T('확인 중…', 'Checking…')); const r = C.updCheck ? await C.updCheck() : 'none'; if (r === 'has' && C.updNow) return C.updNow();
     U.updPaint(r === 'latest' ? U.T('최신 버전입니다 ✓', 'Up to date ✓') : r === 'offline' ? U.T('오프라인 — 나중에 다시', 'Offline — try later') : r === 'has' ? '' : U.T('업데이트 확인', 'Check for updates')); });
   /* 선박 고르기 시트 열고 닫기 (좁은 화면) */
   document.addEventListener('click', e => { const a = e.target.closest && e.target.closest('[data-sjsheet]'); if (!a) return; e.preventDefault(); const sh = document.querySelector('.sjs.sjves'); if (sh) sh.hidden = !sh.hidden; });

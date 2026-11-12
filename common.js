@@ -3,7 +3,7 @@
    도구 코드는 그대로 두고 저장 키만 연결하므로, 도구를 따로(HTML 파일) 써도 동작은 같음. */
 (function () {
   const C = window.SJAPP = window.SJAPP || {};
-  C.ver = '2026.11.12.1625';
+  C.ver = '2026.11.13.0822';
   C.inApp = true;
   /* 도구별 키 ↔ 공통 키 */
   const MAP = {
@@ -42,7 +42,7 @@
   C.homeBtn = function () { if (document.getElementById('sjAppHome')) return; const a = document.createElement('a'); a.id = 'sjAppHome'; a.href = '../index.html'; a.title = '앱 홈 · App home'; a.innerHTML = '<b>⌂</b><span>앱 홈</span>'; document.body.appendChild(a); };
   const css = `#sjAppHome{position:fixed;left:8px;bottom:84px;z-index:9998;display:flex;align-items:center;gap:4px;background:var(--sj-navy,#14244A);color:var(--sj-on,#FFFFFF);text-decoration:none;border-radius:20px;padding:6px 12px 6px 9px;font:600 13px/1 'Noto Sans KR',sans-serif;box-shadow:0 3px 10px #0004;opacity:.88}#sjAppHome:hover{opacity:1}#sjAppHome b{font-size:16px;color:var(--sj-amb-fg,#8A6400)}#sjAppHome .cl{font-style:normal;font-size:12px}
   @media (max-width:760px){#sjAppHome{left:auto;right:8px;top:6px;bottom:auto;padding:5px 9px;font-size:0}#sjAppHome b{font-size:16px}}
-  #sjUpd{position:fixed;left:0;right:0;top:0;z-index:10000;background:var(--sj-amb,#E0A100);color:var(--sj-tx,#1A2233);padding:10px 18px;font:14.5px 'Noto Sans KR','Malgun Gothic',sans-serif;box-shadow:0 2px 10px #0003;display:flex;gap:14px;align-items:center;justify-content:center;flex-wrap:wrap}#sjUpd button{background:var(--sj-navy,#14244A);color:var(--sj-on,#FFFFFF);border:0;border-radius:8px;padding:7px 16px;font-weight:700;cursor:pointer;font:inherit;font-weight:700}html.sj-hasupd body{padding-top:46px!important}html.sj-hasupd #top.sj-top,html.sj-hasupd .sjr{top:46px!important}`;
+  #sjUpd{position:fixed;left:0;right:0;top:0;z-index:10000;min-height:46px;box-sizing:border-box;background:var(--sj-amb-bg,#FFF6D6);border-bottom:2px solid var(--sj-amb,#E0A100);color:var(--sj-tx,#1A2233);padding:6px 16px;font:14px 'Pretendard','Noto Sans KR','Malgun Gothic',sans-serif;box-shadow:0 2px 10px #0002;display:flex;gap:10px 14px;align-items:center;justify-content:center;flex-wrap:wrap;animation:sjUpdIn .25s ease-out}#sjUpd .ic{display:inline-flex;width:28px;height:28px;border-radius:50%;background:var(--sj-amb,#E0A100);color:var(--sj-on,#FFFFFF);align-items:center;justify-content:center}#sjUpd small{color:var(--sj-tx2,#4A5568);font-size:12px}#sjUpd button{background:var(--sj-blu,#1F64B8);color:var(--sj-on,#FFFFFF);border:0;border-radius:8px;padding:8px 18px;cursor:pointer;font:inherit;font-weight:700;min-height:36px}#sjUpd button:disabled{opacity:.75;cursor:progress}@keyframes sjUpdIn{from{transform:translateY(-100%)}to{transform:none}}html.sj-hasupd .sjm{top:46px!important}@media (max-width:760px){#sjUpd small{display:none}#sjUpd{min-height:46px}}html.sj-hasupd body{padding-top:46px!important}html.sj-hasupd #top.sj-top,html.sj-hasupd .sjr{top:46px!important}`;
   const st = document.createElement('style'); st.textContent = css; (document.head || document.documentElement).appendChild(st);
   /* 6) 새 버전 알림 (서비스 워커) */
   C.updHas = false;
@@ -52,10 +52,26 @@
   C.updSafe = function () { const a = document.activeElement; if (a && a.matches && a.matches('input:not([type=button]):not([type=checkbox]):not([type=radio]),textarea,select,[contenteditable=true]')) return false;
     if ([...document.querySelectorAll('.modal,#modal,dialog[open],.sjs:not([hidden]),.sjq:not([hidden]),#mback .modal')].some(m => m.offsetParent || (m.getClientRects && m.getClientRects().length))) return false;
     return document.visibilityState !== 'visible' || Date.now() - fresh < 30000 || Date.now() - lastAct > 8000; };
-  C.updBar = function () { if (!C.updHas || document.getElementById('sjUpd') || !document.body || window.top !== window) return; const en = (C.get('lang') || 'ko') === 'en', d = document.createElement('div'); d.id = 'sjUpd'; d.setAttribute('role', 'status');
-    d.innerHTML = '<b>⬆ ' + (en ? 'A new version is ready — it will update automatically when you pause.' : '새 버전이 있습니다 — 작업이 멈추면 자동으로 업데이트됩니다.') + '</b><button type="button">' + (en ? 'Update now' : '지금 업데이트') + '</button>';
-    d.querySelector('button').onclick = () => C.updNow(); document.body.appendChild(d); document.documentElement.classList.add('sj-hasupd'); };
-  C.updNow = async function () { try { const reg = await navigator.serviceWorker.getRegistration(); if (reg && reg.waiting) { try { sessionStorage.setItem('sejul_upd_done', '1'); } catch (e) { } reg.waiting.postMessage('skip'); return true; } } catch (e) { } return false; };
+  /* 새 버전 안내 띠 (위쪽) — 서버에 새 버전이 보이면 바로 띄움. [지금 업데이트] = 즉시 적용 (받는 중이면 다 받은 뒤 바로) */
+  C.updBar = function () { if (!(C.updHas || C.updAvail) || !document.body || window.top !== window) return; const en = (C.get('lang') || 'ko') === 'en'; let d = document.getElementById('sjUpd');
+    if (!d) { d = document.createElement('div'); d.id = 'sjUpd'; d.setAttribute('role', 'alert'); document.body.appendChild(d); document.documentElement.classList.add('sj-hasupd'); }
+    if (C.updBusy) return; const v = C.updNew ? ' (v' + C.updNew + ')' : '';
+    d.innerHTML = '<span class="ic">' + '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></span><b>' + (en ? 'A new version is available' + v : '새 버전이 있습니다' + v) + '</b><small>' + (en ? 'Save your work, then update. (If you don\'t, it updates by itself when you pause.)' : '입력 중인 내용을 저장한 뒤 누르세요. (누르지 않으면 작업을 멈췄을 때 자동 업데이트)') + '</small><button type="button">' + (en ? 'Update now' : '지금 업데이트') + '</button>';
+    d.querySelector('button').onclick = () => C.updNow(); };
+  C.updMsg = function (t) { const b = document.querySelector('#sjUpd button'); if (b) { b.disabled = true; b.textContent = t; } const sm = document.querySelector('#sjUpd small'); if (sm) sm.textContent = ''; };
+  /* 지금 업데이트: ① 받아 둔 새 버전이 있으면 바로 적용 ② 아직이면 받는 즉시 적용 ③ 그래도 안 되면(서버 연결 확인된 경우만) 보관 파일을 비우고 새로 불러옴. 데이터(작업·기록)는 그대로 */
+  C.updNow = async function () { if (C.updBusy) return true; C.updBusy = true; C.updForce = true; const en = (C.get('lang') || 'ko') === 'en';
+    try { sessionStorage.setItem('sejul_upd_done', '1'); } catch (e) { }
+    C.updMsg(en ? 'Updating…' : '업데이트 중…');
+    let done = false; const fb = async () => { if (done) return; done = true;
+      try { if (await C.updNewer() === true) { for (const k of (await caches.keys()).filter(k => k.startsWith('sejul-'))) await caches.delete(k); const r = await navigator.serviceWorker.getRegistration(); if (r) await r.unregister(); } } catch (e) { }
+      location.reload(); };
+    try { if (!('serviceWorker' in navigator)) { location.reload(); return true; } const reg = await navigator.serviceWorker.getRegistration(); if (!reg) { location.reload(); return true; }
+      if (!reg.waiting) { C.updMsg(en ? 'Downloading…' : '새 버전 받는 중…'); try { await reg.update(); } catch (e) { }
+        const t0 = Date.now(); while (!reg.waiting && Date.now() - t0 < 40000) await new Promise(r => setTimeout(r, 400)); }
+      if (reg.waiting) { C.updMsg(en ? 'Applying…' : '적용 중…'); reg.waiting.postMessage('skip'); setTimeout(fb, 8000); return true; }
+    } catch (e) { }
+    fb(); return true; };
   C.updCheck = async function () { try { const reg = await navigator.serviceWorker.getRegistration(); if (!reg) return 'none'; if (reg.waiting && await C.updNewer() === true) { C.updFound(); return 'has'; } if (await C.updNewer() === false) return 'latest'; await reg.update(); await new Promise(r => setTimeout(r, 1800)); if (reg.waiting || reg.installing) { C.updFound(); return 'has'; } return 'latest'; } catch (e) { return 'offline'; } };
   /* 새 버전을 받으면: 안내 띠 + 안전한 때(입력·팝업 없음, 15초 조작 없음 또는 앱이 뒤로 갔을 때) 자동 적용 */
   let autoT = null;
@@ -71,12 +87,12 @@
       /* 새 버전 확인: version.json(캐시 안 거침)과 지금 버전을 비교 → 다르면 새 앱 파일을 받아 두고(reg.update) 안전할 때 자동 적용 */
       /* 최신 버전이면 아무것도 하지 않음 — 서버 버전이 더 높을 때만 새 파일을 받음(reg.update) */
       const chk = async () => { if (window.top !== window || navigator.onLine === false || C.bg || C.updHas) return;
-          if (await C.updNewer() !== true) return; if (window.SJUI && SJUI.updPaint) SJUI.updPaint();
+          if (await C.updNewer() !== true) return; C.updAvail = true; C.updBar(); if (window.SJUI && SJUI.updPaint) SJUI.updPaint();
           if (reg.waiting && navigator.serviceWorker.controller) return C.updFound(); reg.update().catch(() => { }); setTimeout(() => { if (!C.updHas) reg.update().catch(() => { }); }, 20e3); };
-      setTimeout(chk, 1500); setTimeout(chk, 20e3); setInterval(chk, 60e3);   /* 켤 때 · 3분마다 · 앱으로 돌아올 때 · 인터넷이 다시 연결될 때 — 찾으면 안전한 때 자동 적용 */
+      setTimeout(chk, 1500); setTimeout(chk, 15e3); setInterval(chk, 30e3);   /* 켤 때 · 3분마다 · 앱으로 돌아올 때 · 인터넷이 다시 연결될 때 — 찾으면 안전한 때 자동 적용 */
       document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') chk(); }); addEventListener('online', chk); addEventListener('focus', chk); addEventListener('pageshow', chk); }).catch(() => { });
     /* 다른 창이 업데이트를 적용하면: 이 창도 안전할 때 새로 고침 (입력 중이면 기다림) */
-    let rl = false; navigator.serviceWorker.addEventListener('controllerchange', () => { if (rl) return; rl = true; const go = () => { if (window.top !== window || C.updSafe() || document.visibilityState !== 'visible') location.reload(); else setTimeout(go, 3000); }; go(); });
+    let rl = false; navigator.serviceWorker.addEventListener('controllerchange', () => { if (rl) return; rl = true; const go = () => { if (C.updForce || window.top !== window || C.updSafe() || document.visibilityState !== 'visible') location.reload(); else setTimeout(go, 3000); }; go(); });
     /* 업데이트 직후 한 번 알림 */
     try { if (sessionStorage.getItem('sejul_upd_done') && window.top === window) { sessionStorage.removeItem('sejul_upd_done'); const show = () => { if (!document.body) return setTimeout(show, 300); const t = document.createElement('div'); t.id = 'sjUpdOk'; t.textContent = ((C.get('lang') || 'ko') === 'en' ? '✅ Updated to v' : '✅ 최신 버전으로 업데이트되었습니다 — v') + C.ver; t.style.cssText = 'position:fixed;left:50%;bottom:90px;transform:translateX(-50%);z-index:10001;background:var(--sj-navy,#14244A);color:var(--sj-on,#FFFFFF);padding:10px 18px;border-radius:12px;font:600 14px "Noto Sans KR",sans-serif;box-shadow:0 6px 20px #0004'; document.body.appendChild(t); setTimeout(() => t.remove(), 5000); }; setTimeout(show, 800); } } catch (e) { } };
   /* 도구 페이지: 불러온 뒤 연결 */
