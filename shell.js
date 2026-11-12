@@ -10,7 +10,8 @@
   const CO0 = { dpaName: 'Noh You Seok', dpaPhone: '+82-10-6588-7959', dpaEmail: 'nohys@sejulsm.com', sqEmail: 'sjsm@sejulsm.com' };
   C.company = () => { let o = {}; try { o = JSON.parse(C.get('company') || '{}') || {}; } catch (e) { } Object.keys(CO0).forEach(k => { if (!o[k]) o[k] = CO0[k]; }); return o; };
   C.mode = () => U.role() === 'office' && U.officeOK() ? 'office' : 'ship';
-  const TOOL = /rsk\.html/.test(location.pathname) ? 'rsk' : 'pms';
+  const TOOL = /rsk\.html/.test(location.pathname) ? 'rsk' : 'pms', SUB = TOOL === 'rsk' ? 'rsk' : (window.SJ_SUB || 'pms');   /* 재고·구매(inv)·증서·검사(cert)는 계획정비와 같은 묶음·같은 자료 */
+  const SUBN = () => ({ pms: T('계획정비', 'Maintenance'), rsk: T('위험성 관리', 'Risk'), inv: T('재고·구매', 'Stores & purchasing'), cert: T('증서·검사', 'Certificates & surveys') })[SUB];
   const BG = new URLSearchParams(location.search).has('bg'); C.bg = BG;   /* 앱 홈이 요약만 만들려고 보이지 않게 연 창 */
 
   /* ---------- 디자인 ---------- */
@@ -19,8 +20,8 @@
 :root{--bg:var(--sjx-bg)!important;--sj-bg:var(--sjx-bg)!important;--line:var(--sjx-line);--sj-line:var(--sjx-line)}
 body{background:var(--sjx-bg)!important;font-family:'Pretendard','Noto Sans KR','Malgun Gothic','Apple SD Gothic Neo',system-ui,sans-serif!important}
 @media (min-width:900px){
- body{padding-left:248px!important}
- #top.sj-top,#sjFoot{left:248px!important}
+ body{padding-left:var(--sjr-w,248px)!important}
+ #top.sj-top,#sjFoot{left:var(--sjr-w,248px)!important}
  #top .sjbar,header.top .bar{background:#FFFFFF!important;color:var(--sjx-ink)!important;box-shadow:none!important;border-bottom:0!important;min-height:64px!important;padding-left:28px!important;padding-right:28px!important}
  #top .sjbar .logo,header.top .bar .logo{color:var(--sjx-ink)!important;font-size:21px!important;font-weight:800!important}
  #top .sjbar .logo .en{color:var(--sjx-mut)!important;font-size:13px!important;font-weight:500!important}
@@ -154,42 +155,18 @@ html body #top .sj-nav>button[data-go=help],html body #top .sj-nav>button[data-g
 html body .sjx-hid,html body header.top #nav>button.sjx-hid,html body #nav button.sjx-hid{display:none!important}
 /* 상세 보기 규칙: 한 화면으로 끝나는 것(작업·장비·결함 상세) = 오른쪽 서랍 / 단계가 있는 문서(위험성 평가·PTW·MoC) = 전체 페이지 — 머리 모양은 같게 */
 #drawer .dh{padding:16px 20px 12px!important;border-bottom:1px solid #E3E7EF!important;background:#fff!important}#drawer .dh>div>div[style*='font-size:18px']{font-size:20px!important;font-weight:800!important;color:#14244A;line-height:1.35}#drawer .dh .x{font-size:22px!important;color:#5B6474!important}#drawer .df{background:#F7F8FA!important;border-top:1px solid #E3E7EF!important;padding:12px 20px!important}
-.sjx-dbtn{display:inline-flex;align-items:center;gap:4px;margin-left:10px;vertical-align:middle;border:1px solid #D7DEEA;background:#fff;color:#5B6474;border-radius:999px;padding:2px 10px 2px 7px;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer}.sjx-dbtn:hover,.sjx-dbtn.on{color:#2F6FD6;border-color:#9CB8EA;background:#F2F6FF}.sjx-desc{margin:-4px 0 10px;padding:10px 14px;border-radius:10px;background:#F4F7FC;border:1px solid #E1E8F5;font-size:13.5px;color:#4B5563}.sjx-desc>*{margin:0!important}.sjx-desc[hidden]{display:none!important}
-/* ===== 상태 표시 한 벌 — 두 도구 공통: 모양 = 둥근 알약 + 점, 색 = 대기(호박) · 진행(파랑) · 승인·정상(초록) · 반려·초과·중지(빨강) · 종결·작성 중(회색) · 연기(보라) ===== */
-:is(#main,#drawer,#mback,#modal,.sjh) :is(.badge.b-od,.badge.b-d7,.badge.b-d30,.badge.b-ok,.badge.b-nd,.badge.b-def,.badge.b-pp,.badge.b-act,.badge.b-chk,.badge.b-new,.badge.b-off,.badge.b-low,.st){display:inline-flex!important;align-items:center;gap:5px;border-radius:999px!important;padding:2px 10px!important;font-size:12px!important;font-weight:800!important;line-height:1.6!important;border:0!important;white-space:nowrap}
-:is(#main,#drawer,#mback,#modal,.sjh) :is(.badge.b-od,.badge.b-d7,.badge.b-d30,.badge.b-ok,.badge.b-nd,.badge.b-def,.badge.b-pp,.badge.b-act,.badge.b-chk,.badge.b-new,.badge.b-off,.badge.b-low,.st):before{content:'';width:7px;height:7px;border-radius:50%;background:currentColor;opacity:.85;flex:none}
-:is(#main,#drawer,#mback,#modal,.sjh) :is(.badge.b-od,.badge.b-def,.badge.b-low,.st.stop){background:#FDE7E7!important;color:#B42318!important}
-:is(#main,#drawer,#mback,#modal,.sjh) :is(.badge.b-d7,.badge.b-chk,.st.wait){background:#FFF3D1!important;color:#8A6200!important}
-:is(#main,#drawer,#mback,#modal,.sjh) .badge.b-d30{background:#FBF5DD!important;color:#7A6514!important}
-:is(#main,#drawer,#mback,#modal,.sjh) :is(.badge.b-ok,.badge.b-new,.st.ok){background:#E3F5EA!important;color:#1E7F4E!important}
-:is(#main,#drawer,#mback,#modal,.sjh) :is(.badge.b-act,.st.act,.st.def){background:#E6F0FF!important;color:#1D4FA8!important}
-:is(#main,#drawer,#mback,#modal,.sjh) :is(.badge.b-nd,.badge.b-off,.st.draft,.st.closed){background:#EEF1F6!important;color:#4B5563!important}
-:is(#main,#drawer,#mback,#modal,.sjh) .badge.b-pp{background:#F1E9FF!important;color:#6B3FC7!important}
-:is(#main,#drawer,#mback,#modal) .badge.b-cri{background:#14244A!important;color:#fff!important;border-radius:6px!important;font-size:11px!important;letter-spacing:.03em}
-:is(#main,#drawer,#mback,#modal) :is(.badge.sev-A,.badge.sev-B,.badge.sev-C){border-radius:6px!important}
-.seg button[data-v="draft"]{--c:#9AA4B2!important}.seg button[data-v="wait"]{--c:#E0A100!important;--f:#fff}.seg button[data-v="ok"],.seg button[data-v="ra"]{--c:#2FA36B!important}.seg button[data-v="stop"]{--c:#E5484D!important}.seg button[data-v="closed"]{--c:#6B7280!important}.seg button[data-v="act"],.seg button[data-v="rep"]{--c:#3B7BE0!important}.seg button[data-v="open"]{--c:#8B5CF6!important}
-.sjei{display:inline-flex;vertical-align:-3px;margin-right:6px;flex:none}
-.sjei svg,.sjx-prt svg{stroke-width:2.3}.sjx-prt svg{color:#2F6FD6}
-button:not(.on)>.sjtb-ic.k-home{color:#1B2F5B}button:not(.on)>.sjtb-ic.k-jobs,button:not(.on)>.sjtb-ic.k-due{color:#2F6FD6}button:not(.on)>.sjtb-ic.k-ck{color:#1E9E55}button:not(.on)>.sjtb-ic.k-defects{color:#E0661B}button:not(.on)>.sjtb-ic.k-spares{color:#9C5BD8}
-button:not(.on)>.sjtb-ic.k-raList{color:#2F6FD6}button:not(.on)>.sjtb-ic.k-ptwList{color:#E0661B}button:not(.on)>.sjtb-ic.k-mocList{color:#0E8A7E}button:not(.on)>.sjtb-ic.k-rirList{color:#D93025}button:not(.on)>.sjtb-ic.k-register{color:#5B6B8C}button:not(.on)>.sjtb-ic.k-dpa{color:#1E9E55}
-.sjei-print,.sjei-clip,.sjei-file,.sjei-book,.sjei-fold,.sjei-tree,.sjei-chart,.sjei-pc,.sjei-link{color:#2F6FD6}.sjei-imp,.sjei-dn{color:#0E8A7E}.sjei-exp,.sjei-up,.sjei-send{color:#7C4DDB}
-.sjei-edit,.sjei-cal,.sjei-clk,.sjei-hour{color:#C26A00}.sjei-ok{color:#1E9E55}.sjei-warn,.sjei-fire{color:#E0661B}.sjei-ban,.sjei-del,.sjei-x{color:#D93025}.sjei-star{color:#E8A400}.sjei-star svg{fill:#FFD54F}
-.sjei-wr,.sjei-gear,.sjei-key,.sjei-lab{color:#5B6B8C}.sjei-box,.sjei-pill{color:#9C5BD8}.sjei-srch,.sjei-info,.sjei-bulb{color:#2F6FD6}.sjei-lock{color:#8A6200}.sjei-ship,.sjei-bld,.sjei-bank,.sjei-home,.sjei-user{color:#1B2F5B}.sjei-shld{color:#D93025}.sjei-ref,.sjei-undo{color:#0E8A7E}.sjei-bell{color:#E0A100}.sjei-tgt{color:#D93025}.sjei-cam,.sjei-att,.sjei-save{color:#5B6B8C}.sjei-tel,.sjei-chat,.sjei-ant,.sjei-mob{color:#0E8A7E}.sjei-zap{color:#E0A100}.sjei-law,.sjei-cmp,.sjei-door,.sjei-lad,.sjei-drum,.sjei-img,.sjei-left,.sjei-swap,.sjei-unlk{color:#5B6B8C}.sjei-pin,.sjei-med{color:#D93025}.sjei-help{color:#2F6FD6}.sjei-truck{color:#7C4DDB}.sjei-drop{color:#2F6FD6}.sjei-pause{color:#7C4DDB}
-.on>.sjei,.pri>.sjei,.btn.p>.sjei,.btn.pri>.sjei,.btn.grn>.sjei,.btn.danger>.sjei,.btn.r>.sjei,[class*=" on"]>.sjei,.sel>.sjei,button.on .sjei{color:inherit!important}.on>.sjei svg,.pri>.sjei svg,.btn.p>.sjei svg{fill:none!important}.sjei svg{width:1.05em;height:1.05em;min-width:15px;min-height:15px}
-h1 .sjei svg,h2 .sjei svg{width:.95em;height:.95em}
-.badge .sjei,.tag .sjei,.chip .sjei{margin-right:3px}.badge .sjei svg,.tag .sjei svg{min-width:12px;min-height:12px;width:.95em;height:.95em}
-.sjen{font-size:.8em;font-weight:400;color:#7A8499;margin-left:3px}.en{font-weight:400}#main .regtabs .en,#main .prto .en{color:#7A8499}
-.sjx-prt{display:inline-flex!important;align-items:center;gap:6px}.sjx-prt>summary{display:inline-flex!important;align-items:center;gap:6px}.sjx-prt svg{flex:none}
-details.sjx-prt .sjx-ddm{left:auto;right:0}
-@media (min-width:900px){html body .modal-bg{left:248px!important;width:auto!important;right:0!important}html body .modal-bg .modal{max-width:calc(100vw - 290px)!important}}
-@media (min-width:900px){html body #mback{left:248px!important;width:auto!important;right:0!important}html body #mback .modal{max-width:calc(100vw - 290px)!important}}
+
+
+
+@media (min-width:900px){html body .modal-bg{left:var(--sjr-w,248px)!important;width:auto!important;right:0!important}html body .modal-bg .modal{max-width:calc(100vw - var(--sjr-w,248px) - 42px)!important}}
+@media (min-width:900px){html body #mback{left:var(--sjr-w,248px)!important;width:auto!important;right:0!important}html body #mback .modal{max-width:calc(100vw - var(--sjr-w,248px) - 42px)!important}}
 `;
   const st = document.createElement('style'); st.textContent = css; (document.head || document.documentElement).appendChild(st);
   /* 도구가 앱 설정(선박·사무실)을 적용할 때까지 내용 숨김 — 예전 모양·다른 선박이 잠깐 보이는 것 방지 */
   const wait = document.createElement('style'); wait.id = 'sjxWait'; wait.textContent = 'body>*:not(.sjr):not(.sjmob){visibility:hidden!important}body{background:#F3F4F6!important}'; (document.head || document.documentElement).appendChild(wait);
   /* 불러오는 동안 보이는 화면 (빈 화면 대신) */
-  if (!BG) { const l = document.createElement('div'); l.id = 'sjxLoad'; const nm = TOOL === 'pms' ? T('계획정비', 'Maintenance') : T('위험성 관리', 'Risk');
-    l.innerHTML = `<style>#sjxLoad{position:fixed;inset:0;z-index:890;background:#F3F4F6;display:flex;align-items:center;justify-content:center;font-family:'Pretendard','Noto Sans KR','Malgun Gothic',system-ui,sans-serif}@media (min-width:900px){#sjxLoad{left:248px}}@media (max-width:899px){#sjxLoad{top:54px;bottom:66px}}#sjxLoad .b{text-align:center;color:#1B2F5B}#sjxLoad i{display:block;width:44px;height:44px;margin:0 auto 16px;border-radius:50%;border:4px solid #D7DEEA;border-top-color:#1B2F5B;animation:sjxsp .8s linear infinite}#sjxLoad b{display:block;font-size:18px}#sjxLoad small{display:block;margin-top:6px;color:#5B6474;font-size:14px}@keyframes sjxsp{to{transform:rotate(360deg)}}</style><div class="b"><i></i><b>${nm} ${T('불러오는 중…', 'loading…')}</b><small>${T('처음 열 때는 몇 초 걸릴 수 있습니다', 'The first open can take a few seconds')}</small></div>`;
+  if (!BG) { const l = document.createElement('div'); l.id = 'sjxLoad'; const nm = SUBN();
+    l.innerHTML = `<style>#sjxLoad{position:fixed;inset:0;z-index:890;background:#F3F4F6;display:flex;align-items:center;justify-content:center;font-family:'Pretendard','Noto Sans KR','Malgun Gothic',system-ui,sans-serif}@media (min-width:900px){#sjxLoad{left:var(--sjr-w,248px)}}@media (max-width:899px){#sjxLoad{top:54px;bottom:66px}}#sjxLoad .b{text-align:center;color:#1B2F5B}#sjxLoad i{display:block;width:44px;height:44px;margin:0 auto 16px;border-radius:50%;border:4px solid #D7DEEA;border-top-color:#1B2F5B;animation:sjxsp .8s linear infinite}#sjxLoad b{display:block;font-size:18px}#sjxLoad small{display:block;margin-top:6px;color:#5B6474;font-size:14px}@keyframes sjxsp{to{transform:rotate(360deg)}}</style><div class="b"><i></i><b>${nm} ${T('불러오는 중…', 'loading…')}</b><small>${T('처음 열 때는 몇 초 걸릴 수 있습니다', 'The first open can take a few seconds')}</small></div>`;
     document.documentElement.appendChild(l); }
   C.ready = () => { const w = document.getElementById('sjxWait'); if (w) w.remove(); const l = document.getElementById('sjxLoad'); if (l) l.remove(); };
   /* 비상용: 도구가 끝내 준비되지 않을 때만 가림막을 걷음 (느린 휴대폰에서 예전 화면이 먼저 보이지 않도록 넉넉히) */
@@ -199,76 +176,30 @@ details.sjx-prt .sjx-ddm{left:auto;right:0}
 
   /* ---------- 왼쪽 메뉴 ---------- */
   C.ensureBar = function () {
-    let r = document.querySelector('.sjr'); if (!r) { document.querySelectorAll('.sjmob').forEach(x => x.remove()); const w = document.createElement('div'); w.innerHTML = U.rail(TOOL, '../'); [...w.children].forEach(x => document.body.appendChild(x)); U.syncPaint(); U.updPaint(); C.updBar && C.updBar(); }
+    let r = document.querySelector('.sjr'); if (!r) { document.querySelectorAll('.sjmob').forEach(x => x.remove()); const w = document.createElement('div'); w.innerHTML = U.rail(SUB, '../'); [...w.children].forEach(x => document.body.appendChild(x)); U.syncPaint(); U.updPaint(); C.updBar && C.updBar(); }
     const bar = document.querySelector('#top .sjbar, header.top .bar'); /* 휴대폰: 머리글에 ⌂ */
     if (bar && !bar.querySelector('.sjx-home')) { const a = document.createElement('a'); a.className = 'sjx-home'; a.href = '../index.html'; a.title = T('앱 홈', 'App home'); a.textContent = '⌂'; bar.insertBefore(a, bar.firstChild); } };
   /* 탭 줄 꾸미기 — 도구가 다시 그릴 때마다 */
   const TBI = { home: 'home', jobs: 'M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01', due: 'M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01', ck: 'M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11', defects: 'M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z', spares: 'M21 8 12 3 3 8v8l9 5 9-5zM3 8l9 5 9-5M12 13v8', fleet: 'bld',
     raList: 'M9 4h6v3H9zM7 5H5v16h14V5h-2M9 12h6M9 16h4', ptwList: 'M7 3h7l5 5v13H7zM14 3v5h5M10 14l2 2 4-4', mocList: 'M4 4v6h6M20 20v-6h-6M20 9A8 8 0 0 0 5.6 5.6L4 10M4 15a8 8 0 0 0 14.4 3.4L20 14', rirList: 'M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z', register: 'M4 4h12a4 4 0 0 1 4 4v12H8a4 4 0 0 1-4-4zM8 4v16', dpa: 'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6zM9 12l2 2 4-4' };
 
-  /* ---------- 디자인 통일: 이모지 → 선 아이콘 · 영어 보조 표기 작게 · 팝업 위치 ----------
-     버튼·제목·탭·표 머리·라벨 맨 앞의 이모지를 같은 굵기의 선 아이콘으로 (출력물·입력칸은 그대로) */
-  const EI = { print: 'M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v7H6z', imp: 'M12 3v12m-5-5 5 5 5-5M5 21h14', exp: 'M12 21V9m-5 5 5-5 5 5M5 3h14',
-    clip: 'M9 4h6v3H9zM8 5H6a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1h-2M9 12h6M9 16h4', edit: 'M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z', ok: 'M20 6 9 17l-5-5',
-    warn: 'M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0zM12 9v4M12 17h.01', ban: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM4.9 4.9l14.2 14.2', srch: 'M21 21l-4.3-4.3M11 18a7 7 0 1 1 0-14 7 7 0 0 1 0 14z',
-    cal: 'M3 6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM16 2v4M8 2v4M3 10h18', wr: 'M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.8-3.8a6 6 0 0 1-7.9 7.9l-6.9 6.9a2.1 2.1 0 0 1-3-3l6.9-6.9a6 6 0 0 1 7.9-7.9z',
-    star: 'M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z', box: 'M21 8 12 3 3 8v8l9 5 9-5zM3 8l9 5 9-5M12 13v8', fold: 'M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z',
-    file: 'M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9zM14 3v6h6', book: 'M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5zM4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5', lock: 'M5 11h14v10H5zM8 11V7a4 4 0 0 1 8 0v4',
-    ref: 'M21 12a9 9 0 1 1-2.6-6.4L21 8M21 3v5h-5', home: 'M3 11 12 3l9 8M5 10v10h14V10', user: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0', tree: 'M9 3h6v4H9zM3 17h6v4H3zM15 17h6v4h-6zM12 7v5M6 17v-3h12v3',
-    tgt: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8z', bank: 'M3 21h18M4 10h16M12 3 3 8h18zM6 10v8M10 10v8M14 10v8M18 10v8', hour: 'M6 2h12M6 22h12M7 2c0 6 10 6 10 10S7 16 7 22M17 2c0 6-10 6-10 10s10 4 10 10',
-    fire: 'M12 22c4 0 7-3 7-7 0-5-5-7-5-12-3 2-6 6-6 9-1-1-2-2-2-4-2 2-3 4-3 7 0 4 4 7 9 7z', plus: 'M12 5v14M5 12h14', del: 'M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6', send: 'M22 2 11 13M22 2l-7 20-4-9-9-4z',
-    chart: 'M3 3v18h18M7 16v-5M12 16V8M17 16v-8', save: 'M5 3h11l5 5v13H5zM8 3v5h8M8 21v-7h8v7', ship: 'M3 18c2 2 4 2 6 0 2 2 4 2 6 0 2 2 4 2 6 0M5 15l-2-5h18l-2 5M8 10V6h8v4M12 3v3', bld: 'M4 21V3h10v18M14 9h6v12M8 7h2M8 11h2M8 15h2',
-    undo: 'M9 14 4 9l5-5M4 9h11a5 5 0 0 1 0 10h-1', pause: 'M7 5h3v14H7zM14 5h3v14h-3z', cam: 'M3 8a2 2 0 0 1 2-2h2l2-2h6l2 2h2a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8z',
-    att: 'M21 11l-9 9a5 5 0 0 1-7-7l9-9a3.5 3.5 0 0 1 5 5l-9 9a2 2 0 0 1-3-3l8-8', bell: 'M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0', up: 'M12 19V5M5 12l7-7 7 7', dn: 'M12 5v14M5 12l7 7 7-7',
-    info: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 16v-4M12 8h.01', pill: 'M10.5 20.5a5 5 0 0 1-7-7l10-10a5 5 0 0 1 7 7zM8.5 8.5l7 7', bulb: 'M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z',
-    link: 'M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1', x: 'M18 6 6 18M6 6l12 12', lab: 'M9 3h6M10 3v6L4 20h16L14 9V3', shld: 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z',
-    pc: 'M3 4h18v12H3zM8 20h8M12 16v4', clk: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 6v6l4 2', key: 'M15 7a4 4 0 1 1-3.9 5H3v3h3v3h3v-3h2.1A4 4 0 0 1 15 7z', copy: 'M8 8h12v12H8zM4 16V4h12', gear: 'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM12 2v3M12 19v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1 7 17M17 7l2.1-2.1',
-    unlk: 'M5 11h14v10H5zM8 11V7a4 4 0 0 1 7.8-1.2', swap: 'M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5', tel: 'M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z',
-    chat: 'M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z', zap: 'M13 2 3 14h9l-1 8 10-12h-9z', ant: 'M5 12a7 7 0 0 1 14 0M8.5 12a3.5 3.5 0 0 1 7 0M12 12v9', law: 'M12 3v18M5 21h14M5 7h14M7 7l-3 7a3 3 0 0 0 6 0zM17 7l-3 7a3 3 0 0 0 6 0z',
-    pin: 'M12 17v5M9 3h6l-1 6 3 4H7l3-4z', help: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01', truck: 'M1 3h15v13H1zM16 8h4l3 3v5h-7M5.5 21a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM18.5 21a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z',
-    cmp: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM16 8l-2 6-6 2 2-6z', door: 'M4 21h16M6 21V3h12v18M14 12h.01', med: 'M10 3h4v7h7v4h-7v7h-4v-7H3v-4h7z', img: 'M3 3h18v18H3zM8.5 10a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM21 15l-5-5L5 21',
-    lad: 'M7 2v20M17 2v20M7 6h10M7 10h10M7 14h10M7 18h10', drum: 'M5 5c0-1.7 3.1-3 7-3s7 1.3 7 3v14c0 1.7-3.1 3-7 3s-7-1.3-7-3zM5 5c0 1.7 3.1 3 7 3s7-1.3 7-3M5 12c0 1.7 3.1 3 7 3s7-1.3 7-3', drop: 'M12 2s7 7.5 7 13a7 7 0 0 1-14 0c0-5.5 7-13 7-13z',
-    left: 'M19 12H5M12 19l-7-7 7-7', mob: 'M7 2h10v20H7zM11 18h2' };
-  const EM = { '🖨': 'print', '📥': 'imp', '📤': 'exp', '📋': 'clip', '📝': 'edit', '✏': 'edit', '✍': 'edit', '✅': 'ok', '✔': 'ok', '☑': 'ok', '⚠': 'warn', '⛔': 'ban', '🚫': 'ban', '🔎': 'srch', '🔍': 'srch', '📅': 'cal', '🗓': 'cal', '📆': 'cal',
-    '🔧': 'wr', '🛠': 'wr', '🔩': 'wr', '⭐': 'star', '📦': 'box', '🗂': 'fold', '📁': 'fold', '📂': 'fold', '📄': 'file', '🧾': 'file', '📃': 'file', '📑': 'file', '📚': 'book', '📒': 'book', '📖': 'book', '📘': 'book', '🔒': 'lock', '🔐': 'lock', '🔄': 'ref', '🔁': 'ref', '🏠': 'home',
-    '👤': 'user', '👷': 'user', '👥': 'user', '🌳': 'tree', '🎯': 'tgt', '🏛': 'bank', '⏳': 'hour', '⌛': 'hour', '🔥': 'fire', '➕': 'plus', '🗑': 'del', '📨': 'send', '✉': 'send', '📧': 'send', '📊': 'chart', '📈': 'chart', '💾': 'save', '🚢': 'ship', '⚓': 'ship', '🏢': 'bld',
-    '↩': 'undo', '↶': 'undo', '⏸': 'pause', '📷': 'cam', '📸': 'cam', '📎': 'att', '🔔': 'bell', '⬆': 'up', '⬇': 'dn', 'ℹ': 'info', '💊': 'pill', '💡': 'bulb', '🔗': 'link', '❌': 'x', '🧪': 'lab', '🛡': 'shld', '🧯': 'shld', '🛟': 'shld', '💻': 'pc', '⏱': 'clk', '🕒': 'clk', '⏰': 'clk', '🔑': 'key', '⚙': 'gear', '🔓': 'unlk', '🔀': 'swap', '📞': 'tel', '☎': 'tel', '💬': 'chat', '⚡': 'zap', '📡': 'ant', '📻': 'ant', '⚖': 'law', '📌': 'pin', '✖': 'x', '❓': 'help', '🔻': 'dn', '🦺': 'shld', '🕘': 'clk', '🚨': 'warn',
-    '🖥': 'pc', '🧽': 'wr', '🚚': 'truck', '👍': 'ok', '🧭': 'cmp', '🚪': 'door', '🚑': 'med', '♻': 'ref', '🖼': 'img', '🪜': 'lad', '🛢': 'drum', '💧': 'drop', '👈': 'left', '👆': 'up', '📱': 'mob' };
-  const EANY = new RegExp('(' + Object.keys(EM).sort((a, b) => b.length - a.length).map(k => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + ')\\uFE0F?', 'gu'), EQ = /\p{Extended_Pictographic}/u;
-  const ESKIP = '#mrpv,.sji,.sjq,.sjr,.sjmob,.sjd,script,style,textarea,[contenteditable],.sjei';
-  /* 화면 안의 모든 글자에서 이모지 → 같은 색 체계의 선 아이콘 (문장 중간·카드 그림 포함). 선택 상자(option)는 아이콘을 못 넣어 이모지만 지움 */
-  const deEmoji = root => { if (!root || root.nodeType !== 1 || (root.closest && root.closest(ESKIP))) return;
-    const tw = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, { acceptNode: n => EQ.test(n.data) && !(n.parentElement && n.parentElement.closest(ESKIP)) ? 1 : 2 }), L = []; let n; while ((n = tw.nextNode())) L.push(n);
-    for (const t of L) { const pe = t.parentElement; if (!pe) continue; EANY.lastIndex = 0;
-      if (pe.closest('option,select,title')) { t.data = t.data.replace(EANY, '').replace(/^\s+/, ''); continue; }
-      if (!EANY.test(t.data)) continue; EANY.lastIndex = 0; const frag = document.createDocumentFragment(); let last = 0, m;
-      while ((m = EANY.exec(t.data))) { if (m.index > last) frag.appendChild(document.createTextNode(t.data.slice(last, m.index))); const k = EM[m[1]], sp = document.createElement('span'); sp.className = 'sjei sjei-' + k; sp.setAttribute('aria-hidden', 'true'); sp.innerHTML = U.ic(EI[k], 16); frag.appendChild(sp); last = m.index + m[0].length; if (t.data[last] === ' ' && m.index === 0) last++; }
-      if (last < t.data.length) frag.appendChild(document.createTextNode(t.data.slice(last))); t.replaceWith(frag); }
-    root.querySelectorAll('input[placeholder],textarea[placeholder]').forEach(i => { if (EQ.test(i.placeholder)) i.placeholder = i.placeholder.replace(EANY, '').replace(/^\s+/, ''); }); };
-  const deLab = root => { if (!root || !root.querySelectorAll) return; root.querySelectorAll('label.f>span,.f>span:first-child,th').forEach(el => { if (el.closest('#mrpv')) return; const t = el.childNodes.length === 1 && el.firstChild.nodeType === 3 ? el.firstChild.data : null; const mm = t && /^(.*[가-힣].*?)\s+\/\s+([A-Za-z][^가-힣]*)$/.exec(t); if (mm) el.innerHTML = U.esc(mm[1]) + ' <small class="sjen">' + U.esc(mm[2]) + '</small>'; }); };
-  if (!BG) { let q = new Set(), raf = 0; const flush = () => { raf = 0; const L = [...q]; q.clear(); L.forEach(r => { if (r.isConnected) { try { deEmoji(r); deLab(r); } catch (e) { } } }); };
-    const mo = new MutationObserver(ms => { for (const m of ms) for (const n of m.addedNodes) { if (n.nodeType === 1) q.add(n); else if (n.nodeType === 3 && n.parentElement && EQ.test(n.data)) q.add(n.parentElement); } if (q.size && !raf) raf = requestAnimationFrame(flush); });
-    const st = () => { if (!document.body) return setTimeout(st, 50); mo.observe(document.body, { childList: true, subtree: true }); q.add(document.body); raf = requestAnimationFrame(flush); }; st(); }
-  /* 제목 아래 설명 문단 → 'ⓘ 자세히'로 접기 (처음 쓰는 사람은 펼쳐 보고, 매일 쓰는 사람은 공간 확보). 경고·주의는 접지 않음 */
-  const descFold = (head, ttl) => { if (!head || !ttl || head.dataset.sjdf) return; const L = []; let e = head.nextElementSibling;
-    while (e && L.length < 3) { if (e.matches('.sjx-pcnote,.sjx-mark,.sjx-desc')) { e = e.nextElementSibling; continue; } const txt = (e.textContent || '').trim(), plain = !e.querySelector('button,input,select,textarea,table,img,canvas,svg:not(.sjei svg),details') && !e.matches('.warn,.al,.banner,.err,.sjx-fc,.card,.steps,.regtabs,.dtl,h1,h2,h3,.sjx-desc');
-      if (!plain || !txt || !(e.matches('p,.hsub,.small,.sub,.info,.muted,.desc') || (e.tagName === 'DIV' && !e.children.length))) break; L.push(e); e = e.nextElementSibling; }
-    head.dataset.sjdf = 1; if (!L.length) return; let open = false; try { open = localStorage.getItem('sejul_desc_open') === '1'; } catch (x) { }
-    const box = document.createElement('div'); box.className = 'sjx-desc'; box.hidden = !open; head.after(box); L.forEach(x => box.appendChild(x));
-    const b = document.createElement('button'); b.type = 'button'; b.className = 'sjx-dbtn' + (open ? ' on' : ''); b.title = T('화면 설명 보기·접기', 'Show / hide description'); b.innerHTML = U.ic('M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 16v-4M12 8h.01', 15) + '<span>' + T('자세히', 'About') + '</span>';
-    b.onclick = () => { const o = box.hidden; box.hidden = !o; b.classList.toggle('on', o); try { localStorage.setItem('sejul_desc_open', o ? '1' : '0'); } catch (x) { } }; ttl.appendChild(b); };
-  /* 공통 출력 버튼: 1개면 바로, 여러 개면 펼침 목록 — 화면마다 같은 모양·같은 자리 */
-  const prtNode = (host, before, items) => { let el;
-    if (items.length === 1) { el = document.createElement('button'); el.type = 'button'; el.className = 'btn sjx-prt'; el.innerHTML = U.ic('M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v7H6z', 17) + '<span>' + T('출력', 'Print') + '</span>'; el.title = items[0][0]; el.onclick = e => { e.preventDefault(); items[0][1](); }; }
-    else { el = document.createElement('details'); el.className = 'sjx-dd sjx-prt'; el.innerHTML = `<summary class="btn">${U.ic('M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v7H6z', 17)}<span>${T('출력', 'Print')} ▾</span></summary><div class="sjx-ddm"><span class="sjx-ddh">${T('인쇄 · PDF로 저장', 'Print / save as PDF')}</span>${items.map((x, i) => `<button type="button" class="btn" data-i="${i}">${U.esc(x[0])}</button>`).join('')}</div>`;
-      el.querySelector('.sjx-ddm').addEventListener('click', e => { const b = e.target.closest('[data-i]'); if (!b) return; e.preventDefault(); el.open = false; items[+b.dataset.i][1](); }); }
-    if (!host.querySelector(':scope>.sp') && !host.classList.contains('sjx-act')) el.style.marginLeft = 'auto';
-    if (before && before.parentNode === host) host.insertBefore(el, before); else host.appendChild(el); return el; };
+  /* 공통 모양(아이콘·상태 색·설명 접기·출력 버튼)은 도구 원본의 공통 부품 apps/shared/sjlook.js — 여기서는 불러 쓰기만 */
+  const descFold = (...a) => window.SJLOOK && SJLOOK.descFold(...a), prtNode = (...a) => window.SJLOOK && SJLOOK.prtNode(...a);
+  /* 같은 기기에서 다른 창·미리 준비된 화면이 저장하면: 이 창이 가진 자료가 옛것 → 보이는 순간 새로 불러옴 (덮어쓰기 방지)
+     계획정비·재고·구매·증서·검사는 같은 자료(pms), 위험성 관리는 rsk */
+  const DVK = 'sejul_dv_' + TOOL, PAGE = Math.random().toString(36).slice(2, 8); let dvMine = '';
+  const dvGet = () => { try { return localStorage.getItem(DVK) || ''; } catch (e) { return ''; } };
+  const dvBump = t => { try { dvMine = Date.now() + ':' + PAGE; localStorage.setItem('sejul_dv_' + t, dvMine); } catch (e) { } };
+  const dv0 = dvGet(); let dvStale = false;
+  const dvCheck = () => { if (BG || document.hidden || document.prerendering) return; const cur = dvGet(); if (cur && cur !== dv0 && cur !== dvMine && !cur.endsWith(':' + PAGE)) { const a = document.activeElement; if (a && a.matches && a.matches('input,textarea,select') && a.value) { dvStale = true; return; } location.reload(); } };
+  if (!BG && !window.SJ_NODV) { document.addEventListener("visibilitychange", dvCheck); document.addEventListener('prerenderingchange', () => setTimeout(dvCheck, 0)); addEventListener('pageshow', e => { if (e.persisted) dvCheck(); }); addEventListener('storage', e => { if (e.key === DVK) setTimeout(dvCheck, 300); }); }
+  /* 사무실: 선박을 안 골랐을 때 — 모든 도구 같은 '선박 고르기' 카드 (선대 전체 처리는 승인함·앱 홈) */
+  const pickHTML = (sub, tone) => `<div class="sjx-empty"><h2>${T('선박을 고르세요', 'Choose a vessel')}</h2>${T(`사무실 기기는 선박을 하나 골라 그 선박의 ${SUBN()}을(를) 봅니다. 선대 전체 현황은 <a href="../index.html">앱 홈</a>, 결정·서명할 일은 🔔 승인함에 있습니다.`, 'Pick one vessel. The fleet overview is on the <a href="../index.html">app home</a>; approvals are in the inbox.')}<div class="sjx-pick">${U.VES.map(v => `<button data-sjpick="${U.esc(v)}" class="${tone ? tone(v) : ''}"><b>${U.esc(v)}</b><small>${sub(v)}</small></button>`).join('')}</div></div>`;
   const navDeco = () => { try { const pms = TOOL === 'pms', nav = document.querySelector(pms ? '#top .sj-nav' : 'header.top #nav'); if (!nav) return;
       const key = b => pms ? b.dataset.go : b.dataset.v, off = U.role() === 'office', v = off ? (C.get('view') || '') : (C.get('vessel') || '');
       const sp = (U.sum('pms') || {}).ships || {}, s = sp[v] || {}, r = ((U.sum('rsk') || {}).v || {})[v] || {};
       const CNT = pms ? { jobs: [s.od, ''], defects: [s.def, s.defA ? '' : 'y'], spares: [s.low, 'y'] } : { raList: [(r.wait || 0) + (r.stop || 0), r.stop ? '' : 'y'], ptwList: [r.act, 'b'], dpa: [r.wait, 'y'] };
-      if (!nav.querySelector('.sjtb-id')) nav.insertAdjacentHTML('afterbegin', `<span class="sjtb-id ${pms ? 'pms' : 'rsk'}"><i>${U.ic(pms ? 'pms' : 'rsk', 17)}</i>${pms ? T('계획정비', 'Maintenance') : T('위험성 관리', 'Risk')}</span>`);
+      if (!nav.querySelector('.sjtb-id')) nav.insertAdjacentHTML('afterbegin', `<span class="sjtb-id ${SUB}"><i>${U.ic((U.TOOLS().find(x => x[0] === SUB) || [])[2] || SUB, 17)}</i>${SUBN()}</span>`);
       const btns = [...nav.querySelectorAll(':scope>button, :scope>.sjtb-more .sjtb-mm>button')];
       /* 사무실 DPA·회사 승인 탭 → 승인함(🔔)과 공통 결정 창으로 대체 — 탭 숨김 */
       if (!pms && off) btns.forEach(b => { if (key(b) === 'dpa') b.classList.add('sjx-hid'); });
@@ -285,7 +216,7 @@ details.sjx-prt .sjx-ddm{left:auto;right:0}
     const bs = [...nav.querySelectorAll('button')].filter(b => !b.classList.contains('sjtb-all') && key(b) && getComputedStyle(b).display !== 'none');
     sh.innerHTML = `<div class="bg"></div><div class="pn"><h3>${TOOL === 'pms' ? T('계획정비', 'Maintenance') : T('위험성 관리', 'Risk')}<button type="button" aria-label="${T('닫기', 'Close')}">✕</button></h3>${bs.map((b, i) => `<button type="button" class="it ${b.classList.contains('on') ? 'on' : ''}" data-i="${i}">${b.innerHTML}</button>`).join('')}</div>`;
     sh.hidden = false; sh.onclick = e => { const it = e.target.closest('.it'); if (it) { sh.hidden = true; bs[+it.dataset.i].click(); return; } if (e.target.closest('.bg,h3 button')) sh.hidden = true; }; };
-  const railRefresh = () => { setTimeout(navDeco, 0); const open = document.querySelector('.sjs:not([hidden])'); document.querySelectorAll('.sjr,.sjmob').forEach(x => x.remove()); C.ensureBar(); if (open) { const sh = document.querySelector('.sjs'); if (sh) sh.hidden = false; } };
+  const railRefresh = () => { setTimeout(navDeco, 0); const open = document.querySelector('.sjs:not([hidden])'), oc = open && (open.classList.contains('sjmore') ? '.sjmore' : '.sjves'); document.querySelectorAll('.sjr,.sjmob').forEach(x => x.remove()); C.ensureBar(); if (oc) { const sh = document.querySelector('.sjs' + oc); if (sh) sh.hidden = false; } };
   const appCard = cls => `<div class="${cls} sjx-card"><span class="tx"><b>${T('앱 공통 설정', 'App settings')}</b><br>${T('기기 종류(선박/사무실)·선박·PC 이름·언어·회사 정보(DPA)·서버 동기화·백업 폴더는 앱 [설정]에서 한 번에 관리합니다. 이 화면에는 이 도구에만 필요한 설정만 있습니다.', 'Device type, vessel, PC name, language, company (DPA), sync and backup folder are managed once in app Settings. Only settings for this tool are here.')}</span><a href="../index.html#settings">${T('앱 설정 열기', 'Open app settings')}</a></div>`;
   const noData = (v, tool) => `<div class="sjx-empty"><h2>${U.esc(v)}</h2>${T(`아직 이 선박의 ${tool} 자료를 받지 못했습니다.<br>선박 기기가 앱에 등록되고 사무실이 [기기 승인]을 하면, 선박에서 입력한 자료가 자동으로 들어옵니다.`, `No ${tool} data from this vessel yet. It arrives once a ship device is registered and approved.`)}<div style="margin-top:14px"><a href="../index.html#devices" style="font-weight:700">${T('기기 승인 화면으로 →', 'Go to device approval →')}</a></div></div>`;
   document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-sjpick]'); if (!b) return; C.set('view', b.dataset.sjpick); if (U.onView) U.onView(b.dataset.sjpick); }, true);
@@ -306,6 +237,7 @@ details.sjx-prt .sjx-ddm{left:auto;right:0}
       try { FOLDER_ASKED = true; } catch (e) { } try { folderGate = function () { }; } catch (e) { } try { SPF.lim = 1e6; } catch (e) { }
       try { const sm = setupMissing9; setupMissing9 = () => sm().filter(x => !['fs', 'pc', 'vessel'].includes(x[0])); } catch (e) { }
       try { pmsFolderCard = () => appCard('sj-card'); } catch (e) { }
+      if (!BG) { try { const cm0 = commit; commit = function () { const r = cm0.apply(this, arguments); dvBump('pms'); return r; }; } catch (e) { } }   /* 사람이 고친 것만 (켤 때 정리 저장은 제외) */
       if (BG) { try { persist = function () { }; } catch (e) { } try { const k0 = KV.set; KV.set = function (k) { return /^(ship|office)$/.test(k) ? Promise.resolve() : k0.apply(this, arguments); }; } catch (e) { } }   /* 요약만 만드는 보이지 않는 창: 저장하지 않음 */
       /* 저장할 때마다 알림에 [↶ 되돌리기] (위쪽 실행 취소 단추 대신) */
       try { const c0 = commit; let lc = 0, lu = 0; ['pointerdown', 'keydown'].forEach(ev => document.addEventListener(ev, () => lu = Date.now(), true)); commit = function () { const r = c0.apply(this, arguments); if (Date.now() - lu < 4000) lc = Date.now(); setTimeout(() => { if (Date.now() - lc < 1500 && !document.querySelector('#toasts .toast')) toast(T('저장했습니다', 'Saved'), true); }, 120); return r; };
@@ -366,7 +298,7 @@ details.sjx-prt .sjx-ddm{left:auto;right:0}
       try { if (MODE === 'admin' && OFFICE.wiped) { OFFICE.wiped = false; if (typeof ensureVessels === 'function') ensureVessels(); KV.set('office', OFFICE); ['sejul_cloud_pms_seen', 'sejul_cloud_pms_pushed'].forEach(k => localStorage.removeItem(k)); setTimeout(() => { try { if (window.SJCLOUD && SJCLOUD.A) SJCLOUD.sync(SJCLOUD.A, true); } catch (e) { } }, 1500); setTimeout(() => { try { render(); } catch (e) { } }, 0); } } catch (e) { }
       try { const main = document.getElementById('main'); if (main) { main.querySelectorAll('select').forEach(sl => { const e = [...sl.options].filter(o => o.value === ''); if (e.length > 1) { const sel = sl.value === ''; e.slice(1).forEach(o => o.remove()); if (sel) sl.selectedIndex = [...sl.options].indexOf(e[0]); } });   /* 이름 없는 빈 선택 항목 정리 */ } } catch (e) { } try { PMS.group(); } catch (e) { } try { PMS.layout(); } catch (e) { console.warn('layout', e); } try { PMS.home(); } catch (e) { console.warn('home', e); } if (MODE !== 'admin') return; const main = document.getElementById('main'); if (!main) return; const view = C.get('view') || '';
       if (!view || route() === 'fleet') { const S = (U.sum('pms') || {}).ships || {};
-        main.innerHTML = `<div class="sjx-empty"><h2>${T('선박을 고르세요', 'Choose a vessel')}</h2>${T('사무실 기기는 선박을 하나 골라 그 선박의 계획정비를 봅니다 (왼쪽 위 [보는 선박]으로도 바꿉니다). 선대 전체 현황은 <a href="../index.html">앱 홈</a>에 있습니다.', 'Pick one vessel (or use Viewing at top left). The fleet overview is on the <a href="../index.html">app home</a>.')}<div class="sjx-pick">${U.VES.map(v => `<button data-sjpick="${U.esc(v)}"><b>${U.esc(v)}</b><small>${OFFICE.ships[v] ? (S[v] ? T(`기한 초과 ${S[v].od} · 미결 결함 ${S[v].def}`, `Overdue ${S[v].od} · defects ${S[v].def}`) : T('자료 있음', 'Has data')) : T('아직 받은 자료 없음', 'No data yet')}</small></button>`).join('')}</div></div>`; return; }
+        main.innerHTML = pickHTML(v => OFFICE.ships[v] ? (S[v] ? (SUB === 'inv' ? T(`재고 부족 ${S[v].low || 0} · 청구 ${(S[v].O || []).filter(x => x[0] === 'req').length}`, `Low ${S[v].low || 0}`) : SUB === 'cert' ? T(`선급 검사 할 일 ${(S[v].O || []).concat(S[v].S || []).filter(x => x[0] === 'cls').length}`, 'Surveys') : T(`기한 초과 ${S[v].od} · 미결 결함 ${S[v].def}`, `Overdue ${S[v].od} · defects ${S[v].def}`)) : T('자료 있음', 'Has data')) : T('아직 받은 자료 없음', 'No data yet'), v => S[v] && (SUB === 'pms' ? S[v].od : SUB === 'inv' ? S[v].low : 0) ? 'r' : ''); return; }
       if (!OFFICE.ships[view] && typeof newDB === 'function') { try { const nd = newDB(view); if (nd.master) nd.master.adminHash = OFFICE.adminHash; OFFICE.ships[view] = nd; OFFICE.sel = view; setTimeout(() => { try { render(); } catch (e) { } }, 0); } catch (e) { main.innerHTML = noData(view, T('계획정비', 'Maintenance')); } } },
     apply() { let ch = 0; const co = C.company();
       Object.entries(co).forEach(([k, v]) => { if (SJ.conf('pms')[k] !== v) SJ.confSet('pms', k, v); });
@@ -378,8 +310,10 @@ details.sjx-prt .sjx-ddm{left:auto;right:0}
         if (view && (/fleet/.test(location.hash) || !location.hash) && !/fleet/.test(new URLSearchParams(location.search).get('go') || '')) { location.hash = '#/home'; ch++; } }
       const v = C.get('vessel');
       if (want === 'ship' && v && SHIP && SHIP.ship.name !== v && typeof switchShip === 'function') setTimeout(() => switchShip(v, true), 50);
-      else if (want === 'ship' && v && !SHIP && ACT.v9pickVessel) { const b = document.createElement('button'); b.dataset.name = v; ACT.v9pickVessel(b);
-        setTimeout(() => { const m = document.querySelector('#mback .modal:last-child'), ok = m && m.querySelector('.mf button:last-child'); if (ok && /선박|vessel/i.test(m.textContent || '')) ok.click(); }, 60); }
+      else if (want === 'ship' && v && !SHIP && ACT.v9pickVessel) {   /* 저장된 자료를 다 읽기 전에 새 선박 자료를 만들면 기존 자료를 덮어씀 → 저장소를 먼저 확인 */
+        (async () => { try { if (KV.open && !KV.db) await KV.open(); const x = await KV.get('ship'); if (SHIP) return; if (x && x.ship && x.ship.name === v) { SHIP = x; render(); return; } } catch (e) { } if (SHIP) return;
+          const b = document.createElement('button'); b.dataset.name = v; ACT.v9pickVessel(b);
+          setTimeout(() => { const m = document.querySelector('#mback .modal:last-child'), ok = m && m.querySelector('.mf button:last-child'); if (SHIP) { if (m && m._close) m._close(); return; } if (ok && /선박|vessel/i.test(m.textContent || '')) ok.click(); }, 60); })(); }
       if (ch) render(); },
     view(v) { if (MODE !== 'admin') return; if (!v) { location.href = '../index.html'; return; } if (OFFICE.ships[v]) OFFICE.sel = v; location.hash = '#/home'; render(); },
     /* 계획정비 홈 — 앱 공통 홈 틀 (머리말 · 오늘 할 일 · 숫자 카드 · 처리할 일 · 빠른 작업 · 접어 둔 도구별 칸) */
@@ -557,10 +491,13 @@ details.sjx-prt .sjx-ddm{left:auto;right:0}
         const first = vn === 'ptwList' ? 'printPtwLog' : vn === 'mocList' ? 'printMoCReg' : 'printRegShip'; R.sort((a, b) => (b[0] === first) - (a[0] === first));
         R.forEach(([fn, l]) => { if (!items.some(x => x[0] === l) && typeof A[fn] === 'function') items.push([l, () => A[fn]({}, null, null)]); }); }
       if (!items.length) return; const sp = ph.querySelector(':scope>.sp'), pri = ph.querySelector('.btn.p, .btn.big, .sjh-btn') || (sp && sp.nextElementSibling && sp.nextElementSibling.matches('.btn') ? sp.nextElementSibling : null); prtNode(ph, pri, items); },
-    hookRender() { const r0 = render; render = function () { const v = C.get('view') || '', off = DB.settings.site === 'office', K = ['ras', 'ptws', 'mocs', 'rirs'], keep = {};
+    hookRender() { if (!BG) { try { const s0 = save; save = function () { dvBump('rsk'); return s0.apply(this, arguments); }; } catch (e) { } }
+      const r0 = render; render = function () { const v = C.get('view') || '', off = DB.settings.site === 'office', K = ['ras', 'ptws', 'mocs', 'rirs'], keep = {};
         if (off && v) K.forEach(k => { keep[k] = DB[k] || []; DB[k] = keep[k].filter(x => x.vessel === v); });   /* 사무실: 고른 선박만 보이게 (그리는 동안만) */
         let x; try { x = r0.apply(this, arguments); } finally { if (off && v) K.forEach(k => { const shown = DB[k]; DB[k] = keep[k].filter(y => y.vessel !== v || shown.includes(y)).concat(shown.filter(y => !keep[k].includes(y))); }); }
         try { if (off && v) { const h = document.querySelector('.page-h h2'); if (h && !h.querySelector('.sjv')) h.insertAdjacentHTML('beforeend', ` <span class="sjv" style="font-size:14px;color:#5B6474;font-weight:500">· ${U.esc(v)}</span>`); } } catch (e) { }
+        try { if (off && !v && ['home', 'raList', 'ptwList', 'mocList', 'rirList'].includes(VIEW.name)) { const sr = (U.sum('rsk') || {}).v || {}, m = document.getElementById('main');
+            if (m) { m.innerHTML = pickHTML(n => { const r = sr[n]; return r ? T(`승인 대기 ${r.wait || 0} · 작업 중 PTW ${r.act || 0} · 진행 MoC ${r.moc || 0}`, `Waiting ${r.wait || 0} · PTW ${r.act || 0} · MoC ${r.moc || 0}`) : T('아직 받은 자료 없음', 'No data yet'); }, n => (sr[n] || {}).wait ? 'y' : ''); const f = document.getElementById('foot'); if (f) f.innerHTML = ''; } } } catch (e) { console.warn('pick', e); }
         try { RSK.shipStep(); } catch (e) { }
         try { RSK.prtHead(); } catch (e) { console.warn('prt', e); }
         try { const ph = document.querySelector('#main>.page-h'); if (ph) descFold(ph, ph.querySelector('h2')); } catch (e) { }

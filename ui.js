@@ -29,7 +29,15 @@
   };
   U.ic = (k, s) => `<svg width="${s || 19}" height="${s || 19}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${P[k] || k}"/></svg>`;
   U.css = `
-.sjr{position:fixed;left:0;top:0;bottom:0;width:248px;z-index:900;box-sizing:border-box;background:#14244A;color:#E6EBF5;font-family:'Pretendard','Noto Sans KR','Malgun Gothic','Apple SD Gothic Neo',system-ui,sans-serif;display:flex;flex-direction:column;padding:16px 14px;gap:4px;overflow-y:auto}
+.sjr{position:fixed;left:0;top:0;bottom:0;width:var(--sjr-w);transition:width .15s;z-index:900;box-sizing:border-box;background:#14244A;color:#E6EBF5;font-family:'Pretendard','Noto Sans KR','Malgun Gothic','Apple SD Gothic Neo',system-ui,sans-serif;display:flex;flex-direction:column;padding:16px 14px;gap:4px;overflow-y:auto}
+:root{--sjr-w:248px}html.sj-railmin{--sjr-w:76px}
+.sjr .sj-lgr{display:flex;align-items:center;gap:4px}.sjr .sj-lgr .sj-lg{flex:1;min-width:0}.sjr .sj-srch{position:relative}.sjr .sj-min{flex:none;width:30px;height:30px;border-radius:8px;border:0;background:none;color:#8F9BB8;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-bottom:10px}.sjr .sj-min:hover{background:#22396C;color:#fff}
+.sjr .sj-ft .sj-it{min-height:40px}.sjr .sj-ftl{display:flex;align-items:center;gap:6px;background:#0F1D3D;border-radius:12px;padding:4px 6px 4px 4px}.sjr .sj-ftl .sj-sy{flex:1;min-width:0;background:none!important;padding:6px 8px!important}.sjr .sj-ftl .sj-sy .sj-t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12.5px}
+.sjr .sj-ftl .sj-up{flex:none;padding:4px 8px;border-radius:8px;min-height:0}.sjr .sj-ftl .sj-up .sj-ut span{font-size:11.5px;color:#8F9BB8}.sjr .sj-ftl .sj-up .sj-ut small{display:none}.sjr .sj-ftl .sj-up.has .sj-ut small{display:block;font-size:11px}.sjr .sj-ftl .sj-up:hover{background:#22396C}
+html.sj-railmin .sjr{padding:16px 10px}html.sj-railmin .sjr .sj-lg span,html.sj-railmin .sjr .sj-lt,html.sj-railmin .sjr .sj-srch span,html.sj-railmin .sjr .sj-srch kbd,html.sj-railmin .sjr .sj-vt,html.sj-railmin .sjr .sj-vl,html.sj-railmin .sjr .sj-hd span,html.sj-railmin .sjr .sj-ftl .sj-t,html.sj-railmin .sjr .sj-ftl .sj-up{display:none!important}
+html.sj-railmin .sjr .sj-lgr{flex-direction:column}html.sj-railmin .sjr .sj-min{transform:rotate(180deg);margin:0 0 8px}html.sj-railmin .sjr .sj-lg{padding:4px 0 6px;justify-content:center}html.sj-railmin .sjr .sj-it,html.sj-railmin .sjr .sj-srch{justify-content:center;padding:9px 0;gap:0}html.sj-railmin .sjr .sj-vb{justify-content:center;padding:8px 0}
+html.sj-railmin .sjr .sj-it .sj-bd,html.sj-railmin .sjr .sj-srch .sj-bd{position:absolute;top:3px;right:4px;padding:0 5px!important;font-size:10.5px!important;margin:0}html.sj-railmin .sjr .sj-hd{margin:8px 4px 2px}html.sj-railmin .sjr .sj-it.on::before{left:-10px}html.sj-railmin .sjr .sj-ftl{justify-content:center;padding:6px 0}html.sj-railmin .sjr .sj-ftl .sj-sy{flex:none;padding:6px!important}
+.sji-k.inv{background:#F1E9FF;color:#6B3FC7}
 .sjr *{box-sizing:border-box}.sjr [hidden]{display:none!important}.sjr a{text-decoration:none}
 .sjr .sj-lg{display:flex;align-items:center;gap:10px;padding:4px 8px 14px;color:#fff}.sjr .sj-lg i{width:36px;height:36px;border-radius:10px;background:#F2B705;color:#14244A;display:flex;align-items:center;justify-content:center;font:800 18px/1 inherit;font-style:normal}
 .sjr .sj-lg b{display:block;font-size:15.5px}.sjr .sj-lg small{display:block;font-size:11.5px;color:#8F9BB8;letter-spacing:.05em}
@@ -55,7 +63,7 @@
 @media (max-width:899px){.sjr{display:none!important}}
 @media print{.sjr,.sjmob,.sjq,.sji{display:none!important}}
 .sjd{position:fixed;inset:0;z-index:1500;font-family:'Pretendard','Noto Sans KR','Malgun Gothic','Apple SD Gothic Neo',system-ui,sans-serif;display:flex;align-items:center;justify-content:center}.sjd-bg{position:absolute;inset:0;background:rgba(10,20,40,.45)}
-@media (min-width:900px){.sjd{left:248px}}
+@media (min-width:900px){.sjd{left:var(--sjr-w)}}
 .sjd-p{position:relative;width:min(760px,96vw);max-height:92vh;background:#fff;border-radius:18px;box-shadow:0 24px 60px rgba(15,23,42,.35);display:flex;flex-direction:column;overflow:hidden}
 .sjd-h{padding:16px 22px 12px;border-bottom:1px solid #E3E7EF}.sjd-ct{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.sjd-h h2{margin:8px 0 0;font-size:20px;line-height:1.35;color:#14244A}.sjd-sub{font-size:13.5px;color:#5B6474;margin-top:4px}
 .sjd-k{font-size:12px;font-weight:800;border-radius:6px;padding:3px 8px;background:#E8EEF9;color:#2E6BD8}.sjd-k.rsk{background:#FBEFE3;color:#B8661C}.sjd-v{font-weight:800;color:#1B2F5B;font-size:13.5px}.sjd-no{font-size:13px;color:#5B6474;font-weight:600}
@@ -124,34 +132,42 @@
  .sjs-r .sj-dt{width:11px;height:11px;border-radius:50%;background:#B8C0CC;flex:none}.sjs-r .sj-dt.r{background:#F04438}.sjs-r .sj-dt.y{background:#F2B705}.sjs-r .sj-dt.g{background:#3CCB7F}.sjs-r .sj-dt.b{width:auto;height:auto;background:none;color:#2F5496;display:flex}
 }`;
   /* 왼쪽 메뉴 HTML. act = home|pms|rsk|devices|settings, base = 앱 홈 기준 경로 ('' 또는 '../') */
+  /* 도구 목록 (왼쪽 메뉴·휴대폰 탭·검색·알림이 같이 씀) — 재고·구매, 증서·검사는 계획정비와 같은 자료를 씀 */
+  U.TOOLS = () => [['pms', U.T('계획정비', 'Maintenance'), 'pms'], ['rsk', U.T('위험성 관리', 'Risk'), 'rsk'], ['inv', U.T('재고·구매', 'Stores & purchasing'), 'M21 8 12 3 3 8v8l9 5 9-5zM3 8l9 5 9-5M12 13v8'], ['cert', U.T('증서·검사', 'Certificates & surveys'), 'M12 15a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM9 14.5 8 22l4-2 4 2-1-7.5M5 3h14']];
+  U.toolOf = k => k === 'req' ? 'inv' : k === 'cls' || k === 'cal' ? 'cert' : 'pms';
+  U.toolBadges = function (off, v) { const sp = U.sum('pms'), sr = U.sum('rsk'), B = { pms: '', rsk: '', inv: '', cert: '' }, bd = (n, y) => n ? `<span class="sj-bd ${y ? 'y' : ''}">${n}</span>` : '';
+    if (sp && sp.ships) { const S = off ? Object.values(sp.ships) : [sp.ships[v] || {}], cnt = (L, f) => L.reduce((a, s) => a + (s[off ? 'O' : 'S'] || []).filter(f).length, 0);
+      B.pms = off ? bd(cnt(S, x => !['cls', 'req'].includes(x[0])), 1) : bd((S[0] || {}).od);
+      B.inv = off ? bd(cnt(S, x => x[0] === 'req'), 1) : bd((S[0] || {}).low, 1);
+      B.cert = bd(cnt(S, x => x[0] === 'cls'), 1); }
+    if (sr && sr.v) { const n = Object.entries(sr.v).filter(([k]) => off || k === v).reduce((a, [, s]) => a + (off ? s.wait : s.draft + s.wait + s.stop), 0); B.rsk = bd(n, 1); }
+    return B; };
+  /* 왼쪽 메뉴 (A안: 도구 → 선대 → 관리, 아래는 설정·동기화 한 줄 · [≪]로 아이콘만 남기기) */
   U.rail = function (act, base) { base = base || ''; const T = U.T, role = U.role(), off = role === 'office', v = C.get('vessel') || '', pc = C.get('pcname') || '', view = C.get('view') || '';
-    const sp = U.sum('pms'), sr = U.sum('rsk');
-    let bp = '', br = '';
-    if (sp && sp.ships){ if (off){ const n = Object.values(sp.ships).reduce((a, s) => a + (s.O || []).filter(x => x[0] !== 'cls').length, 0); bp = n ? `<span class="sj-bd y">${n}</span>` : ''; } else { const s = sp.ships[v]; bp = s && s.od ? `<span class="sj-bd">${s.od}</span>` : ''; } }
-    if (sr && sr.v){ const n = Object.entries(sr.v).filter(([k]) => off || k === v).reduce((a, [, s]) => a + (off ? s.wait : s.draft + s.wait + s.stop), 0); br = n ? `<span class="sj-bd y">${n}</span>` : ''; }
-    const it = (k, href, label, icon, extra, sub) => `<a class="sj-it ${act === k ? 'on' : ''}" href="${href}"><span class="sj-ii">${U.ic(icon)}</span><span class="sj-lt">${label}${sub ? `<small>${sub}</small>` : ''}</span>${extra || ''}</a>`;
-    const sec = t => `<div class="sj-hd">${t}</div>`;
-    /* 사무실: 선대 목록이 곧 선박 선택 (한 번 눌러 바로 그 선박) */
+    const sp = U.sum('pms'), sr = U.sum('rsk'), B = U.toolBadges(off, off ? view : v);
+    const it = (k, href, label, icon, extra, sub) => `<a class="sj-it ${act === k ? 'on' : ''}" href="${href}" title="${U.esc(label.replace(/<[^>]+>/g, ''))}"><span class="sj-ii">${U.ic(icon)}</span><span class="sj-lt">${label}${sub ? `<small>${sub}</small>` : ''}</span>${extra || ''}</a>`;
+    const sec = t => `<div class="sj-hd"><span>${t}</span></div>`;
     const fleet = () => { const ps = (sp && sp.ships) || {}, rs = (sr && sr.v) || {};
       const row = n => { const a = ps[n], r = rs[n]; const dc = !a || !a.n ? '' : a.od ? 'r' : a.d7 ? 'y' : 'g'; const k = (a ? (a.O || []).filter(x => x[0] !== 'cls').length : 0) + (r ? r.wait || 0 : 0);
-        return `<a class="sj-vs ${view === n ? (act === 'home' ? 'on' : act === 'pms' || act === 'rsk' ? 'cur' : '') : ''}" href="#" data-sjves="${U.esc(n)}" title="${U.esc(n)}"><span class="sj-dt ${dc}"></span><span class="sj-vn">${U.esc(n)}</span>${k ? `<span class="sj-bd y">${k}</span>` : ''}</a>`; };
-      return `${sec(T('선대', 'Fleet'))}<a class="sj-it sj-fl ${act === 'home' && !view ? 'on' : ''}" href="${base}index.html" data-sjves=""><span class="sj-ii">${U.ic('bld')}</span><span class="sj-lt">${T('선대 현황', 'Fleet overview')}<small>${T('전체 ' + U.VES.length + '척', 'All ' + U.VES.length + ' vessels')}</small></span></a><div class="sj-vl">${U.VES.map(row).join('')}</div>`; };
-    const vbox = off ? fleet()
-      : `<div class="sj-vb"><span class="sj-vi s">${U.ic('ship', 17)}</span><span class="sj-vt"><b>${v ? U.esc(v) : T('선박 미설정', 'No vessel')}</b><small>${T('선박 기기', 'Ship device')}${pc ? ' · ' + U.esc(pc) : ''}</small></span></div>`;
+        return `<a class="sj-vs ${view === n ? (act === 'home' ? 'on' : act !== 'devices' && act !== 'settings' ? 'cur' : '') : ''}" href="#" data-sjves="${U.esc(n)}" title="${U.esc(n)}"><span class="sj-dt ${dc}"></span><span class="sj-vn">${U.esc(n)}</span>${k ? `<span class="sj-bd y">${k}</span>` : ''}</a>`; };
+      return `${sec(T('선대', 'Fleet'))}<a class="sj-it sj-fl ${act === 'home' && !view ? 'on' : ''}" href="${base}index.html" data-sjves="" title="${T('선대 현황', 'Fleet overview')}"><span class="sj-ii">${U.ic('bld')}</span><span class="sj-lt">${T('선대 현황', 'Fleet overview')}<small>${T('전체 ' + U.VES.length + '척', 'All ' + U.VES.length + ' vessels')}</small></span></a><div class="sj-vl">${U.VES.map(row).join('')}</div>`; };
+    const vbox = off ? '' : `<div class="sj-vb" title="${U.esc(v)}"><span class="sj-vi s">${U.ic('ship', 17)}</span><span class="sj-vt"><b>${v ? U.esc(v) : T('선박 미설정', 'No vessel')}</b><small>${T('선박 기기', 'Ship device')}${pc ? ' · ' + U.esc(pc) : ''}</small></span></div>`;
     const tsub = off ? (view ? U.esc(view) : T('선박을 고르세요', 'Pick a vessel')) : '';
-    return `<nav class="sjr" aria-label="${T('도구 메뉴', 'Tools')}"><a class="sj-lg" href="${base}index.html"><i>S</i><span><b>${T('SEJUL 선박관리', 'SEJUL Fleet')}</b><small>FLEET APPS</small></span></a><button class="sj-srch" data-sjsearch type="button">${U.ic('M21 21l-4.3-4.3M11 18a7 7 0 1 1 0-14 7 7 0 0 1 0 14z', 17)}<span>${T('검색', 'Search')}</span><kbd>Ctrl K</kbd></button><button class="sj-srch sj-inb" data-sjinb type="button">${U.ic('M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0', 17)}<span>${T('알림함', 'Notifications')}</span><b class="sj-bd" data-sjinbn hidden></b></button>${vbox}
-      ${off ? '' : it('home', base + 'index.html', T('홈 · 오늘 할 일', 'Home · Today'), 'home')}
-      ${sec(T('도구', 'Tools'))}
-      ${it('pms', base + 'tools/pms.html', T('계획정비', 'Maintenance'), 'pms', bp, tsub)}
-      ${it('rsk', base + 'tools/rsk.html', T('위험성 관리', 'Risk'), 'rsk', br, tsub)}
-      ${off ? sec(T('관리', 'Admin')) + it('devices', base + 'index.html#devices', T('기기 승인', 'Devices'), 'dev', '<span class="sj-bd y" data-sjpend hidden></span>') : ''}
-      <div class="sj-soon"><span>${T('준비 중', 'Soon')}</span> ${T('화물 호환성 · SMS 서식', 'Cargo compat. · SMS forms')}</div>
-      <div class="sj-ft"><a class="sj-it sj-up" href="#" data-sjupd><span class="sj-ii">${U.ic('M21 12a9 9 0 1 1-2.6-6.4L21 8M21 3v5h-5')}</span><span class="sj-ut"><span>${T('앱 버전', 'App version')} v${U.esc(String(C.ver || '').replace(/^(\d{4})\.(\d\d)\.(\d\d)\.(\d\d)(\d\d)$/, '$1.$2.$3 $4:$5'))}</span><small>${T('업데이트 확인', 'Check for updates')}</small></span></a>${it('settings', base + 'index.html#settings', T('설정', 'Settings'), 'set')}<a class="sj-sy" id="sjSync" href="${base}index.html#settings/sync"><span class="sj-d"></span><span class="sj-t">${T('서버 동기화', 'Server sync')}</span></a></div></nav>` + U.mob(act, base, { off, v, view, sp, sr, bp, br }) + (setTimeout(() => U.inb && U.inb.paint(), 0), ''); };
+    const ver = U.esc(String(C.ver || '').replace(/^(\d{4})\.(\d\d)\.(\d\d)\.(\d\d)(\d\d)$/, '$2.$3 $4:$5'));
+    return `<nav class="sjr" aria-label="${T('도구 메뉴', 'Tools')}"><div class="sj-lgr"><a class="sj-lg" href="${base}index.html" title="${T('앱 홈', 'App home')}"><i>S</i><span><b>${T('SEJUL 선박관리', 'SEJUL Fleet')}</b><small>FLEET APPS</small></span></a><button type="button" class="sj-min" data-sjmin aria-label="${T('메뉴 접기·펴기', 'Collapse menu')}" title="${T('메뉴 접기·펴기', 'Collapse / expand')}">${U.ic('M11 17l-5-5 5-5M18 17l-5-5 5-5', 16)}</button></div>
+      <button class="sj-srch" data-sjsearch type="button" title="${T('검색', 'Search')} (Ctrl K)">${U.ic('M21 21l-4.3-4.3M11 18a7 7 0 1 1 0-14 7 7 0 0 1 0 14z', 17)}<span>${T('검색', 'Search')}</span><kbd>Ctrl K</kbd></button><button class="sj-srch sj-inb" data-sjinb type="button" title="${T('알림함', 'Inbox')}">${U.ic('M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0', 17)}<span>${T('알림함', 'Inbox')}</span><b class="sj-bd" data-sjinbn hidden></b></button>${vbox}
+      ${sec(T('도구', 'Tools'))}${off ? '' : it('home', base + 'index.html', T('홈 · 오늘 할 일', 'Home · Today'), 'home')}
+      ${U.TOOLS().map(([k, label, ic]) => it(k, base + 'tools/' + k + '.html', label, ic, B[k], tsub)).join('')}
+      ${off ? fleet() + sec(T('관리', 'Admin')) + it('devices', base + 'index.html#devices', T('기기 승인', 'Devices'), 'dev', '<span class="sj-bd y" data-sjpend hidden></span>') : ''}
+      <div class="sj-ft">${it('settings', base + 'index.html#settings', T('설정', 'Settings'), 'set')}<div class="sj-ftl"><a class="sj-sy" id="sjSync" href="${base}index.html#settings/sync"><span class="sj-d"></span><span class="sj-t">${T('서버 동기화', 'Server sync')}</span></a><a class="sj-up" href="#" data-sjupd title="${T('업데이트 확인', 'Check for updates')}"><span class="sj-ut"><span>v${ver}</span><small>${T('업데이트 확인', 'Check for updates')}</small></span></a></div></div></nav>` + U.mob(act, base, { off, v, view, sp, sr, B }) + (setTimeout(() => U.inb && U.inb.paint(), 0), ''); };
+  /* 메뉴 접기: 기기마다 기억 */
+  U.railMin = on => { try { if (on == null) on = localStorage.getItem('sejul_rail_min') === '1'; else localStorage.setItem('sejul_rail_min', on ? '1' : '0'); } catch (e) { } document.documentElement.classList.toggle('sj-railmin', !!on); };
+  U.railMin(); document.addEventListener('click', e => { if (e.target.closest && e.target.closest('[data-sjmin]')) { e.preventDefault(); U.railMin(!document.documentElement.classList.contains('sj-railmin')); } });
   /* ================= 공통 홈 틀 (앱 홈 · 계획정비 홈 · 위험성 관리 홈이 같이 씀) ================= */
   U.goHref = (base, tool, o) => (base || '') + 'tools/' + tool + '.html' + (o ? '?go=' + encodeURIComponent(JSON.stringify(o)) : '');
   /* 링크(href) 또는 도구 안 동작(data-*) — 도구 안 동작은 button으로 (주소가 #으로 바뀌지 않게) */
   const el = (o, cls, inner) => o.href ? `<a class="${cls}" href="${o.href}">${inner}</a>` : `<button type="button" class="${cls}" ${Object.entries(o.d || {}).map(([k, v]) => `data-${k}="${U.esc(v)}"`).join(' ')}>${inner}</button>`;
-  const tagL = () => ({ p: U.T('계획정비', 'PMS'), r: U.T('위험성', 'Risk'), c: U.T('선급', 'Class') });
+  const tagL = () => ({ p: U.T('계획정비', 'PMS'), r: U.T('위험성', 'Risk'), c: U.T('증서·검사', 'Surveys'), i: U.T('재고·구매', 'Stores') });
   U.H = {
     page: o => `<div class="sjh-hd"><div><small>${o.kicker || ''}</small><h1>${o.title}</h1></div><span class="sp"></span>${o.actions || ''}</div>`,
     btn: (label, o, pri) => el(o, 'sjh-btn ' + (pri ? 'pri' : ''), label),
@@ -170,9 +186,9 @@
     const s = sp && sp.ships && sp.ships[v];
     if (s) { if (s.od) out.push({ k: 'p', bar: 'r', due: ['r', T('초과', 'Overdue')], t: T(`기한 초과 작업 ${s.od}건`, `${s.od} overdue jobs`), sub: (s.cri ? T(`중요장비 ${s.cri}건 포함 · `, `${s.cri} critical · `) : '') + T(`장비 ${(s.E || {}).od || 0}대`, `${(s.E || {}).od || 0} equipment`), act: T('목록 보기', 'View'), href: g('pms', { attrs: { v9due: 'od' } }) });
       if (s.d7) out.push({ k: 'p', bar: 'y', due: ['y', T('7일 이내', '≤ 7 days')], t: T(`7일 안에 할 작업 ${s.d7}건`, `${s.d7} jobs due in 7 days`), sub: T(`장비 ${(s.E || {}).d7 || 0}대`, `${(s.E || {}).d7 || 0} equipment`), act: T('목록 보기', 'View'), href: g('pms', { attrs: { v9due: 'd7' } }) });
-      (s.S || []).forEach(([k, id, what, tx]) => out.push({ k: k === 'cls' ? 'c' : 'p', bar: k === 'cls' ? 'y' : '', due: ['g', ''], t: what, sub: tx, act: T('열기', 'Open'), href: g('pms', { attrs: { opsk: k, opsid: id } }) }));
+      (s.S || []).forEach(([k, id, what, tx]) => out.push({ k: k === 'cls' ? 'c' : k === 'req' ? 'i' : 'p', bar: k === 'cls' ? 'y' : '', due: ['g', ''], t: what, sub: tx, act: T('열기', 'Open'), href: g(U.toolOf(k), { attrs: { opsk: k, opsid: id } }) }));
       if (s.def) out.push({ k: 'p', bar: s.defA ? 'r' : '', due: ['g', ''], t: T(`미결 결함 ${s.def}건`, `${s.def} open defects`), sub: s.defA ? T(`A등급 ${s.defA}건`, `${s.defA} grade A`) : T('결함 보고 진행 중', 'In progress'), act: T('결함', 'Defects'), href: g('pms', { hash: '#/defects' }) });
-      if (s.low) out.push({ k: 'p', bar: '', due: ['g', '—'], t: T(`재고 부족 ${s.low}품목`, `${s.low} items below minimum`), sub: T('최소 재고 아래 — 청구서에 담기', 'Below minimum stock — add to a requisition'), act: T('청구서', 'Requisition'), href: g('pms', { hash: '#/spares' }) }); }
+      if (s.low) out.push({ k: 'p', bar: '', due: ['g', '—'], t: T(`재고 부족 ${s.low}품목`, `${s.low} items below minimum`), sub: T('최소 재고 아래 — 청구서에 담기', 'Below minimum stock — add to a requisition'), act: T('청구서', 'Requisition'), href: g('inv', { hash: '#/spares' }) }); }
     const r = sr && sr.v && sr.v[v];
     if (r) { const lab = { draft: T('작성 중 위험성 평가', 'Draft RA'), wait: T('DPA 승인 대기', 'Awaiting DPA'), stop: T('작업 중지 — 보완 필요', 'Stopped — revise'), mocw: T('MoC 회사 승인 대기', 'MoC awaiting approval') };
       (r.items || []).forEach(([k, id, tx]) => out.push({ k: 'r', bar: k === 'stop' ? 'r' : k === 'wait' || k === 'mocw' ? 'y' : '', due: ['g', ''], t: lab[k] || k, sub: tx, act: T('열기', 'Open'), href: g('rsk', { attrs: k === 'mocw' ? { a: 'open', k: 'moc', id } : { a: 'open', k: 'ra', id } }) }));
@@ -196,8 +212,8 @@
         (p.e || []).forEach(([id, n, sfi, mk]) => { if (hit(id, n, sfi, mk)) out.push({ g: 'e', v, t: n, s: `${sfi} · ${id}${mk ? ' · ' + mk : ''}`, tool: 'pms', o: { hash: '#/jobs', attrs: { sjfn: 'openEquip', arg: id } } }); });
         (p.j || []).forEach(([c, d, eq, pid]) => { if (hit(c, d, pid)) out.push({ g: 'j', v, t: d, s: `${pid || c} · ${eq || ''}`, tool: 'pms', o: { attrs: { sjfn: 'openJob', arg: c } } }); });
         (p.d || []).forEach(([id, no, t, cl]) => { if (hit(no, t)) out.push({ g: 'd', v, t: (no ? no + ' ' : '') + t, s: cl ? T('종결', 'Closed') : T('진행 중', 'Open'), tool: 'pms', o: { hash: '#/defects', attrs: { sjfn: 'openDefect', arg: id } } }); });
-        (p.s || []).forEach(([id, n, pno, im]) => { if (hit(n, pno, im)) out.push({ g: 's', v, t: n, s: [pno, im ? 'IMPA ' + im : ''].filter(Boolean).join(' · '), tool: 'pms', o: { hash: '#/spares', attrs: { act: 'spEdit', id } } }); });
-        (p.r || []).forEach(([id, no, it, st]) => { if (hit(no, it)) out.push({ g: 'q', v, t: no, s: it, tool: 'pms', o: { hash: '#/spares' } }); });
+        (p.s || []).forEach(([id, n, pno, im]) => { if (hit(n, pno, im)) out.push({ g: 's', v, t: n, s: [pno, im ? 'IMPA ' + im : ''].filter(Boolean).join(' · '), tool: 'inv', o: { hash: '#/spares', attrs: { act: 'spEdit', id } } }); });
+        (p.r || []).forEach(([id, no, it, st]) => { if (hit(no, it)) out.push({ g: 'q', v, t: no, s: it, tool: 'inv', o: { hash: '#/spares' } }); });
         r.forEach(([k, id, no, t]) => { if (hit(no, t, rskK[k])) out.push({ g: 'r', v, t: `${rskK[k]} ${no} ${t}`, s: '', tool: 'rsk', o: { attrs: { a: 'open', k, id } } }); }); });
       return out; }
     const GL = () => ({ e: U.T('장비', 'Equipment'), j: U.T('작업', 'Jobs'), d: U.T('결함', 'Defects'), s: U.T('인벤토리 품목', 'Inventory'), q: U.T('청구서', 'Requisitions'), r: U.T('위험성 관리', 'Risk') });
@@ -224,14 +240,18 @@
   U.fleetRows = function (act, base, view, sp, sr, cls) { const T = U.T, ps = (sp && sp.ships) || {}, rs = (sr && sr.v) || {};
     return `<a class="${cls} fl ${act === 'home' && !view ? 'on' : ''}" href="${base}index.html" data-sjves=""><span class="sj-dt b">${U.ic('bld', 15)}</span><span class="sj-vn">${T('선대 현황', 'Fleet overview')} <small>· ${T('전체 ' + U.VES.length + '척', 'all ' + U.VES.length)}</small></span></a>` + U.VES.map(n => { const a = ps[n], r = rs[n]; const dc = !a || !a.n ? '' : a.od ? 'r' : a.d7 ? 'y' : 'g'; const k = (a ? (a.O || []).filter(x => x[0] !== 'cls').length : 0) + (r ? r.wait || 0 : 0);
       return `<a class="${cls} ${view === n ? 'on' : ''}" href="#" data-sjves="${U.esc(n)}"><span class="sj-dt ${dc}"></span><span class="sj-vn">${U.esc(n)}</span>${a && a.od ? `<small class="od">${T('초과', 'overdue')} ${a.od}</small>` : ''}${k ? `<span class="sj-bd y">${k}</span>` : ''}</a>`; }).join(''); };
-  U.mob = function (act, base, o) { const T = U.T, { off, v, view, sp, sr, bp, br } = o;
+  U.mob = function (act, base, o) { const T = U.T, { off, v, view, sp, sr, B } = o;
     const name = off ? (view || T('선대 전체', 'Whole fleet')) : (v || T('선박 미설정', 'No vessel'));
     const tab = (k, href, label, ic, bd) => `<a class="${act === k ? 'on' : ''}" href="${href}">${U.ic(ic, 22)}<span>${label}</span>${bd || ''}</a>`;
+    const more = ['cert', 'devices', 'settings'].includes(act);
     return `<div class="sjmob"><header class="sjm"><a class="sjm-lg" href="${base}index.html" aria-label="${T('앱 홈', 'App home')}"><i>S</i></a>
       ${off ? `<button class="sjm-v" data-sjsheet type="button">${U.ic('bld', 17)}<b>${U.esc(name)}</b>${U.ic('m6 9 6 6 6-6', 16)}</button>` : `<span class="sjm-v">${U.ic('ship', 17)}<b>${U.esc(name)}</b></span>`}
-      <span class="sjm-sp"></span><button class="sjm-sr sjm-inb" data-sjinb type="button" aria-label="${T('알림함', 'Notifications')}">${U.ic('M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0', 21)}<b data-sjinbn hidden></b></button><button class="sjm-sr" data-sjsearch type="button" aria-label="${T('검색', 'Search')}">${U.ic('M21 21l-4.3-4.3M11 18a7 7 0 1 1 0-14 7 7 0 0 1 0 14z', 21)}</button><a class="sjm-up" href="#" data-sjupd hidden>⬆ ${T('업데이트', 'Update')}</a><a class="sjm-sy" href="${base}index.html#settings/sync" aria-label="${T('동기화', 'Sync')}"><span class="sj-d"></span></a></header>
-      <nav class="sjb">${tab('home', base + 'index.html', off ? T('선대', 'Fleet') : T('홈', 'Home'), off ? 'bld' : 'home')}${tab('pms', base + 'tools/pms.html', T('계획정비', 'PMS'), 'pms', bp)}${tab('rsk', base + 'tools/rsk.html', T('위험성', 'Risk'), 'rsk', br)}${off ? tab('devices', base + 'index.html#devices', T('기기', 'Devices'), 'dev', '<span class="sj-bd y" data-sjpend hidden></span>') : ''}${tab('settings', base + 'index.html#settings', T('설정', 'Settings'), 'set')}</nav>
-      ${off ? `<div class="sjs" hidden><div class="sjs-bg" data-sjsheet></div><div class="sjs-p" role="dialog" aria-label="${T('선박 고르기', 'Choose vessel')}"><div class="sjs-h"><b>${T('선박 고르기', 'Choose vessel')}</b><button type="button" data-sjsheet aria-label="${T('닫기', 'Close')}">✕</button></div>${U.fleetRows(act, base, view, sp, sr, 'sjs-r')}</div></div>` : ''}</div>`; };
+      <span class="sjm-sp"></span><button class="sjm-sr sjm-inb" data-sjinb type="button" aria-label="${T('알림함', 'Inbox')}">${U.ic('M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0', 21)}<b data-sjinbn hidden></b></button><button class="sjm-sr" data-sjsearch type="button" aria-label="${T('검색', 'Search')}">${U.ic('M21 21l-4.3-4.3M11 18a7 7 0 1 1 0-14 7 7 0 0 1 0 14z', 21)}</button><a class="sjm-up" href="#" data-sjupd hidden>⬆ ${T('업데이트', 'Update')}</a><a class="sjm-sy" href="${base}index.html#settings/sync" aria-label="${T('동기화', 'Sync')}"><span class="sj-d"></span></a></header>
+      <nav class="sjb">${tab('home', base + 'index.html', off ? T('선대', 'Fleet') : T('홈', 'Home'), off ? 'bld' : 'home')}${tab('pms', base + 'tools/pms.html', T('정비', 'PMS'), 'pms', B.pms)}${tab('rsk', base + 'tools/rsk.html', T('위험성', 'Risk'), 'rsk', B.rsk)}${tab('inv', base + 'tools/inv.html', T('재고', 'Stores'), U.TOOLS()[2][2], B.inv)}<a href="#" class="${more ? 'on' : ''}" data-sjmore>${U.ic('M4 6h16M4 12h16M4 18h16', 22)}<span>${T('더보기', 'More')}</span>${B.cert || ''}</a></nav>
+      <div class="sjs sjmore" hidden><div class="sjs-bg" data-sjmore></div><div class="sjs-p" role="dialog" aria-label="${T('더보기', 'More')}"><div class="sjs-h"><b>${T('더보기', 'More')}</b><button type="button" data-sjmore aria-label="${T('닫기', 'Close')}">✕</button></div>
+        <a class="sjs-r" href="${base}tools/cert.html"><span class="sj-dt b">${U.ic(U.TOOLS()[3][2], 15)}</span><span class="sj-vn">${T('증서·검사', 'Certificates & surveys')}</span>${B.cert || ''}</a>${off ? `<a class="sjs-r" href="${base}index.html#devices"><span class="sj-dt b">${U.ic('dev', 15)}</span><span class="sj-vn">${T('기기 승인', 'Devices')}</span><span class="sj-bd y" data-sjpend hidden></span></a>` : ''}<a class="sjs-r" href="${base}index.html#settings"><span class="sj-dt b">${U.ic('set', 15)}</span><span class="sj-vn">${T('설정', 'Settings')}</span></a></div></div>
+      ${off ? `<div class="sjs sjves" hidden><div class="sjs-bg" data-sjsheet></div><div class="sjs-p" role="dialog" aria-label="${T('선박 고르기', 'Choose vessel')}"><div class="sjs-h"><b>${T('선박 고르기', 'Choose vessel')}</b><button type="button" data-sjsheet aria-label="${T('닫기', 'Close')}">✕</button></div>${U.fleetRows(act, base, view, sp, sr, 'sjs-r')}</div></div>` : ''}</div>`; };
+  document.addEventListener('click', e => { const a = e.target.closest && e.target.closest('[data-sjmore]'); if (!a) return; e.preventDefault(); const sh = document.querySelector('.sjmore'); if (sh) sh.hidden = !sh.hidden; });
   /* 동기화 표시 (레일 아래) */
   U.syncPaint = function () { const el = document.getElementById('sjSync'); if (!el) return; const T = U.T, m = U.me(), s = (window.SJCLOUD && SJCLOUD.state) || {};
     let c = '', t;
@@ -250,10 +270,10 @@
     if (C.updHas && C.updNow && await C.updNow()) return; U.updPaint(U.T('확인 중…', 'Checking…')); const r = C.updCheck ? await C.updCheck() : 'none';
     U.updPaint(r === 'latest' ? U.T('최신 버전입니다 ✓', 'Up to date ✓') : r === 'offline' ? U.T('오프라인 — 나중에 다시', 'Offline — try later') : r === 'has' ? '' : U.T('업데이트 확인', 'Check for updates')); });
   /* 선박 고르기 시트 열고 닫기 (좁은 화면) */
-  document.addEventListener('click', e => { const a = e.target.closest && e.target.closest('[data-sjsheet]'); if (!a) return; e.preventDefault(); const sh = document.querySelector('.sjs'); if (sh) sh.hidden = !sh.hidden; });
+  document.addEventListener('click', e => { const a = e.target.closest && e.target.closest('[data-sjsheet]'); if (!a) return; e.preventDefault(); const sh = document.querySelector('.sjs.sjves'); if (sh) sh.hidden = !sh.hidden; });
   /* 선대 목록에서 선박 고르기 (사무실) */
   document.addEventListener('click', e => { const a = e.target.closest && e.target.closest('[data-sjves]'); if (!a) return; const n = a.dataset.sjves; C.set('view', n);
-    const sh = document.querySelector('.sjs'); if (sh) sh.hidden = true;
+    document.querySelectorAll('.sjs').forEach(sh => sh.hidden = true);
     if (!n && a.getAttribute('href') !== 'index.html') return; e.preventDefault(); if (U.onView) U.onView(n); }, true);
   /* 보는 선박 바꾸기 (사무실) */
   document.addEventListener('change', e => { const s = e.target.closest && e.target.closest('[data-sjview]'); if (!s) return; C.set('view', s.value); if (U.onView) U.onView(s.value); });
@@ -270,7 +290,7 @@
     function events() { const T = U.T, role = U.role(), off = role === 'office', sp = U.sum('pms'), sr = U.sum('rsk'), E = [];
       if (!role) return { scope: '', E };
       if (off) { Object.entries((sp && sp.ships) || {}).forEach(([n, s]) => (s.O || []).forEach(([k, id, what, tx]) => { if (k === 'cls') return;
-          E.push({ k: `o:${n}:${k}:${id}:${h(what)}`, g: k === 'pp' ? 'apv' : 'pms', t: `${n} · ${what}`, b: tx || '', tool: 'pms', o: { view: n, attrs: { opsk: k, opsid: id, opsship: n } } }); }));
+          E.push({ k: `o:${n}:${k}:${id}:${h(what)}`, g: k === 'pp' ? 'apv' : 'pms', t: `${n} · ${what}`, b: tx || '', tool: U.toolOf(k), o: { view: n, attrs: { opsk: k, opsid: id, opsship: n } } }); }));
         Object.entries((sr && sr.v) || {}).forEach(([n, r]) => (r.items || []).filter(x => x[0] === 'wait' || x[0] === 'mocw').forEach(([k, id, tx]) =>
           E.push({ k: `r:${n}:${k}:${id}`, g: 'apv', t: `${n} · ${k === 'mocw' ? T('MoC 회사 승인 요청', 'MoC approval request') : T('위험성 평가 DPA 승인 요청', 'RA approval request (DPA)')}`, b: tx || '', tool: 'rsk', o: { view: n, attrs: { a: 'sjApprove', id } } })));
         return { scope: 'office', E }; }
@@ -282,10 +302,10 @@
       return { scope: 'ship:' + v, E }; }
     /* 승인함: 지금 결정·서명이 필요한 일 (실시간 — 처리하면 사라짐). 모든 종류를 같은 카드·같은 상태·같은 버튼으로
        사무실 = 선박이 보낸 요청 / 선박 = 내가 보낸 요청의 진행 상황 + 반려되어 보완할 것 */
-    const KIND = () => ({ def: [U.T('결함', 'Defect'), 'pms'], req: [U.T('청구서', 'Requisition'), 'pms'], pp: [U.T('작업 연기', 'Postponement'), 'pms'], dpa: [U.T('위험성 평가', 'Risk assessment'), 'rsk'], mocw: ['MoC', 'rsk'], wait: [U.T('위험성 평가', 'Risk assessment'), 'rsk'], dev: [U.T('기기', 'Device'), 'dev'] });
+    const KIND = () => ({ def: [U.T('결함', 'Defect'), 'pms'], req: [U.T('청구서', 'Requisition'), 'inv'], pp: [U.T('작업 연기', 'Postponement'), 'pms'], dpa: [U.T('위험성 평가', 'Risk assessment'), 'rsk'], mocw: ['MoC', 'rsk'], wait: [U.T('위험성 평가', 'Risk assessment'), 'rsk'], dev: [U.T('기기', 'Device'), 'dev'] });
     function pend() { const T = U.T, role = U.role(), off = role === 'office', sp = U.sum('pms'), sr = U.sum('rsk'), out = [];
       if (off) { Object.entries((sp && sp.ships) || {}).forEach(([n, s]) => (s.O || []).forEach(([k, id, what, tx]) => { if (k === 'cls') return;
-          out.push({ k, n, t: what, b: tx || '', st: k === 'req' ? 'rcv' : k === 'def' ? 'sign' : 'wait', btn: k === 'req' ? T('접수·처리', 'Process') : k === 'def' ? T('확인·서명', 'Review & sign') : T('검토·결정', 'Review'), tool: 'pms', o: { view: n, attrs: { opsk: k, opsid: id, opsship: n } } }); }));
+          out.push({ k, n, t: what, b: tx || '', st: k === 'req' ? 'rcv' : k === 'def' ? 'sign' : 'wait', btn: k === 'req' ? T('접수·처리', 'Process') : k === 'def' ? T('확인·서명', 'Review & sign') : T('검토·결정', 'Review'), tool: U.toolOf(k), o: { view: n, attrs: { opsk: k, opsid: id, opsship: n } } }); }));
         Object.entries((sr && sr.v) || {}).forEach(([n, r]) => (r.items || []).filter(x => x[0] === 'wait' || x[0] === 'mocw').forEach(([k, id, tx]) => out.push({ k: k === 'mocw' ? 'mocw' : 'dpa', n, t: k === 'mocw' ? T('MoC 회사 승인 요청', 'MoC approval request') : T('DPA 승인 요청', 'DPA approval request'), b: tx || '', st: 'wait', btn: T('검토·결정', 'Review'), tool: 'rsk', o: { view: n, attrs: { a: 'sjApprove', id } } })));
         let dv = []; try { dv = JSON.parse(localStorage.getItem('sejul_pend_dev') || '[]'); } catch (e) { }
         dv.forEach(([id, ship, pc]) => out.push({ k: 'dev', n: ship || T('사무실', 'Office'), t: T('기기 승인 요청', 'Device approval'), b: pc, st: 'wait', btn: T('승인·거절', 'Approve'), href: 'index.html#devices' })); }
@@ -345,9 +365,9 @@
      ?go= 같은 바로가기 주소는 미리 준비 대상이 아님 (그때는 예전처럼 불러옴) */
   (function () { if (window.top !== window || /[?&]bg=1/.test(location.search) || !(window.HTMLScriptElement && HTMLScriptElement.supports && HTMLScriptElement.supports('speculationrules'))) return;
     const inTool = /\/tools\//.test(location.pathname), base = inTool ? '../' : '', here = location.pathname.split('/').pop();
-    const urls = [base + 'tools/pms.html', base + 'tools/rsk.html', base + 'index.html'].filter(u => u.split('/').pop() !== here && !(u.endsWith('index.html') && !inTool));
+    const urls = [base + 'tools/pms.html', base + 'tools/rsk.html', base + 'tools/inv.html', base + 'tools/cert.html', base + 'index.html'].filter(u => u.split('/').pop() !== here && !(u.endsWith('index.html') && !inTool));
     const add = () => { if (document.getElementById('sjSpec') || !U.role()) return; const sc = document.createElement('script'); sc.type = 'speculationrules'; sc.id = 'sjSpec';
-      sc.textContent = JSON.stringify({ prerender: [{ source: 'list', urls: urls.filter(u => !u.endsWith('index.html')), eagerness: 'eager' }, { source: 'list', urls: urls.filter(u => u.endsWith('index.html')), eagerness: 'moderate' }].filter(r => r.urls.length) });
+      const eager = u => /(pms|rsk)\.html$/.test(u); sc.textContent = JSON.stringify({ prerender: [{ source: 'list', urls: urls.filter(eager), eagerness: 'eager' }, { source: 'list', urls: urls.filter(u => !eager(u)), eagerness: 'moderate' }].filter(r => r.urls.length) });   /* 재고·증서·앱 홈은 마우스를 올리거나 누를 때 준비 (메모리 절약) */
       document.head.appendChild(sc); };
     /* 켠 직후에는 지금 화면을 먼저 — 4초 뒤 준비 시작 */
     const go = () => setTimeout(add, document.prerendering ? 0 : 4000);
