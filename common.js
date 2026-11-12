@@ -3,7 +3,7 @@
    도구 코드는 그대로 두고 저장 키만 연결하므로, 도구를 따로(HTML 파일) 써도 동작은 같음. */
 (function () {
   const C = window.SJAPP = window.SJAPP || {};
-  C.ver = '2026.11.12.1003';
+  C.ver = '2026.11.12.1026';
   C.inApp = true;
   /* 도구별 키 ↔ 공통 키 */
   const MAP = {
@@ -56,19 +56,23 @@
     d.innerHTML = '<b>⬆ ' + (en ? 'A new version is ready — it will update automatically when you pause.' : '새 버전이 있습니다 — 작업이 멈추면 자동으로 업데이트됩니다.') + '</b><button type="button">' + (en ? 'Update now' : '지금 업데이트') + '</button>';
     d.querySelector('button').onclick = () => C.updNow(); document.body.appendChild(d); document.documentElement.classList.add('sj-hasupd'); };
   C.updNow = async function () { try { const reg = await navigator.serviceWorker.getRegistration(); if (reg && reg.waiting) { try { sessionStorage.setItem('sejul_upd_done', '1'); } catch (e) { } reg.waiting.postMessage('skip'); return true; } } catch (e) { } return false; };
-  C.updCheck = async function () { try { const reg = await navigator.serviceWorker.getRegistration(); if (!reg) return 'none'; if (reg.waiting) { C.updFound(); return 'has'; } await reg.update(); await new Promise(r => setTimeout(r, 1800)); if (reg.waiting || reg.installing) { C.updFound(); return 'has'; } return 'latest'; } catch (e) { return 'offline'; } };
+  C.updCheck = async function () { try { const reg = await navigator.serviceWorker.getRegistration(); if (!reg) return 'none'; if (reg.waiting && await C.updNewer() === true) { C.updFound(); return 'has'; } if (await C.updNewer() === false) return 'latest'; await reg.update(); await new Promise(r => setTimeout(r, 1800)); if (reg.waiting || reg.installing) { C.updFound(); return 'has'; } return 'latest'; } catch (e) { return 'offline'; } };
   /* 새 버전을 받으면: 안내 띠 + 안전한 때(입력·팝업 없음, 15초 조작 없음 또는 앱이 뒤로 갔을 때) 자동 적용 */
   let autoT = null;
-  C.updFound = function () { C.updHas = true; C.updBar(); if (window.SJUI && SJUI.updPaint) SJUI.updPaint(); if (C.onUpd) C.onUpd();
+  /* 서버의 최신 버전 번호(version.json, 캐시 안 거침) — 지금 버전보다 높을 때만 '새 버전'으로 인정 */
+  C.updVurl = () => (C.swPath || '../sw.js').replace(/sw\.js$/, 'version.json');
+  C.updNewer = async function () { try { const j = await (await fetch(C.updVurl() + '?t=' + Date.now(), { cache: 'no-store' })).json(); if (j && j.v && j.v > C.ver) { C.updNew = j.v; return true; } return false; } catch (e) { return null; } };
+  C.updFound = async function () { if (C.updHas) return; const nw = await C.updNewer(); if (nw !== true) return; /* 최신 버전이면(또는 확인 불가) 띠·자동 적용 안 함 */ C.updHas = true; C.updBar(); if (window.SJUI && SJUI.updPaint) SJUI.updPaint(); if (C.onUpd) C.onUpd();
     if (window.top !== window || C.bg || autoT) return; autoT = setInterval(() => { if (C.updSafe()) { clearInterval(autoT); C.updNow(); } }, 2000); if (C.updSafe()) { clearInterval(autoT); C.updNow(); } };
   C.watchUpdate = function () { if (!('serviceWorker' in navigator)) return;
     navigator.serviceWorker.register(C.swPath || '../sw.js').then(reg => {
       if (reg.waiting && navigator.serviceWorker.controller) C.updFound();
       reg.addEventListener('updatefound', () => { const w = reg.installing; w && w.addEventListener('statechange', () => { if (w.state === 'installed' && navigator.serviceWorker.controller) C.updFound(); }); });
       /* 새 버전 확인: version.json(캐시 안 거침)과 지금 버전을 비교 → 다르면 새 앱 파일을 받아 두고(reg.update) 안전할 때 자동 적용 */
-      const vurl = (C.swPath || '../sw.js').replace(/sw\.js$/, 'version.json');
-      const chk = async () => { if (window.top !== window || navigator.onLine === false || C.bg) return; try { reg.update().catch(() => { });
-          const j = await (await fetch(vurl + '?t=' + Date.now(), { cache: 'no-store' })).json(); if (j && j.v && j.v !== C.ver && j.v > C.ver) { C.updNew = j.v; if (!C.updHas) { if (window.SJUI && SJUI.updPaint) SJUI.updPaint(); setTimeout(() => reg.update().catch(() => { }), 20e3); } } } catch (e) { } };
+      /* 최신 버전이면 아무것도 하지 않음 — 서버 버전이 더 높을 때만 새 파일을 받음(reg.update) */
+      const chk = async () => { if (window.top !== window || navigator.onLine === false || C.bg || C.updHas) return;
+          if (await C.updNewer() !== true) return; if (window.SJUI && SJUI.updPaint) SJUI.updPaint();
+          if (reg.waiting && navigator.serviceWorker.controller) return C.updFound(); reg.update().catch(() => { }); setTimeout(() => { if (!C.updHas) reg.update().catch(() => { }); }, 20e3); };
       setTimeout(chk, 1500); setTimeout(chk, 20e3); setInterval(chk, 60e3);   /* 켤 때 · 3분마다 · 앱으로 돌아올 때 · 인터넷이 다시 연결될 때 — 찾으면 안전한 때 자동 적용 */
       document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') chk(); }); addEventListener('online', chk); addEventListener('focus', chk); addEventListener('pageshow', chk); }).catch(() => { });
     /* 다른 창이 업데이트를 적용하면: 이 창도 안전할 때 새로 고침 (입력 중이면 기다림) */

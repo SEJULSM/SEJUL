@@ -158,7 +158,8 @@ html body #top .sj-nav>button[data-go=help],html body #top .sj-nav>button[data-g
     l.innerHTML = `<style>#sjxLoad{position:fixed;inset:0;z-index:890;background:#F3F4F6;display:flex;align-items:center;justify-content:center;font-family:'Pretendard','Noto Sans KR','Malgun Gothic',system-ui,sans-serif}@media (min-width:900px){#sjxLoad{left:248px}}@media (max-width:899px){#sjxLoad{top:54px;bottom:66px}}#sjxLoad .b{text-align:center;color:#1B2F5B}#sjxLoad i{display:block;width:44px;height:44px;margin:0 auto 16px;border-radius:50%;border:4px solid #D7DEEA;border-top-color:#1B2F5B;animation:sjxsp .8s linear infinite}#sjxLoad b{display:block;font-size:18px}#sjxLoad small{display:block;margin-top:6px;color:#5B6474;font-size:14px}@keyframes sjxsp{to{transform:rotate(360deg)}}</style><div class="b"><i></i><b>${nm} ${T('불러오는 중…', 'loading…')}</b><small>${T('처음 열 때는 몇 초 걸릴 수 있습니다', 'The first open can take a few seconds')}</small></div>`;
     document.documentElement.appendChild(l); }
   C.ready = () => { const w = document.getElementById('sjxWait'); if (w) w.remove(); const l = document.getElementById('sjxLoad'); if (l) l.remove(); };
-  setTimeout(C.ready, 5000);
+  /* 비상용: 도구가 끝내 준비되지 않을 때만 가림막을 걷음 (느린 휴대폰에서 예전 화면이 먼저 보이지 않도록 넉넉히) */
+  setTimeout(() => { if (!C.booted) C.ready(); }, 20000); setTimeout(C.ready, 30000);
   const early = () => { try { C.ensureBar(); } catch (e) { } };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', early); else setTimeout(early, 0);
 
@@ -318,7 +319,9 @@ html body #top .sj-nav>button[data-go=help],html body #top .sj-nav>button[data-g
             r: (typeof RQS === 'function' ? RQS(db) : []).filter(r => !(MODE === 'admin' && r.st === 'draft')).map(r => [r.id, r.no || '', (r.items || []).slice(0, 3).map(x => cut(x.name)).join(', '), r.st]) }; }
         const js = JSON.stringify({ at: Date.now(), v: ix }); if (localStorage.getItem('sejul_idx_pms_h') !== String(js.length)) { localStorage.setItem('sejul_idx_pms', js); localStorage.setItem('sejul_idx_pms_h', String(js.length)); } } catch (e) { console.warn('idx', e); } },
     hookRender() { const r0 = render; render = function () { try { const v = C.get('view') || ''; if (MODE === 'admin' && v && OFFICE.ships[v] && OFFICE.sel !== v) OFFICE.sel = v; } catch (e) { }   /* 사무실: 항상 왼쪽 메뉴에서 고른 선박 */
-      const x = r0.apply(this, arguments); try { PMS.after(); } catch (e) { } navDeco(); sumSoon(PMS); return x; }; }
+      const x = r0.apply(this, arguments); try { PMS.after(); } catch (e) { } navDeco(); sumSoon(PMS); return x; };
+      /* 저장·동기화 때 상단 줄만 다시 그려도(renderTop) 새 탭 모양 유지 — 예전 모양으로 깜빡이지 않게 */
+      try { if (typeof renderTop === 'function' && !renderTop.sjx) { const t0 = renderTop; renderTop = function () { const y = t0.apply(this, arguments); navDeco(); return y; }; renderTop.sjx = 1; } } catch (e) { } }
   };
   /* ---------- 위험성 관리 ---------- */
   const RSK = {
@@ -427,7 +430,7 @@ html body #top .sj-nav>button[data-go=help],html body #top .sj-nav>button[data-g
     if (C.restoring) setTimeout(() => { try { if (window.SJCLOUD && SJCLOUD.A) SJCLOUD.sync(SJCLOUD.A, true); } catch (e) { } }, 6000);
     if (X === RSK && /^#settings/.test(location.hash)) { try { A.go({ v: 'settings' }); } catch (e) { } }
     if (X === RSK) { try { RSK.approvals(); } catch (e) { console.warn('apv', e); } }
-    X.hookRender(); try { render(); } catch (e) { }
+    X.hookRender(); try { render(); } catch (e) { } C.booted = 1;
     C.ensureBar(); setInterval(C.ensureBar, 1000); setInterval(U.syncPaint, 20e3); setTimeout(C.ready, 150);
     U.onView = v => { try { X.view(v); } catch (e) { } railRefresh(); };
     /* PTW 만료 30분 전 — 이 기기에서 위험성 관리를 열어 둔 동안 (인터넷 없어도) */
