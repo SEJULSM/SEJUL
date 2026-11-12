@@ -1,5 +1,5 @@
 /* SEJUL 앱 서비스 워커 — 앱 파일을 PC에 보관해 인터넷 없이 실행, 인터넷이 되면 새 버전을 받아 둠 (데이터는 다루지 않음) */
-const CACHE = 'sejul-2026.11.12.1137';
+const CACHE = 'sejul-2026.11.12.1206';
 const FILES = ['./', './index.html', './common.js', './ui.js', './cloud.js', './shell.js', './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-maskable.png', './apple-touch-icon.png', './favicon.png', './tools/pms.html', './tools/rsk.html'];
 self.addEventListener('install', e => e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES.map(f => new Request(f, { cache: 'reload' }))))));
 self.addEventListener('activate', e => e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k.startsWith('sejul-') && k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())));

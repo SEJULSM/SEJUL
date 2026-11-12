@@ -151,13 +151,30 @@ html body #top .sj-nav>button[data-go=help],html body #top .sj-nav>button[data-g
  html body #toasts{top:auto!important;bottom:84px!important;left:10px!important;right:10px!important}html body{padding-top:54px!important;padding-bottom:84px!important}html.sj-hasupd body{padding-top:100px!important}html body #foot{bottom:66px!important}#drawer{bottom:66px!important}#selbar{bottom:66px!important}
 }`;
   css += `
+html body .sjx-hid,html body header.top #nav>button.sjx-hid,html body #nav button.sjx-hid{display:none!important}
+/* 상세 보기 규칙: 한 화면으로 끝나는 것(작업·장비·결함 상세) = 오른쪽 서랍 / 단계가 있는 문서(위험성 평가·PTW·MoC) = 전체 페이지 — 머리 모양은 같게 */
+#drawer .dh{padding:16px 20px 12px!important;border-bottom:1px solid #E3E7EF!important;background:#fff!important}#drawer .dh>div>div[style*='font-size:18px']{font-size:20px!important;font-weight:800!important;color:#14244A;line-height:1.35}#drawer .dh .x{font-size:22px!important;color:#5B6474!important}#drawer .df{background:#F7F8FA!important;border-top:1px solid #E3E7EF!important;padding:12px 20px!important}
+.sjx-dbtn{display:inline-flex;align-items:center;gap:4px;margin-left:10px;vertical-align:middle;border:1px solid #D7DEEA;background:#fff;color:#5B6474;border-radius:999px;padding:2px 10px 2px 7px;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer}.sjx-dbtn:hover,.sjx-dbtn.on{color:#2F6FD6;border-color:#9CB8EA;background:#F2F6FF}.sjx-desc{margin:-4px 0 10px;padding:10px 14px;border-radius:10px;background:#F4F7FC;border:1px solid #E1E8F5;font-size:13.5px;color:#4B5563}.sjx-desc>*{margin:0!important}.sjx-desc[hidden]{display:none!important}
+/* ===== 상태 표시 한 벌 — 두 도구 공통: 모양 = 둥근 알약 + 점, 색 = 대기(호박) · 진행(파랑) · 승인·정상(초록) · 반려·초과·중지(빨강) · 종결·작성 중(회색) · 연기(보라) ===== */
+:is(#main,#drawer,#mback,#modal,.sjh) :is(.badge.b-od,.badge.b-d7,.badge.b-d30,.badge.b-ok,.badge.b-nd,.badge.b-def,.badge.b-pp,.badge.b-act,.badge.b-chk,.badge.b-new,.badge.b-off,.badge.b-low,.st){display:inline-flex!important;align-items:center;gap:5px;border-radius:999px!important;padding:2px 10px!important;font-size:12px!important;font-weight:800!important;line-height:1.6!important;border:0!important;white-space:nowrap}
+:is(#main,#drawer,#mback,#modal,.sjh) :is(.badge.b-od,.badge.b-d7,.badge.b-d30,.badge.b-ok,.badge.b-nd,.badge.b-def,.badge.b-pp,.badge.b-act,.badge.b-chk,.badge.b-new,.badge.b-off,.badge.b-low,.st):before{content:'';width:7px;height:7px;border-radius:50%;background:currentColor;opacity:.85;flex:none}
+:is(#main,#drawer,#mback,#modal,.sjh) :is(.badge.b-od,.badge.b-def,.badge.b-low,.st.stop){background:#FDE7E7!important;color:#B42318!important}
+:is(#main,#drawer,#mback,#modal,.sjh) :is(.badge.b-d7,.badge.b-chk,.st.wait){background:#FFF3D1!important;color:#8A6200!important}
+:is(#main,#drawer,#mback,#modal,.sjh) .badge.b-d30{background:#FBF5DD!important;color:#7A6514!important}
+:is(#main,#drawer,#mback,#modal,.sjh) :is(.badge.b-ok,.badge.b-new,.st.ok){background:#E3F5EA!important;color:#1E7F4E!important}
+:is(#main,#drawer,#mback,#modal,.sjh) :is(.badge.b-act,.st.act,.st.def){background:#E6F0FF!important;color:#1D4FA8!important}
+:is(#main,#drawer,#mback,#modal,.sjh) :is(.badge.b-nd,.badge.b-off,.st.draft,.st.closed){background:#EEF1F6!important;color:#4B5563!important}
+:is(#main,#drawer,#mback,#modal,.sjh) .badge.b-pp{background:#F1E9FF!important;color:#6B3FC7!important}
+:is(#main,#drawer,#mback,#modal) .badge.b-cri{background:#14244A!important;color:#fff!important;border-radius:6px!important;font-size:11px!important;letter-spacing:.03em}
+:is(#main,#drawer,#mback,#modal) :is(.badge.sev-A,.badge.sev-B,.badge.sev-C){border-radius:6px!important}
+.seg button[data-v="draft"]{--c:#9AA4B2!important}.seg button[data-v="wait"]{--c:#E0A100!important;--f:#fff}.seg button[data-v="ok"],.seg button[data-v="ra"]{--c:#2FA36B!important}.seg button[data-v="stop"]{--c:#E5484D!important}.seg button[data-v="closed"]{--c:#6B7280!important}.seg button[data-v="act"],.seg button[data-v="rep"]{--c:#3B7BE0!important}.seg button[data-v="open"]{--c:#8B5CF6!important}
 .sjei{display:inline-flex;vertical-align:-3px;margin-right:6px;flex:none}
 .sjei svg,.sjx-prt svg{stroke-width:2.3}.sjx-prt svg{color:#2F6FD6}
 button:not(.on)>.sjtb-ic.k-home{color:#1B2F5B}button:not(.on)>.sjtb-ic.k-jobs,button:not(.on)>.sjtb-ic.k-due{color:#2F6FD6}button:not(.on)>.sjtb-ic.k-ck{color:#1E9E55}button:not(.on)>.sjtb-ic.k-defects{color:#E0661B}button:not(.on)>.sjtb-ic.k-spares{color:#9C5BD8}
 button:not(.on)>.sjtb-ic.k-raList{color:#2F6FD6}button:not(.on)>.sjtb-ic.k-ptwList{color:#E0661B}button:not(.on)>.sjtb-ic.k-mocList{color:#0E8A7E}button:not(.on)>.sjtb-ic.k-rirList{color:#D93025}button:not(.on)>.sjtb-ic.k-register{color:#5B6B8C}button:not(.on)>.sjtb-ic.k-dpa{color:#1E9E55}
 .sjei-print,.sjei-clip,.sjei-file,.sjei-book,.sjei-fold,.sjei-tree,.sjei-chart,.sjei-pc,.sjei-link{color:#2F6FD6}.sjei-imp,.sjei-dn{color:#0E8A7E}.sjei-exp,.sjei-up,.sjei-send{color:#7C4DDB}
 .sjei-edit,.sjei-cal,.sjei-clk,.sjei-hour{color:#C26A00}.sjei-ok{color:#1E9E55}.sjei-warn,.sjei-fire{color:#E0661B}.sjei-ban,.sjei-del,.sjei-x{color:#D93025}.sjei-star{color:#E8A400}.sjei-star svg{fill:#FFD54F}
-.sjei-wr,.sjei-gear,.sjei-key,.sjei-lab{color:#5B6B8C}.sjei-box,.sjei-pill{color:#9C5BD8}.sjei-srch,.sjei-info,.sjei-bulb{color:#2F6FD6}.sjei-lock{color:#8A6200}.sjei-ship,.sjei-bld,.sjei-bank,.sjei-home,.sjei-user{color:#1B2F5B}.sjei-shld{color:#D93025}.sjei-ref,.sjei-undo{color:#0E8A7E}.sjei-bell{color:#E0A100}.sjei-tgt{color:#D93025}.sjei-cam,.sjei-att,.sjei-save{color:#5B6B8C}.sjei-pause{color:#7C4DDB}
+.sjei-wr,.sjei-gear,.sjei-key,.sjei-lab{color:#5B6B8C}.sjei-box,.sjei-pill{color:#9C5BD8}.sjei-srch,.sjei-info,.sjei-bulb{color:#2F6FD6}.sjei-lock{color:#8A6200}.sjei-ship,.sjei-bld,.sjei-bank,.sjei-home,.sjei-user{color:#1B2F5B}.sjei-shld{color:#D93025}.sjei-ref,.sjei-undo{color:#0E8A7E}.sjei-bell{color:#E0A100}.sjei-tgt{color:#D93025}.sjei-cam,.sjei-att,.sjei-save{color:#5B6B8C}.sjei-tel,.sjei-chat,.sjei-ant,.sjei-mob{color:#0E8A7E}.sjei-zap{color:#E0A100}.sjei-law,.sjei-cmp,.sjei-door,.sjei-lad,.sjei-drum,.sjei-img,.sjei-left,.sjei-swap,.sjei-unlk{color:#5B6B8C}.sjei-pin,.sjei-med{color:#D93025}.sjei-help{color:#2F6FD6}.sjei-truck{color:#7C4DDB}.sjei-drop{color:#2F6FD6}.sjei-pause{color:#7C4DDB}
 .on>.sjei,.pri>.sjei,.btn.p>.sjei,.btn.pri>.sjei,.btn.grn>.sjei,.btn.danger>.sjei,.btn.r>.sjei,[class*=" on"]>.sjei,.sel>.sjei,button.on .sjei{color:inherit!important}.on>.sjei svg,.pri>.sjei svg,.btn.p>.sjei svg{fill:none!important}.sjei svg{width:1.05em;height:1.05em;min-width:15px;min-height:15px}
 h1 .sjei svg,h2 .sjei svg{width:.95em;height:.95em}
 .badge .sjei,.tag .sjei,.chip .sjei{margin-right:3px}.badge .sjei svg,.tag .sjei svg{min-width:12px;min-height:12px;width:.95em;height:.95em}
@@ -205,23 +222,41 @@ details.sjx-prt .sjx-ddm{left:auto;right:0}
     att: 'M21 11l-9 9a5 5 0 0 1-7-7l9-9a3.5 3.5 0 0 1 5 5l-9 9a2 2 0 0 1-3-3l8-8', bell: 'M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0', up: 'M12 19V5M5 12l7-7 7 7', dn: 'M12 5v14M5 12l7 7 7-7',
     info: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 16v-4M12 8h.01', pill: 'M10.5 20.5a5 5 0 0 1-7-7l10-10a5 5 0 0 1 7 7zM8.5 8.5l7 7', bulb: 'M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z',
     link: 'M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1', x: 'M18 6 6 18M6 6l12 12', lab: 'M9 3h6M10 3v6L4 20h16L14 9V3', shld: 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z',
-    pc: 'M3 4h18v12H3zM8 20h8M12 16v4', clk: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 6v6l4 2', key: 'M15 7a4 4 0 1 1-3.9 5H3v3h3v3h3v-3h2.1A4 4 0 0 1 15 7z', copy: 'M8 8h12v12H8zM4 16V4h12', gear: 'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM12 2v3M12 19v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1 7 17M17 7l2.1-2.1' };
+    pc: 'M3 4h18v12H3zM8 20h8M12 16v4', clk: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 6v6l4 2', key: 'M15 7a4 4 0 1 1-3.9 5H3v3h3v3h3v-3h2.1A4 4 0 0 1 15 7z', copy: 'M8 8h12v12H8zM4 16V4h12', gear: 'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM12 2v3M12 19v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1 7 17M17 7l2.1-2.1',
+    unlk: 'M5 11h14v10H5zM8 11V7a4 4 0 0 1 7.8-1.2', swap: 'M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5', tel: 'M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z',
+    chat: 'M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z', zap: 'M13 2 3 14h9l-1 8 10-12h-9z', ant: 'M5 12a7 7 0 0 1 14 0M8.5 12a3.5 3.5 0 0 1 7 0M12 12v9', law: 'M12 3v18M5 21h14M5 7h14M7 7l-3 7a3 3 0 0 0 6 0zM17 7l-3 7a3 3 0 0 0 6 0z',
+    pin: 'M12 17v5M9 3h6l-1 6 3 4H7l3-4z', help: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01', truck: 'M1 3h15v13H1zM16 8h4l3 3v5h-7M5.5 21a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM18.5 21a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z',
+    cmp: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM16 8l-2 6-6 2 2-6z', door: 'M4 21h16M6 21V3h12v18M14 12h.01', med: 'M10 3h4v7h7v4h-7v7h-4v-7H3v-4h7z', img: 'M3 3h18v18H3zM8.5 10a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM21 15l-5-5L5 21',
+    lad: 'M7 2v20M17 2v20M7 6h10M7 10h10M7 14h10M7 18h10', drum: 'M5 5c0-1.7 3.1-3 7-3s7 1.3 7 3v14c0 1.7-3.1 3-7 3s-7-1.3-7-3zM5 5c0 1.7 3.1 3 7 3s7-1.3 7-3M5 12c0 1.7 3.1 3 7 3s7-1.3 7-3', drop: 'M12 2s7 7.5 7 13a7 7 0 0 1-14 0c0-5.5 7-13 7-13z',
+    left: 'M19 12H5M12 19l-7-7 7-7', mob: 'M7 2h10v20H7zM11 18h2' };
   const EM = { '🖨': 'print', '📥': 'imp', '📤': 'exp', '📋': 'clip', '📝': 'edit', '✏': 'edit', '✍': 'edit', '✅': 'ok', '✔': 'ok', '☑': 'ok', '⚠': 'warn', '⛔': 'ban', '🚫': 'ban', '🔎': 'srch', '🔍': 'srch', '📅': 'cal', '🗓': 'cal', '📆': 'cal',
     '🔧': 'wr', '🛠': 'wr', '🔩': 'wr', '⭐': 'star', '📦': 'box', '🗂': 'fold', '📁': 'fold', '📂': 'fold', '📄': 'file', '🧾': 'file', '📃': 'file', '📑': 'file', '📚': 'book', '📒': 'book', '📖': 'book', '📘': 'book', '🔒': 'lock', '🔐': 'lock', '🔄': 'ref', '🔁': 'ref', '🏠': 'home',
     '👤': 'user', '👷': 'user', '👥': 'user', '🌳': 'tree', '🎯': 'tgt', '🏛': 'bank', '⏳': 'hour', '⌛': 'hour', '🔥': 'fire', '➕': 'plus', '🗑': 'del', '📨': 'send', '✉': 'send', '📧': 'send', '📊': 'chart', '📈': 'chart', '💾': 'save', '🚢': 'ship', '⚓': 'ship', '🏢': 'bld',
-    '↩': 'undo', '↶': 'undo', '⏸': 'pause', '📷': 'cam', '📸': 'cam', '📎': 'att', '🔔': 'bell', '⬆': 'up', '⬇': 'dn', 'ℹ': 'info', '💊': 'pill', '💡': 'bulb', '🔗': 'link', '❌': 'x', '🧪': 'lab', '🛡': 'shld', '🧯': 'shld', '🛟': 'shld', '💻': 'pc', '⏱': 'clk', '🕒': 'clk', '⏰': 'clk', '🔑': 'key', '⚙': 'gear' };
-  const ERX = new RegExp('^(\\s*)(' + Object.keys(EM).sort((a, b) => b.length - a.length).map(k => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + ')\\uFE0F?\\s*', 'u');
-  const ESEL = 'button,summary,h1,h2,h3,h4,th,label,.flab,.mh>span,.badge,.chip,.tag,.tab,.lbl,.sjx-ddh,a.btn,.steps button,.seg button,.regtabs button,.dh,.desc>b,.ttl,b,strong,.flab,.sub';
-  const deEmoji = root => { if (!root || !root.querySelectorAll) return; const els = root.matches && root.matches(ESEL) ? [root, ...root.querySelectorAll(ESEL)] : root.querySelectorAll(ESEL);
-    for (const el of els) { if (el.closest('#mrpv,.sji,.sjq,.sjr,.sjmob,input,textarea,select,[contenteditable]')) continue;
-      for (const n of el.childNodes) { if (n.nodeType !== 3) continue; const m = ERX.exec(n.data); if (!m) { if (n.data.trim()) break; continue; }
-        const k = EM[m[2]]; const sp = document.createElement('span'); sp.className = 'sjei sjei-' + k; sp.setAttribute('aria-hidden', 'true'); sp.innerHTML = U.ic(EI[k], 16); n.data = n.data.slice(m[0].length); el.insertBefore(sp, n); break; }
-      /* '한국어 / English' 라벨: 영어는 작고 흐리게 (화면만) */
-      if (el.tagName === 'SPAN' || el.tagName === 'LABEL' || el.tagName === 'TH') { const t = el.childNodes.length === 1 && el.firstChild.nodeType === 3 ? el.firstChild.data : null; const mm = t && /^(.*[가-힣].*?)\s+\/\s+([A-Za-z][^가-힣]*)$/.exec(t); if (mm) el.innerHTML = U.esc(mm[1]) + ' <small class="sjen">' + U.esc(mm[2]) + '</small>'; } } };
+    '↩': 'undo', '↶': 'undo', '⏸': 'pause', '📷': 'cam', '📸': 'cam', '📎': 'att', '🔔': 'bell', '⬆': 'up', '⬇': 'dn', 'ℹ': 'info', '💊': 'pill', '💡': 'bulb', '🔗': 'link', '❌': 'x', '🧪': 'lab', '🛡': 'shld', '🧯': 'shld', '🛟': 'shld', '💻': 'pc', '⏱': 'clk', '🕒': 'clk', '⏰': 'clk', '🔑': 'key', '⚙': 'gear', '🔓': 'unlk', '🔀': 'swap', '📞': 'tel', '☎': 'tel', '💬': 'chat', '⚡': 'zap', '📡': 'ant', '📻': 'ant', '⚖': 'law', '📌': 'pin', '✖': 'x', '❓': 'help', '🔻': 'dn', '🦺': 'shld', '🕘': 'clk', '🚨': 'warn',
+    '🖥': 'pc', '🧽': 'wr', '🚚': 'truck', '👍': 'ok', '🧭': 'cmp', '🚪': 'door', '🚑': 'med', '♻': 'ref', '🖼': 'img', '🪜': 'lad', '🛢': 'drum', '💧': 'drop', '👈': 'left', '👆': 'up', '📱': 'mob' };
+  const EANY = new RegExp('(' + Object.keys(EM).sort((a, b) => b.length - a.length).map(k => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + ')\\uFE0F?', 'gu'), EQ = /\p{Extended_Pictographic}/u;
+  const ESKIP = '#mrpv,.sji,.sjq,.sjr,.sjmob,.sjd,script,style,textarea,[contenteditable],.sjei';
+  /* 화면 안의 모든 글자에서 이모지 → 같은 색 체계의 선 아이콘 (문장 중간·카드 그림 포함). 선택 상자(option)는 아이콘을 못 넣어 이모지만 지움 */
+  const deEmoji = root => { if (!root || root.nodeType !== 1 || (root.closest && root.closest(ESKIP))) return;
+    const tw = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, { acceptNode: n => EQ.test(n.data) && !(n.parentElement && n.parentElement.closest(ESKIP)) ? 1 : 2 }), L = []; let n; while ((n = tw.nextNode())) L.push(n);
+    for (const t of L) { const pe = t.parentElement; if (!pe) continue; EANY.lastIndex = 0;
+      if (pe.closest('option,select,title')) { t.data = t.data.replace(EANY, '').replace(/^\s+/, ''); continue; }
+      if (!EANY.test(t.data)) continue; EANY.lastIndex = 0; const frag = document.createDocumentFragment(); let last = 0, m;
+      while ((m = EANY.exec(t.data))) { if (m.index > last) frag.appendChild(document.createTextNode(t.data.slice(last, m.index))); const k = EM[m[1]], sp = document.createElement('span'); sp.className = 'sjei sjei-' + k; sp.setAttribute('aria-hidden', 'true'); sp.innerHTML = U.ic(EI[k], 16); frag.appendChild(sp); last = m.index + m[0].length; if (t.data[last] === ' ' && m.index === 0) last++; }
+      if (last < t.data.length) frag.appendChild(document.createTextNode(t.data.slice(last))); t.replaceWith(frag); }
+    root.querySelectorAll('input[placeholder],textarea[placeholder]').forEach(i => { if (EQ.test(i.placeholder)) i.placeholder = i.placeholder.replace(EANY, '').replace(/^\s+/, ''); }); };
   const deLab = root => { if (!root || !root.querySelectorAll) return; root.querySelectorAll('label.f>span,.f>span:first-child,th').forEach(el => { if (el.closest('#mrpv')) return; const t = el.childNodes.length === 1 && el.firstChild.nodeType === 3 ? el.firstChild.data : null; const mm = t && /^(.*[가-힣].*?)\s+\/\s+([A-Za-z][^가-힣]*)$/.exec(t); if (mm) el.innerHTML = U.esc(mm[1]) + ' <small class="sjen">' + U.esc(mm[2]) + '</small>'; }); };
   if (!BG) { let q = new Set(), raf = 0; const flush = () => { raf = 0; const L = [...q]; q.clear(); L.forEach(r => { if (r.isConnected) { try { deEmoji(r); deLab(r); } catch (e) { } } }); };
-    const mo = new MutationObserver(ms => { for (const m of ms) for (const n of m.addedNodes) if (n.nodeType === 1) q.add(n); if (q.size && !raf) raf = requestAnimationFrame(flush); });
+    const mo = new MutationObserver(ms => { for (const m of ms) for (const n of m.addedNodes) { if (n.nodeType === 1) q.add(n); else if (n.nodeType === 3 && n.parentElement && EQ.test(n.data)) q.add(n.parentElement); } if (q.size && !raf) raf = requestAnimationFrame(flush); });
     const st = () => { if (!document.body) return setTimeout(st, 50); mo.observe(document.body, { childList: true, subtree: true }); q.add(document.body); raf = requestAnimationFrame(flush); }; st(); }
+  /* 제목 아래 설명 문단 → 'ⓘ 자세히'로 접기 (처음 쓰는 사람은 펼쳐 보고, 매일 쓰는 사람은 공간 확보). 경고·주의는 접지 않음 */
+  const descFold = (head, ttl) => { if (!head || !ttl || head.dataset.sjdf) return; const L = []; let e = head.nextElementSibling;
+    while (e && L.length < 3) { if (e.matches('.sjx-pcnote,.sjx-mark,.sjx-desc')) { e = e.nextElementSibling; continue; } const txt = (e.textContent || '').trim(), plain = !e.querySelector('button,input,select,textarea,table,img,canvas,svg:not(.sjei svg),details') && !e.matches('.warn,.al,.banner,.err,.sjx-fc,.card,.steps,.regtabs,.dtl,h1,h2,h3,.sjx-desc');
+      if (!plain || !txt || !(e.matches('p,.hsub,.small,.sub,.info,.muted,.desc') || (e.tagName === 'DIV' && !e.children.length))) break; L.push(e); e = e.nextElementSibling; }
+    head.dataset.sjdf = 1; if (!L.length) return; let open = false; try { open = localStorage.getItem('sejul_desc_open') === '1'; } catch (x) { }
+    const box = document.createElement('div'); box.className = 'sjx-desc'; box.hidden = !open; head.after(box); L.forEach(x => box.appendChild(x));
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'sjx-dbtn' + (open ? ' on' : ''); b.title = T('화면 설명 보기·접기', 'Show / hide description'); b.innerHTML = U.ic('M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 16v-4M12 8h.01', 15) + '<span>' + T('자세히', 'About') + '</span>';
+    b.onclick = () => { const o = box.hidden; box.hidden = !o; b.classList.toggle('on', o); try { localStorage.setItem('sejul_desc_open', o ? '1' : '0'); } catch (x) { } }; ttl.appendChild(b); };
   /* 공통 출력 버튼: 1개면 바로, 여러 개면 펼침 목록 — 화면마다 같은 모양·같은 자리 */
   const prtNode = (host, before, items) => { let el;
     if (items.length === 1) { el = document.createElement('button'); el.type = 'button'; el.className = 'btn sjx-prt'; el.innerHTML = U.ic('M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v7H6z', 17) + '<span>' + T('출력', 'Print') + '</span>'; el.title = items[0][0]; el.onclick = e => { e.preventDefault(); items[0][1](); }; }
@@ -235,6 +270,8 @@ details.sjx-prt .sjx-ddm{left:auto;right:0}
       const CNT = pms ? { jobs: [s.od, ''], defects: [s.def, s.defA ? '' : 'y'], spares: [s.low, 'y'] } : { raList: [(r.wait || 0) + (r.stop || 0), r.stop ? '' : 'y'], ptwList: [r.act, 'b'], dpa: [r.wait, 'y'] };
       if (!nav.querySelector('.sjtb-id')) nav.insertAdjacentHTML('afterbegin', `<span class="sjtb-id ${pms ? 'pms' : 'rsk'}"><i>${U.ic(pms ? 'pms' : 'rsk', 17)}</i>${pms ? T('계획정비', 'Maintenance') : T('위험성 관리', 'Risk')}</span>`);
       const btns = [...nav.querySelectorAll(':scope>button, :scope>.sjtb-more .sjtb-mm>button')];
+      /* 사무실 DPA·회사 승인 탭 → 승인함(🔔)과 공통 결정 창으로 대체 — 탭 숨김 */
+      if (!pms && off) btns.forEach(b => { if (key(b) === 'dpa') b.classList.add('sjx-hid'); });
       btns.forEach(b => { const k = key(b); if (!k) return; if (k === 'dpa' && /승인 코드/.test(b.textContent)) b.textContent = T('DPA·회사 승인', 'Approvals'); if (pms && k === 'home' && /선박 현황|Vessel/.test(b.textContent)) b.textContent = T('홈', 'Home');
         if (!b.querySelector('.sjtb-ic') && TBI[k]) b.insertAdjacentHTML('afterbegin', `<span class="sjtb-ic k-${k}">${U.ic(TBI[k], 16)}</span>`);
         b.querySelectorAll('.sjtb-n').forEach(x => x.remove()); const c = CNT[k]; if (c && c[0]) b.insertAdjacentHTML('beforeend', `<span class="sjtb-n ${c[1]}">${c[0]}</span>`); });
@@ -293,7 +330,8 @@ details.sjx-prt .sjx-ddm{left:auto;right:0}
         d.innerHTML = `<summary class="${bs[0].className.replace(/\b(pri|danger|g)\b/g, '')}">${label} ▾</summary><div class="sjx-ddm"><span class="sjx-ddh">${hint}</span></div>`;
         bs[0].parentNode.insertBefore(d, bs[0]); const m = d.querySelector('.sjx-ddm'); bs.forEach(b => m.appendChild(b)); }
       document.querySelectorAll('details.sjx-dd[open]').forEach(d => { if (!d.matches(':hover')) d.open = false; });
-      try { PMS.prtHead(); } catch (e) { console.warn('prt', e); } },
+      try { PMS.prtHead(); } catch (e) { console.warn('prt', e); }
+      try { const ph = document.querySelector('#main .sjx-ph'); if (ph) descFold(ph, ph.querySelector('h1')); } catch (e) { } },
     /* 제목줄 오른쪽 = [가져오기 ▾] [내보내기 ▾] [출력] [+ 주 동작] — 모든 계획정비 화면 같은 순서 */
     prtHead() { const main = document.getElementById('main'); if (!main) return; const r = route();
       if (r === 'home') { const hd = main.querySelector('.sjh-hd'); if (hd && !hd.querySelector('.sjx-prt')) prtNode(hd, hd.querySelector('.sp') ? hd.querySelector('.sp').nextElementSibling : null, [[T('월간 이행 보고서', 'Monthly report'), () => ACT.prt9()]]); return; }
@@ -317,7 +355,7 @@ details.sjx-prt .sjx-ddm{left:auto;right:0}
       /* 줄마다 이름 (위험성 평가 목록과 같게) + 상태 줄은 이어 붙인 선택 버튼 */
       const r = route(), lab = e => { const c = e.classList; if (c.contains('toolbar')) return e.querySelector('input') ? T('검색', 'Search') : T('작업', 'Actions'); if (c.contains('sfibar')) return T('SFI 분류', 'SFI group');
           if (c.contains('dfsub')) return T('진행 단계', 'Step'); if (c.contains('tabs9') || c.contains('caltabs')) return T('보기', 'View'); if (c.contains('chips')) return r === 'spares' ? T('구분', 'Category') : T('상태', 'Status'); return T('필터', 'Filter'); };
-      const DOT = { od: '#E57373', d7: '#E3C26B', d30: '#C9B26B', nd: '#B8C0CC', ok: '#8BC34A', all: '#B8C0CC', def: '#E57373', low: '#E57373', crit: '#E8A400' };
+      const DOT = { od: '#E5484D', d7: '#E0A100', d30: '#D4B44A', nd: '#9AA4B2', ok: '#2FA36B', all: '#9AA4B2', def: '#E5484D', low: '#E5484D', crit: '#E0A100' };   /* 상태 색 한 벌 (위험성 관리와 같음) */
       main.querySelectorAll('.sjx-fc').forEach(fc => [...fc.children].forEach(e => { if (e.classList.contains('sjx-row')) return; const w = document.createElement('div'); w.className = 'sjx-row'; w.innerHTML = `<span class="sjx-lb">${lab(e)}</span><div class="sjx-rc"></div>`; fc.insertBefore(w, e); w.lastChild.appendChild(e);
         if ((e.classList.contains('chips') || e.classList.contains('tabs9') || e.classList.contains('caltabs')) && e.querySelectorAll('button').length <= 8 && !e.classList.contains('dfsub')) { e.classList.add('sjx-seg'); e.querySelectorAll('button').forEach(b => { b.classList.add('chip'); const k = Object.values(b.dataset).join(' '); const m = Object.keys(DOT).find(x => new RegExp('\\b' + x + '\\b').test(k)); if (m) b.style.setProperty('--dot', DOT[m]); }); } }));
       /* 목록 위 'N건' */
@@ -405,7 +443,7 @@ details.sjx-prt .sjx-ddm{left:auto;right:0}
       const r = { draft: cnt(DB.ras, raStatus, 'draft'), wait: cnt(DB.ras, raStatus, 'wait') + mocw, stop: cnt(DB.ras, raStatus, 'stop'), act: cnt(DB.ptws, ptwStatus, 'act'), moc: (DB.mocs || []).filter(m => !(m.close && m.close.apvDate)).length };
       const cont = typeof contList === 'function' ? contList() : [], k = v => ({ d: { a: 'kpiGo', v } });
       const hero = r.stop ? { tone: 'r', title: `${T('작업 중지', 'Stopped')} <em class="r">${r.stop}</em>${T('건 — 대책 보완 필요', ' — revise controls')}`, sub: T('잔여 위험 "불가" 평가가 있습니다. 대책을 보완하고 다시 평가하세요.', 'Residual risk is unacceptable — revise and re-assess.'), btn: Object.assign({ label: T('확인하기 →', 'Review →') }, k('raList:stop')) }
-        : off && r.wait ? { tone: 'y', title: `${T('회사 승인 대기', 'Awaiting approval')} <em class="y">${r.wait}</em>${T('건', '')}`, sub: T('선박이 보낸 위험성 평가·MoC 승인 요청입니다.', 'Approval requests from the ship.'), btn: { label: T('검토·결정 →', 'Review →'), d: { a: 'go', v: 'dpa' } } }
+        : off && r.wait ? { tone: 'y', title: `${T('회사 승인 대기', 'Awaiting approval')} <em class="y">${r.wait}</em>${T('건', '')}`, sub: T('선박이 보낸 위험성 평가·MoC 승인 요청입니다.', 'Approval requests from the ship.'), btn: { label: T('검토·결정 →', 'Review →'), d: { sjinb: 'apv' } } }
         : cont.length ? { tone: 'b', title: `${T('진행 중인 작업', 'Work in progress')} <em>${cont.length}</em>${T('건', '')}`, sub: cont.slice(0, 2).map(([x]) => (x.no ? x.no + ' ' : '') + (x.title || '')).map(U.esc).join(' · '), btn: { label: T('이어서 하기 →', 'Continue →'), d: { a: 'contOpen' } } }
         : r.wait ? { tone: 'y', title: `${T('DPA·회사 승인 대기', 'Awaiting approval')} <em class="y">${r.wait}</em>${T('건', '')}`, sub: T('승인되면 알림이 옵니다.', 'You will be notified when approved.'), btn: Object.assign({ label: T('보기 →', 'View →') }, k('raList:wait')) }
         : off ? { tone: 'g', title: '✅ ' + T('승인 대기 중인 요청이 없습니다', 'No pending approvals'), sub: '' }
@@ -422,7 +460,7 @@ details.sjx-prt .sjx-ddm{left:auto;right:0}
           { d: { a: 'newRIR' }, bg: '#FFF4D6', fg: '#8A5A00', ic: 'M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z', t: T('위험성 식별 보고', 'Risk identification report'), sub: T('새 위험 발견 시 선장 보고', 'Report a new hazard') },
           { d: { a: 'blankForms' }, bg: '#F1F3F7', fg: '#475467', ic: 'M6 9V3h12v6M6 18H4v-6h16v6h-2M8 14h8v7H8z', t: T('빈 양식 출력', 'Blank forms'), sub: T('F-RSK 6종 · F-SAF 7종', 'F-RSK ×6 · F-SAF ×7') }]));
       let band = '', crewX = ''; try { if (!off) { const nC = (DB.settings.crew || []).length; if (nC) crewX = H.extra('👥 ' + T(`승무원 명단 (Crew List) · ${nC}명`, `Crew list · ${nC}`), crewCardHTML(), 'sjhCrew'); else band = crewCardHTML(); } } catch (e) { }
-      return `<div class="sjh">${H.page({ kicker: (vn ? U.esc(vn) + ' · ' : '') + (typeof today === 'function' ? today() : ''), title: off ? T('위험성 관리 · 회사 승인', 'Risk · approvals') : T('위험성 관리', 'Risk management'), actions: off ? H.btn(T('DPA·회사 승인 →', 'Approvals →'), { d: { a: 'go', v: 'dpa' } }, true) : H.btn('＋ ' + T('새 작업 시작', 'Start work'), { d: { a: 'newRA' } }, true) })}
+      return `<div class="sjh">${H.page({ kicker: (vn ? U.esc(vn) + ' · ' : '') + (typeof today === 'function' ? today() : ''), title: off ? T('위험성 관리 · 회사 승인', 'Risk · approvals') : T('위험성 관리', 'Risk management'), actions: off ? H.btn(T('승인함 →', 'Approvals →'), { d: { sjinb: 'apv' } }, true) : H.btn('＋ ' + T('새 작업 시작', 'Start work'), { d: { a: 'newRA' } }, true) })}
         ${band ? `<div class="sjh-crew">${band}</div>` : ''}${H.hero(hero)}${U.rskKpis(r, k)}
         ${H.cols(H.card(T('확인 필요 항목', 'Action items'), H.rows(rows, { empty: '✅ ' + T('확인 필요 항목이 없습니다.', 'No action items.') })), H.card(T('빠른 작업', 'Quick actions'), quick))}
         ${crewX}${H.card(T('최근 작업', 'Recent'), H.rows(rec, { empty: T('아직 작성한 문서가 없습니다.', 'No documents yet.') }))}
@@ -456,6 +494,9 @@ details.sjx-prt .sjx-ddm{left:auto;right:0}
       try { const mc0 = mocApvCard; mocApvCard = function (m, closed) { const a = m.apv, dec = a.dec || (a.date ? 'ok' : ''), h = mc0(m, closed); if (dec && dec !== 'reject') return h;
           const i = h.indexOf('<div class="stepbox"'), head = i > 0 ? h.slice(0, i) : (dec ? h : ''), sent = (m.reports || []).some(r => r.kind === 'request');
           return head + `<div class="sjx-srv">📡 <b>${sent ? T2('회사 승인 요청됨 — 서버로 전달', 'Approval requested via the server') : T2('회사 승인 요청', 'Ask the office for approval')}</b><br>${sent ? T2('사무실이 앱에서 결정하면 이 화면에 자동으로 반영되고 알림이 옵니다.', 'The office decision appears here automatically, with a notification.') : T2('변화평가표를 마쳤으면 아래 버튼을 누르세요. 회사(사무실 앱)에 바로 전달됩니다.', 'When the form is complete, press the button — it goes straight to the office app.')}${phone()}<br><button class="btn g big" data-a="sjMocReq" data-id="${m.id}" ${closed ? 'disabled' : ''}>📡 ${sent ? T2('다시 요청', 'Request again') : T2('회사에 승인 요청', 'Request approval')}</button></div>`; }; } catch (e) { }
+      /* 사무실 — 공통 결정 창 (승인함·홈·알림에서 열림): 위험성 평가 DPA 승인 / MoC 회사 승인 — 계획정비의 연기·청구·결함과 같은 모양 */
+      A.sjApprove0 = A.sjApprove;
+      A.sjApprove = d => { if (DB.settings.site !== 'office' || !U.decide) return A.sjApprove0(d); try { return RSK.decide(d.id); } catch (e) { console.warn('decide', e); return A.sjApprove0(d); } };
       /* 사무실 — [DPA·회사 승인] 화면: 서버로 받은 요청 목록 */
       try { V.dpa = () => { const ras = (DB.ras || []).filter(r => { try { return raStatus(r)[0] === 'wait'; } catch (e) { return false; } }), mocs = (DB.mocs || []).filter(m => { try { return m.cls !== 'emg' && mocStatus(m)[0] === 'wait'; } catch (e) { return false; } });
           const done = (DB.dpaq || []).filter(x => x.dec).sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0)).slice(0, 20);
@@ -473,6 +514,26 @@ details.sjx-prt .sjx-ddm{left:auto;right:0}
             const eb = el.querySelector('[data-a=dqEdit]'); if (eb) eb.textContent = '✎ ' + T2('결정 변경', 'Change decision');
             el.querySelectorAll('h4.dqsec').forEach(h => { if (/선박에 전달|Send to the ship/.test(h.textContent) && !h.dataset.sj) { h.dataset.sj = 1; h.innerHTML = '📡 ' + T2('선박에 전달 — 서버로 자동', 'Sent to the ship automatically'); let n = h.nextElementSibling; if (n && n.classList.contains('sub')) n.innerHTML = T2('결정이 저장되었습니다. 선박 기기가 인터넷에 연결되면 위험성 평가 화면에 바로 반영되고, 선박에 알림이 갑니다. 전화·카톡·메일로 따로 알릴 필요가 없습니다.', 'Saved. It reaches the ship automatically when it is online, with a notification. No call, chat or e-mail needed.'); } }); } } catch (e) { } return x; }; } catch (e) { }
     },
+    decide(id) { const ra = (DB.ras || []).find(x => x.id === id), m = ra ? null : (DB.mocs || []).find(x => x.id === id); if (!ra && !m) return toast(T('항목을 찾지 못했습니다 — 동기화 후 다시', 'Not found — try after sync'));
+      const q = ra ? dqFromRA(ra) : dqAdd({ kind: 'moc', raNo: m.no, rq: mocRq(m), vessel: m.vessel, task: m.title, mocId: m.id, reason: T('변화관리 회사 승인', 'MoC company approval') }); save();
+      const hi = q.kind !== 'moc' && dqHigh(q), stx = ra ? raStatus(ra) : mocStatus(m), tone = { wait: 'wait', stop: 'rej', ok: 'ok', act: 'prog', draft: 'draft', done: 'done' }[stx[0]] || 'prog';
+      const TY = { prejob: T('작업 전 위험성 평가', 'Pre-job RA'), periodic: T('정기 위험성 평가', 'Periodic RA'), unplanned: T('비계획 / 임시 평가', 'Unplanned RA'), simops: T('동시작업 (SIMOPS)', 'SIMOPS') };
+      const rows = ra ? [[T('평가 구분', 'Type'), U.esc(TY[ra.type] || ra.type || '')], [T('작업 장소', 'Location'), U.esc(ra.location || '-')], [T('작업 예정일', 'Work date'), U.esc(ra.workDate || ra.date || '-')], [T('평가팀', 'Team'), U.esc((ra.team || []).map(x => typeof x === 'string' ? x : [x.rank, x.name].filter(Boolean).join(' ')).join(', ') || '-')],
+          [T('작업허가', 'Permits'), U.esc((ra.ptw || []).join(', ') || '-')], [T('위험도', 'Risk'), `${T('초기', 'Initial')} ${gb(maxG(ra.hazards.map(hzI)))} → ${T('잔여', 'Residual')} ${gb(raMaxR(ra))}`], [T('승인 사유', 'Why DPA'), U.esc(q.reason || '-')], [T('선장 승인', 'Master'), U.esc([ra.apv.master, ra.apv.masterDate].filter(Boolean).join(' · ') || '-')]]
+        : [[T('구분', 'Category'), U.esc([m.cat, m.cls].filter(Boolean).join(' · '))], [T('제안자', 'Proposed by'), U.esc([m.proposerRank, m.proposer, m.date].filter(Boolean).join(' · '))], [T('필요성', 'Need'), U.esc(m.need || '-')], [T('변경 내용', 'Change'), U.esc(m.content || '-')], [T('영향', 'Impact'), U.esc(m.impact || '-')], [T('기간', 'Duration'), U.esc(m.dur === 'temp' ? T('임시', 'Temporary') + ` ${m.start || ''} ~ ${m.end || ''}` : T('영구', 'Permanent'))]];
+      const hz = ra && ra.hazards.length ? U.sjdTable(['#', T('위험 요인', 'Hazard'), T('초기', 'Initial'), T('감소 대책', 'Controls'), T('잔여', 'Residual')], ra.hazards.map((h, i) => [i + 1, `<b>${U.esc(h.hazard)}</b>`, gb(hzI(h)), h.controls.map(c => U.esc(c.t)).join('<br>'), gb(hzR(h))])) : '';
+      const last = ra && ra.apv.lastReject ? [[ra.apv.lastReject.at, ra.apv.lastReject.name, T('이전 반려: ', 'Returned before: ') + (ra.apv.lastReject.items || '')]] : [];
+      const run = dec => v => { if (dec === 'ok' && hi) return T('잔여 위험 "높음" — 조건부 승인 또는 반려만 가능합니다 (RSK-P-01 3.4)', 'Residual High: conditional approval or return only');
+        Object.assign(q, { dec, dpaName: v.name, cond: v.cond, code: apvCode(q.rq, dec, q.kind === 'moc' ? 'MOC' : ''), decAt: today(), updatedAt: Date.now() }); DB.settings.dpaName = v.name;
+        if (m) { mocApplyRec(m, dec, q.dpaName, q.cond, f6(q.code)); touch(m); }
+        if (ra) { if (dec === 'reject') ra.apv.lastReject = { at: nowLocal(), name: q.dpaName, items: q.cond }; Object.assign(ra.apv, { dpaDecision: dec, dpaName: q.dpaName, dpaDecDate: q.decAt, dpaComment: q.cond, dpaCode: q.code, rq: q.rq }); dpaApply(ra); touch(ra); }
+        save(); render(); toast(T('결정을 저장했습니다 — 선박으로 전달됩니다', 'Decision saved — sent to the ship')); };
+      U.decide({ kind: ra ? T('위험성 평가 · DPA 승인', 'Risk assessment · DPA') : T('변화관리 · 회사 승인', 'MoC · company approval'), tool: 'rsk', vessel: (ra || m).vessel, no: (ra || m).no, title: String((ra || m).title || '').split(' / ')[0], sub: hi ? `<b style="color:#B42318">${T('잔여 위험 "높음" — 조건 없는 승인 불가', 'Residual High — plain approval not allowed')}</b>` : '', st: [stx[1], tone],
+        rows, secs: [{ h: T('위험 요인 · 대책', 'Hazards & controls'), html: hz }], hist: last,
+        fields: [{ id: 'name', label: T('DPA 성명', 'DPA name'), value: DB.settings.dpaName || '', req: 1 }, { id: 'cond', label: T('승인 조건 / 보완 요청 사항 (한 줄에 하나 — 조건부·반려 시 필수)', 'Conditions / items to revise (one per line)'), type: 'ta', value: q.cond || '' }],
+        acts: [{ k: 'open', label: T('문서 전체 보기', 'Open document'), tone: 'neu', run: () => { A.open({ k: ra ? 'ra' : 'moc', id }); } },
+          { k: 'reject', label: '↩ ' + T('반려', 'Return'), tone: 'rej', need: ['name', 'cond'], run: run('reject') }, { k: 'cond', label: T('조건부 승인', 'Approve w/ conditions'), tone: 'cond', need: ['name', 'cond'], run: run('cond') },
+          { k: 'ok', label: '✓ ' + T('승인', 'Approve'), tone: 'ok', need: ['name'], off: hi ? T('잔여 위험 높음 — 조건부 승인 또는 반려', 'Residual High') : '', run: run('ok') }] }); },
     shipStep() { if (DB.settings.site === 'office') return; const k = document.querySelector('[data-a=dpaKakao]'); if (!k) return; const box = k.closest('.stepbox'); if (!box || box.dataset.sj) return;
       const S = DB.settings; box.dataset.sj = 1; box.outerHTML = `<div class="sjx-srv">📡 <b>${T('DPA 승인 요청 — 서버로 자동 전달됨', 'DPA approval requested via the server')}</b><br>${T('DPA가 사무실 앱에서 결정하면 이 화면에 바로 반영되고 알림이 옵니다. 요청번호·승인 코드·카톡·메일은 필요 없습니다.', 'The DPA decides in the office app; the result appears here with a notification. No request number, code, chat or e-mail needed.')}${S.dpaPhone ? ` <span class="sub">(${T('급하면 DPA에게 전화', 'urgent: call the DPA')} ☎ ${U.esc(S.dpaPhone)})</span>` : ''}</div>`;
       const c = document.getElementById('dpaCodeIn'); if (c) { const b2 = c.closest('.stepbox'); if (b2) b2.style.display = 'none'; } },
@@ -502,6 +563,7 @@ details.sjx-prt .sjx-ddm{left:auto;right:0}
         try { if (off && v) { const h = document.querySelector('.page-h h2'); if (h && !h.querySelector('.sjv')) h.insertAdjacentHTML('beforeend', ` <span class="sjv" style="font-size:14px;color:#5B6474;font-weight:500">· ${U.esc(v)}</span>`); } } catch (e) { }
         try { RSK.shipStep(); } catch (e) { }
         try { RSK.prtHead(); } catch (e) { console.warn('prt', e); }
+        try { const ph = document.querySelector('#main>.page-h'); if (ph) descFold(ph, ph.querySelector('h2')); } catch (e) { }
         try { const n = NAV.find(z => z[0] === 'dpa'); if (n) { n[1] = 'DPA·회사 승인'; n[2] = 'Approvals'; } } catch (e) { }
         navDeco(); sumSoon(RSK); return x; }; }
   };
