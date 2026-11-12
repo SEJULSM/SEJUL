@@ -112,6 +112,31 @@ html body #top .sjbar,html body header.top .bar{display:none!important}
 #main .tw{background:#fff;border:1px solid var(--sjx-line);border-radius:14px}
 #main table.g thead th,#main table.g>tr:first-child>th{background:#F7F8FA!important;color:#5B6474!important;font-weight:700!important;font-size:12.5px!important;border-bottom:1px solid #E3E6EB!important;text-transform:none}
 #main table.g tbody tr:hover>td{background:#F7F9FC}
+/* ===== 도구 안 탭 줄: 도구 이름표 · 아이콘 · 숫자 · 고른 탭은 남색 알약 · 더보기(PC) · 전체 메뉴(휴대폰) ===== */
+html body #top .sj-nav,html body header.top #nav{display:flex!important;align-items:center!important;gap:4px!important;flex-wrap:nowrap!important;background:#fff!important;border-bottom:1px solid #E3E6EB!important;box-shadow:0 2px 8px rgba(15,23,42,.06)!important;padding:8px 14px!important;overflow:visible}
+html body #top .sj-nav>button,html body header.top #nav>button,html body .sjtb-more .sjtb-mm>button{display:inline-flex!important;align-items:center!important;gap:6px!important;flex:0 0 auto!important;white-space:nowrap!important;color:#334155!important;background:transparent!important;border:0!important;border-radius:9px!important;padding:8px 12px!important;font-size:14.5px!important;font-weight:600!important;box-shadow:none!important;margin:0!important;line-height:1.2!important}
+html body #top .sj-nav>button:hover,html body header.top #nav>button:hover{background:#F1F4F9!important;color:#14244A!important}
+html body #top .sj-nav>button.on,html body header.top #nav>button.on{background:#1B2F5B!important;color:#fff!important;font-weight:800!important;border:0!important}
+.sjtb-ic{display:inline-flex;opacity:.8}button.on .sjtb-ic{opacity:1}
+.sjtb-n{font-size:11.5px;font-weight:800;border-radius:9px;padding:0 6px;line-height:18px;background:#FDECEC;color:#C62828}.sjtb-n.y{background:#FFF4D6;color:#8A5A00}.sjtb-n.b{background:#E7ECF5;color:#1B2F5B}button.on .sjtb-n{background:#fff}
+.sjtb-id{display:inline-flex;align-items:center;gap:8px;padding:4px 14px 4px 2px;margin-right:6px;border-right:1px solid #E3E6EB;font-weight:800;font-size:15px;color:#0F172A;white-space:nowrap;flex:none}.sjtb-id i{width:28px;height:28px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-style:normal}
+.sjtb-id.pms i{background:#E7ECF5;color:#1B2F5B}.sjtb-id.rsk i{background:#FDF0E7;color:#B4501A}
+.sjtb-more{position:relative;margin-left:auto;flex:none}.sjtb-more>summary{list-style:none;cursor:pointer;padding:8px 12px;border-radius:9px;font-weight:700;font-size:14.5px;color:#334155;white-space:nowrap}.sjtb-more>summary::-webkit-details-marker{display:none}.sjtb-more>summary:hover{background:#F1F4F9}.sjtb-more.on>summary{background:#1B2F5B;color:#fff}
+.sjtb-mm{position:absolute;right:0;top:calc(100% + 6px);z-index:60;background:#fff;border:1px solid #DDE2EA;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.15);padding:6px;min-width:220px;display:flex;flex-direction:column}.sjtb-mm>button{width:100%;justify-content:flex-start}.sjtb-mm>button.on{background:#1B2F5B!important;color:#fff!important}
+.sjtb-all{display:none}
+html body #top .sj-nav>button[data-go=help],html body #top .sj-nav>button[data-go=settings],html body header.top #nav>button[data-v=help],html body header.top #nav>button[data-v=settings],html body #top .sj-nav>button.sjtb-all,html body header.top #nav>button.sjtb-all{display:none!important}
+@media (max-width:899px){
+ html body #top .sj-nav>button.sjtb-all,html body header.top #nav>button.sjtb-all{display:flex!important;position:fixed!important;right:0!important;width:56px!important;height:50px!important;padding:0 8px 0 0!important;align-items:center!important;justify-content:flex-end!important;border:0!important;border-radius:0!important;background:linear-gradient(90deg,rgba(255,255,255,0),#fff 40%)!important}
+ html body #top .sj-nav,html body header.top #nav{padding:8px 52px 8px 10px!important;overflow-x:auto!important;gap:6px!important;position:relative}
+ html body #top .sj-nav>button,html body header.top #nav>button{border:1px solid #D5DCE6!important;border-radius:18px!important;padding:7px 12px!important;font-size:14px!important}
+ html body #top .sj-nav>button.on,html body header.top #nav>button.on{border-color:#1B2F5B!important}
+ .sjtb-id{display:none}.sjtb-more{display:contents}.sjtb-more>summary{display:none}.sjtb-more .sjtb-mm{display:contents}
+ .sjtb-all{display:flex;position:fixed;right:0;width:52px;height:52px;align-items:center;justify-content:center;background:linear-gradient(90deg,rgba(255,255,255,0),#fff 35%);border:0;z-index:5;cursor:pointer;color:#1B2F5B}
+ .sjtb-all span{display:flex;width:34px;height:34px;border-radius:10px;border:1px solid #D5DCE6;background:#fff;align-items:center;justify-content:center}
+}
+.sjtb-sh{position:fixed;inset:0;z-index:2100}.sjtb-sh[hidden]{display:none}.sjtb-sh .bg{position:absolute;inset:0;background:rgba(15,23,42,.45)}.sjtb-sh .pn{position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:18px 18px 0 0;padding:10px 12px calc(16px + env(safe-area-inset-bottom));max-height:80vh;overflow:auto;font-family:'Pretendard','Noto Sans KR','Malgun Gothic',system-ui,sans-serif}
+.sjtb-sh h3{margin:6px 6px 10px;font-size:17px;display:flex;align-items:center}.sjtb-sh h3 button{margin-left:auto;border:0;background:#F1F3F7;border-radius:50%;width:34px;height:34px;font-size:16px}
+.sjtb-sh .pn>button.it{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:0;border-bottom:1px solid #F0F2F5;background:none;padding:14px 10px;font:inherit;font-size:16px;font-weight:700;color:#0F172A;cursor:pointer}.sjtb-sh .pn>button.it.on{background:#EEF3FB;box-shadow:inset 4px 0 0 #F2B705}.sjtb-sh .pn>button.it .sjtb-n{margin-left:auto}
 /* 이전/다음 막대 없앰 (위 탭·왼쪽 메뉴로 이동) · 실행 취소 단추는 저장 알림의 [되돌리기]로 · 위험성 관리 '설정' 탭은 앱 설정으로 */
 #sjFoot{display:none!important}#top .sj-nav [data-go=help],#nav [data-v=help],#mtab [data-v=help],#mtsheet [data-v=help],#drawer [data-go=help],#drawer [data-v=help]{display:none!important}#top .sj-tool[data-act=undo],#top .sj-tool[data-act=redo]{display:none!important}#nav [data-v=settings],#mtab [data-v=settings]{display:none!important}
 #toasts .toast button:not(.tx){white-space:nowrap;flex:none;background:#F2B705!important;color:#14244A!important;border:0!important;border-radius:8px!important;font-weight:800!important;padding:5px 12px!important}
@@ -142,7 +167,29 @@ html body #top .sjbar,html body header.top .bar{display:none!important}
     let r = document.querySelector('.sjr'); if (!r) { document.querySelectorAll('.sjmob').forEach(x => x.remove()); const w = document.createElement('div'); w.innerHTML = U.rail(TOOL, '../'); [...w.children].forEach(x => document.body.appendChild(x)); U.syncPaint(); U.updPaint(); C.updBar && C.updBar(); }
     const bar = document.querySelector('#top .sjbar, header.top .bar'); /* 휴대폰: 머리글에 ⌂ */
     if (bar && !bar.querySelector('.sjx-home')) { const a = document.createElement('a'); a.className = 'sjx-home'; a.href = '../index.html'; a.title = T('앱 홈', 'App home'); a.textContent = '⌂'; bar.insertBefore(a, bar.firstChild); } };
-  const railRefresh = () => { const open = document.querySelector('.sjs:not([hidden])'); document.querySelectorAll('.sjr,.sjmob').forEach(x => x.remove()); C.ensureBar(); if (open) { const sh = document.querySelector('.sjs'); if (sh) sh.hidden = false; } };
+  /* 탭 줄 꾸미기 — 도구가 다시 그릴 때마다 */
+  const TBI = { home: 'home', jobs: 'M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01', due: 'M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01', ck: 'M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11', defects: 'M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z', spares: 'M21 8 12 3 3 8v8l9 5 9-5zM3 8l9 5 9-5M12 13v8', fleet: 'bld',
+    raList: 'M9 4h6v3H9zM7 5H5v16h14V5h-2M9 12h6M9 16h4', ptwList: 'M7 3h7l5 5v13H7zM14 3v5h5M10 14l2 2 4-4', mocList: 'M4 4v6h6M20 20v-6h-6M20 9A8 8 0 0 0 5.6 5.6L4 10M4 15a8 8 0 0 0 14.4 3.4L20 14', rirList: 'M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z', register: 'M4 4h12a4 4 0 0 1 4 4v12H8a4 4 0 0 1-4-4zM8 4v16', dpa: 'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6zM9 12l2 2 4-4' };
+  const navDeco = () => { try { const pms = TOOL === 'pms', nav = document.querySelector(pms ? '#top .sj-nav' : 'header.top #nav'); if (!nav) return;
+      const key = b => pms ? b.dataset.go : b.dataset.v, off = U.role() === 'office', v = off ? (C.get('view') || '') : (C.get('vessel') || '');
+      const sp = (U.sum('pms') || {}).ships || {}, s = sp[v] || {}, r = ((U.sum('rsk') || {}).v || {})[v] || {};
+      const CNT = pms ? { jobs: [s.od, ''], defects: [s.def, s.defA ? '' : 'y'], spares: [s.low, 'y'] } : { raList: [(r.wait || 0) + (r.stop || 0), r.stop ? '' : 'y'], ptwList: [r.act, 'b'], dpa: [r.wait, 'y'] };
+      if (!nav.querySelector('.sjtb-id')) nav.insertAdjacentHTML('afterbegin', `<span class="sjtb-id ${pms ? 'pms' : 'rsk'}"><i>${U.ic(pms ? 'pms' : 'rsk', 17)}</i>${pms ? T('계획정비', 'Maintenance') : T('위험성 관리', 'Risk')}</span>`);
+      const btns = [...nav.querySelectorAll(':scope>button, :scope>.sjtb-more .sjtb-mm>button')];
+      btns.forEach(b => { const k = key(b); if (!k) return; if (k === 'dpa' && /승인 코드/.test(b.textContent)) b.textContent = T('DPA·회사 승인', 'Approvals'); if (pms && k === 'home' && /선박 현황|Vessel/.test(b.textContent)) b.textContent = T('홈', 'Home');
+        if (!b.querySelector('.sjtb-ic') && TBI[k]) b.insertAdjacentHTML('afterbegin', `<span class="sjtb-ic">${U.ic(TBI[k], 16)}</span>`);
+        b.querySelectorAll('.sjtb-n').forEach(x => x.remove()); const c = CNT[k]; if (c && c[0]) b.insertAdjacentHTML('beforeend', `<span class="sjtb-n ${c[1]}">${c[0]}</span>`); });
+      if (!pms) { let more = nav.querySelector('.sjtb-more'); const mv = btns.filter(b => ['rirList', 'register'].includes(key(b)));
+        if (mv.length) { if (!more) { more = document.createElement('details'); more.className = 'sjtb-more'; more.innerHTML = `<summary>${T('더보기', 'More')} ▾</summary><div class="sjtb-mm"></div>`; nav.appendChild(more); more.addEventListener('click', e => { if (e.target.closest('.sjtb-mm>button')) more.open = false; }); }
+          mv.forEach(b => { if (b.parentNode !== more.querySelector('.sjtb-mm')) more.querySelector('.sjtb-mm').appendChild(b); }); more.classList.toggle('on', mv.some(b => b.classList.contains('on'))); } }
+      let all = nav.querySelector('.sjtb-all'); if (!all) { nav.insertAdjacentHTML('beforeend', `<button type="button" class="sjtb-all" aria-label="${T('전체 메뉴', 'All sections')}"><span>${U.ic('M4 6h16M4 12h16M4 18h16', 18)}</span></button>`); all = nav.querySelector('.sjtb-all'); all.onclick = e => { e.stopPropagation(); navSheet(nav, key); }; }
+      if (window.matchMedia('(max-width: 899px)').matches) setTimeout(() => { const on = nav.querySelector('button.on:not(.sjtb-all)'); if (!on) return; const a = on.getBoundingClientRect(), n = nav.getBoundingClientRect(); if (a.left < n.left || a.right > n.right - 56) nav.scrollLeft += a.left - n.left - 12; }, 60);
+    } catch (e) { console.warn('nav', e); } };
+  const navSheet = (nav, key) => { let sh = document.querySelector('.sjtb-sh'); if (!sh) { sh = document.createElement('div'); sh.className = 'sjtb-sh'; document.body.appendChild(sh); }
+    const bs = [...nav.querySelectorAll('button')].filter(b => !b.classList.contains('sjtb-all') && key(b) && getComputedStyle(b).display !== 'none');
+    sh.innerHTML = `<div class="bg"></div><div class="pn"><h3>${TOOL === 'pms' ? T('계획정비', 'Maintenance') : T('위험성 관리', 'Risk')}<button type="button" aria-label="${T('닫기', 'Close')}">✕</button></h3>${bs.map((b, i) => `<button type="button" class="it ${b.classList.contains('on') ? 'on' : ''}" data-i="${i}">${b.innerHTML}</button>`).join('')}</div>`;
+    sh.hidden = false; sh.onclick = e => { const it = e.target.closest('.it'); if (it) { sh.hidden = true; bs[+it.dataset.i].click(); return; } if (e.target.closest('.bg,h3 button')) sh.hidden = true; }; };
+  const railRefresh = () => { setTimeout(navDeco, 0); const open = document.querySelector('.sjs:not([hidden])'); document.querySelectorAll('.sjr,.sjmob').forEach(x => x.remove()); C.ensureBar(); if (open) { const sh = document.querySelector('.sjs'); if (sh) sh.hidden = false; } };
   const appCard = cls => `<div class="${cls} sjx-card"><span class="tx"><b>${T('앱 공통 설정', 'App settings')}</b><br>${T('기기 종류(선박/사무실)·선박·PC 이름·언어·회사 정보(DPA)·서버 동기화·백업 폴더는 앱 [설정]에서 한 번에 관리합니다. 이 화면에는 이 도구에만 필요한 설정만 있습니다.', 'Device type, vessel, PC name, language, company (DPA), sync and backup folder are managed once in app Settings. Only settings for this tool are here.')}</span><a href="../index.html#settings">${T('앱 설정 열기', 'Open app settings')}</a></div>`;
   const noData = (v, tool) => `<div class="sjx-empty"><h2>${U.esc(v)}</h2>${T(`아직 이 선박의 ${tool} 자료를 받지 못했습니다.<br>선박 기기가 앱에 등록되고 사무실이 [기기 승인]을 하면, 선박에서 입력한 자료가 자동으로 들어옵니다.`, `No ${tool} data from this vessel yet. It arrives once a ship device is registered and approved.`)}<div style="margin-top:14px"><a href="../index.html#devices" style="font-weight:700">${T('기기 승인 화면으로 →', 'Go to device approval →')}</a></div></div>`;
   document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-sjpick]'); if (!b) return; C.set('view', b.dataset.sjpick); if (U.onView) U.onView(b.dataset.sjpick); }, true);
@@ -271,7 +318,7 @@ html body #top .sjbar,html body header.top .bar{display:none!important}
             r: (typeof RQS === 'function' ? RQS(db) : []).filter(r => !(MODE === 'admin' && r.st === 'draft')).map(r => [r.id, r.no || '', (r.items || []).slice(0, 3).map(x => cut(x.name)).join(', '), r.st]) }; }
         const js = JSON.stringify({ at: Date.now(), v: ix }); if (localStorage.getItem('sejul_idx_pms_h') !== String(js.length)) { localStorage.setItem('sejul_idx_pms', js); localStorage.setItem('sejul_idx_pms_h', String(js.length)); } } catch (e) { console.warn('idx', e); } },
     hookRender() { const r0 = render; render = function () { try { const v = C.get('view') || ''; if (MODE === 'admin' && v && OFFICE.ships[v] && OFFICE.sel !== v) OFFICE.sel = v; } catch (e) { }   /* 사무실: 항상 왼쪽 메뉴에서 고른 선박 */
-      const x = r0.apply(this, arguments); try { PMS.after(); } catch (e) { } sumSoon(PMS); return x; }; }
+      const x = r0.apply(this, arguments); try { PMS.after(); } catch (e) { } navDeco(); sumSoon(PMS); return x; }; }
   };
   /* ---------- 위험성 관리 ---------- */
   const RSK = {
@@ -369,7 +416,7 @@ html body #top .sjbar,html body header.top .bar{display:none!important}
         try { if (off && v) { const h = document.querySelector('.page-h h2'); if (h && !h.querySelector('.sjv')) h.insertAdjacentHTML('beforeend', ` <span class="sjv" style="font-size:14px;color:#5B6474;font-weight:500">· ${U.esc(v)}</span>`); } } catch (e) { }
         try { RSK.shipStep(); } catch (e) { }
         try { const n = NAV.find(z => z[0] === 'dpa'); if (n) { n[1] = 'DPA·회사 승인'; n[2] = 'Approvals'; } } catch (e) { }
-        sumSoon(RSK); return x; }; }
+        navDeco(); sumSoon(RSK); return x; }; }
   };
   /* ---------- 시작 ---------- */
   let tries = 0;
