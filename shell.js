@@ -14,7 +14,7 @@
   const BG = new URLSearchParams(location.search).has('bg'); C.bg = BG;   /* 앱 홈이 요약만 만들려고 보이지 않게 연 창 */
 
   /* ---------- 디자인 ---------- */
-  const css = U.css + `
+  let css = U.css + `
 :root{--sjx-bg:#F3F4F6;--sjx-line:#E3E6EB;--sjx-ink:#0F172A;--sjx-navy:#1B2F5B;--sjx-mut:#5B6474}
 :root{--bg:var(--sjx-bg)!important;--sj-bg:var(--sjx-bg)!important;--line:var(--sjx-line);--sj-line:var(--sjx-line)}
 body{background:var(--sjx-bg)!important;font-family:'Pretendard','Noto Sans KR','Malgun Gothic','Apple SD Gothic Neo',system-ui,sans-serif!important}
@@ -97,7 +97,7 @@ body{background:var(--sjx-bg)!important;font-family:'Pretendard','Noto Sans KR',
  #mback .modal table{display:block;overflow-x:auto}
  /* 간소화: 설명 문단·출력·엑셀·대량 등록은 PC에서 */
  #main>p.hsub,#main>.info.small,#main .sech,#main .sfitiles,#main section.eql,
- #main [data-act=prt9],#main .prt9,#main .prt9s,#main .sjx-dd,#main [data-act=ckPrintMenu],#main [data-act=ckBlankMenu],#main [data-act=sfiPrint],#main [data-act=clsPrint],#main [data-act=clsBlank],#main [data-act=monthlyReport],
+ #main [data-act=prt9],#main .prt9,#main .prt9s,#main .sjx-dd,#main .sjx-prt,#main [data-act=ckPrintMenu],#main [data-act=ckBlankMenu],#main [data-act=sfiPrint],#main [data-act=clsPrint],#main [data-act=clsBlank],#main [data-act=monthlyReport],
  #main .sjx-ph [data-act=eqAdd],#main .sjx-ph [data-act=calAdd],#main .sjx-ph [data-act=clsNew],#main .sjx-ph [data-act=spNew],#main [data-act=sfiAdd]{display:none!important}
  #main .sjx-row:has([data-act=ckBlankMenu]):not(:has(input,select)),#main .sjx-fc:has([data-act=ckBlankMenu]):not(:has(input,select)){display:none!important}
  #main h1{font-size:22px!important}#main .sjx-ph{margin-bottom:6px}
@@ -150,6 +150,16 @@ html body #top .sj-nav>button[data-go=help],html body #top .sj-nav>button[data-g
  #top .sj-nav .sj-site{display:none!important}
  html body #toasts{top:auto!important;bottom:84px!important;left:10px!important;right:10px!important}html body{padding-top:54px!important;padding-bottom:84px!important}html.sj-hasupd body{padding-top:100px!important}html body #foot{bottom:66px!important}#drawer{bottom:66px!important}#selbar{bottom:66px!important}
 }`;
+  css += `
+.sjei{display:inline-flex;vertical-align:-3px;margin-right:6px;flex:none}.sjei svg{width:1.05em;height:1.05em;min-width:15px;min-height:15px}
+h1 .sjei,h2 .sjei,h3 .sjei{color:#2F5496}h1 .sjei svg,h2 .sjei svg{width:.95em;height:.95em}
+.badge .sjei,.tag .sjei,.chip .sjei{margin-right:3px}.badge .sjei svg,.tag .sjei svg{min-width:12px;min-height:12px;width:.95em;height:.95em}
+.sjen{font-size:.8em;font-weight:400;color:#7A8499;margin-left:3px}.en{font-weight:400}#main .regtabs .en,#main .prto .en{color:#7A8499}
+.sjx-prt{display:inline-flex!important;align-items:center;gap:6px}.sjx-prt>summary{display:inline-flex!important;align-items:center;gap:6px}.sjx-prt svg{flex:none}
+details.sjx-prt .sjx-ddm{left:auto;right:0}
+@media (min-width:900px){html body .modal-bg{left:248px!important;width:auto!important;right:0!important}html body .modal-bg .modal{max-width:calc(100vw - 290px)!important}}
+@media (min-width:900px){html body #mback{left:248px!important;width:auto!important;right:0!important}html body #mback .modal{max-width:calc(100vw - 290px)!important}}
+`;
   const st = document.createElement('style'); st.textContent = css; (document.head || document.documentElement).appendChild(st);
   /* 도구가 앱 설정(선박·사무실)을 적용할 때까지 내용 숨김 — 예전 모양·다른 선박이 잠깐 보이는 것 방지 */
   const wait = document.createElement('style'); wait.id = 'sjxWait'; wait.textContent = 'body>*:not(.sjr):not(.sjmob){visibility:hidden!important}body{background:#F3F4F6!important}'; (document.head || document.documentElement).appendChild(wait);
@@ -171,6 +181,47 @@ html body #top .sj-nav>button[data-go=help],html body #top .sj-nav>button[data-g
   /* 탭 줄 꾸미기 — 도구가 다시 그릴 때마다 */
   const TBI = { home: 'home', jobs: 'M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01', due: 'M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01', ck: 'M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11', defects: 'M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z', spares: 'M21 8 12 3 3 8v8l9 5 9-5zM3 8l9 5 9-5M12 13v8', fleet: 'bld',
     raList: 'M9 4h6v3H9zM7 5H5v16h14V5h-2M9 12h6M9 16h4', ptwList: 'M7 3h7l5 5v13H7zM14 3v5h5M10 14l2 2 4-4', mocList: 'M4 4v6h6M20 20v-6h-6M20 9A8 8 0 0 0 5.6 5.6L4 10M4 15a8 8 0 0 0 14.4 3.4L20 14', rirList: 'M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z', register: 'M4 4h12a4 4 0 0 1 4 4v12H8a4 4 0 0 1-4-4zM8 4v16', dpa: 'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6zM9 12l2 2 4-4' };
+
+  /* ---------- 디자인 통일: 이모지 → 선 아이콘 · 영어 보조 표기 작게 · 팝업 위치 ----------
+     버튼·제목·탭·표 머리·라벨 맨 앞의 이모지를 같은 굵기의 선 아이콘으로 (출력물·입력칸은 그대로) */
+  const EI = { print: 'M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v7H6z', imp: 'M12 3v12m-5-5 5 5 5-5M5 21h14', exp: 'M12 21V9m-5 5 5-5 5 5M5 3h14',
+    clip: 'M9 4h6v3H9zM8 5H6a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1h-2M9 12h6M9 16h4', edit: 'M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z', ok: 'M20 6 9 17l-5-5',
+    warn: 'M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0zM12 9v4M12 17h.01', ban: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM4.9 4.9l14.2 14.2', srch: 'M21 21l-4.3-4.3M11 18a7 7 0 1 1 0-14 7 7 0 0 1 0 14z',
+    cal: 'M3 6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM16 2v4M8 2v4M3 10h18', wr: 'M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.8-3.8a6 6 0 0 1-7.9 7.9l-6.9 6.9a2.1 2.1 0 0 1-3-3l6.9-6.9a6 6 0 0 1 7.9-7.9z',
+    star: 'M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z', box: 'M21 8 12 3 3 8v8l9 5 9-5zM3 8l9 5 9-5M12 13v8', fold: 'M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z',
+    file: 'M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9zM14 3v6h6', book: 'M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5zM4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5', lock: 'M5 11h14v10H5zM8 11V7a4 4 0 0 1 8 0v4',
+    ref: 'M21 12a9 9 0 1 1-2.6-6.4L21 8M21 3v5h-5', home: 'M3 11 12 3l9 8M5 10v10h14V10', user: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0', tree: 'M9 3h6v4H9zM3 17h6v4H3zM15 17h6v4h-6zM12 7v5M6 17v-3h12v3',
+    tgt: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8z', bank: 'M3 21h18M4 10h16M12 3 3 8h18zM6 10v8M10 10v8M14 10v8M18 10v8', hour: 'M6 2h12M6 22h12M7 2c0 6 10 6 10 10S7 16 7 22M17 2c0 6-10 6-10 10s10 4 10 10',
+    fire: 'M12 22c4 0 7-3 7-7 0-5-5-7-5-12-3 2-6 6-6 9-1-1-2-2-2-4-2 2-3 4-3 7 0 4 4 7 9 7z', plus: 'M12 5v14M5 12h14', del: 'M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6', send: 'M22 2 11 13M22 2l-7 20-4-9-9-4z',
+    chart: 'M3 3v18h18M7 16v-5M12 16V8M17 16v-8', save: 'M5 3h11l5 5v13H5zM8 3v5h8M8 21v-7h8v7', ship: 'M3 18c2 2 4 2 6 0 2 2 4 2 6 0 2 2 4 2 6 0M5 15l-2-5h18l-2 5M8 10V6h8v4M12 3v3', bld: 'M4 21V3h10v18M14 9h6v12M8 7h2M8 11h2M8 15h2',
+    undo: 'M9 14 4 9l5-5M4 9h11a5 5 0 0 1 0 10h-1', pause: 'M7 5h3v14H7zM14 5h3v14h-3z', cam: 'M3 8a2 2 0 0 1 2-2h2l2-2h6l2 2h2a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8z',
+    att: 'M21 11l-9 9a5 5 0 0 1-7-7l9-9a3.5 3.5 0 0 1 5 5l-9 9a2 2 0 0 1-3-3l8-8', bell: 'M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0', up: 'M12 19V5M5 12l7-7 7 7', dn: 'M12 5v14M5 12l7 7 7-7',
+    info: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 16v-4M12 8h.01', pill: 'M10.5 20.5a5 5 0 0 1-7-7l10-10a5 5 0 0 1 7 7zM8.5 8.5l7 7', bulb: 'M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z',
+    link: 'M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1', x: 'M18 6 6 18M6 6l12 12', lab: 'M9 3h6M10 3v6L4 20h16L14 9V3', shld: 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z',
+    pc: 'M3 4h18v12H3zM8 20h8M12 16v4', clk: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 6v6l4 2', key: 'M15 7a4 4 0 1 1-3.9 5H3v3h3v3h3v-3h2.1A4 4 0 0 1 15 7z', copy: 'M8 8h12v12H8zM4 16V4h12', gear: 'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM12 2v3M12 19v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1 7 17M17 7l2.1-2.1' };
+  const EM = { '🖨': 'print', '📥': 'imp', '📤': 'exp', '📋': 'clip', '📝': 'edit', '✏': 'edit', '✍': 'edit', '✅': 'ok', '✔': 'ok', '☑': 'ok', '⚠': 'warn', '⛔': 'ban', '🚫': 'ban', '🔎': 'srch', '🔍': 'srch', '📅': 'cal', '🗓': 'cal', '📆': 'cal',
+    '🔧': 'wr', '🛠': 'wr', '🔩': 'wr', '⭐': 'star', '📦': 'box', '🗂': 'fold', '📁': 'fold', '📂': 'fold', '📄': 'file', '🧾': 'file', '📃': 'file', '📑': 'file', '📚': 'book', '📒': 'book', '📖': 'book', '📘': 'book', '🔒': 'lock', '🔐': 'lock', '🔄': 'ref', '🔁': 'ref', '🏠': 'home',
+    '👤': 'user', '👷': 'user', '👥': 'user', '🌳': 'tree', '🎯': 'tgt', '🏛': 'bank', '⏳': 'hour', '⌛': 'hour', '🔥': 'fire', '➕': 'plus', '🗑': 'del', '📨': 'send', '✉': 'send', '📧': 'send', '📊': 'chart', '📈': 'chart', '💾': 'save', '🚢': 'ship', '⚓': 'ship', '🏢': 'bld',
+    '↩': 'undo', '↶': 'undo', '⏸': 'pause', '📷': 'cam', '📸': 'cam', '📎': 'att', '🔔': 'bell', '⬆': 'up', '⬇': 'dn', 'ℹ': 'info', '💊': 'pill', '💡': 'bulb', '🔗': 'link', '❌': 'x', '🧪': 'lab', '🛡': 'shld', '🧯': 'shld', '🛟': 'shld', '💻': 'pc', '⏱': 'clk', '🕒': 'clk', '⏰': 'clk', '🔑': 'key', '⚙': 'gear' };
+  const ERX = new RegExp('^(\\s*)(' + Object.keys(EM).sort((a, b) => b.length - a.length).map(k => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + ')\\uFE0F?\\s*', 'u');
+  const ESEL = 'button,summary,h1,h2,h3,h4,th,label,.flab,.mh>span,.badge,.chip,.tag,.tab,.lbl,.sjx-ddh,a.btn,.steps button,.seg button,.regtabs button,.dh,.desc>b,.ttl,b,strong,.flab,.sub';
+  const deEmoji = root => { if (!root || !root.querySelectorAll) return; const els = root.matches && root.matches(ESEL) ? [root, ...root.querySelectorAll(ESEL)] : root.querySelectorAll(ESEL);
+    for (const el of els) { if (el.closest('#mrpv,.sji,.sjq,.sjr,.sjmob,input,textarea,select,[contenteditable]')) continue;
+      for (const n of el.childNodes) { if (n.nodeType !== 3) continue; const m = ERX.exec(n.data); if (!m) { if (n.data.trim()) break; continue; }
+        const k = EM[m[2]]; const sp = document.createElement('span'); sp.className = 'sjei sjei-' + k; sp.setAttribute('aria-hidden', 'true'); sp.innerHTML = U.ic(EI[k], 16); n.data = n.data.slice(m[0].length); el.insertBefore(sp, n); break; }
+      /* '한국어 / English' 라벨: 영어는 작고 흐리게 (화면만) */
+      if (el.tagName === 'SPAN' || el.tagName === 'LABEL' || el.tagName === 'TH') { const t = el.childNodes.length === 1 && el.firstChild.nodeType === 3 ? el.firstChild.data : null; const mm = t && /^(.*[가-힣].*?)\s+\/\s+([A-Za-z][^가-힣]*)$/.exec(t); if (mm) el.innerHTML = U.esc(mm[1]) + ' <small class="sjen">' + U.esc(mm[2]) + '</small>'; } } };
+  const deLab = root => { if (!root || !root.querySelectorAll) return; root.querySelectorAll('label.f>span,.f>span:first-child,th').forEach(el => { if (el.closest('#mrpv')) return; const t = el.childNodes.length === 1 && el.firstChild.nodeType === 3 ? el.firstChild.data : null; const mm = t && /^(.*[가-힣].*?)\s+\/\s+([A-Za-z][^가-힣]*)$/.exec(t); if (mm) el.innerHTML = U.esc(mm[1]) + ' <small class="sjen">' + U.esc(mm[2]) + '</small>'; }); };
+  if (!BG) { let q = new Set(), raf = 0; const flush = () => { raf = 0; const L = [...q]; q.clear(); L.forEach(r => { if (r.isConnected) { try { deEmoji(r); deLab(r); } catch (e) { } } }); };
+    const mo = new MutationObserver(ms => { for (const m of ms) for (const n of m.addedNodes) if (n.nodeType === 1) q.add(n); if (q.size && !raf) raf = requestAnimationFrame(flush); });
+    const st = () => { if (!document.body) return setTimeout(st, 50); mo.observe(document.body, { childList: true, subtree: true }); q.add(document.body); raf = requestAnimationFrame(flush); }; st(); }
+  /* 공통 출력 버튼: 1개면 바로, 여러 개면 펼침 목록 — 화면마다 같은 모양·같은 자리 */
+  const prtNode = (host, before, items) => { let el;
+    if (items.length === 1) { el = document.createElement('button'); el.type = 'button'; el.className = 'btn sjx-prt'; el.innerHTML = U.ic('M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v7H6z', 17) + '<span>' + T('출력', 'Print') + '</span>'; el.title = items[0][0]; el.onclick = e => { e.preventDefault(); items[0][1](); }; }
+    else { el = document.createElement('details'); el.className = 'sjx-dd sjx-prt'; el.innerHTML = `<summary class="btn">${U.ic('M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v7H6z', 17)}<span>${T('출력', 'Print')} ▾</span></summary><div class="sjx-ddm"><span class="sjx-ddh">${T('인쇄 · PDF로 저장', 'Print / save as PDF')}</span>${items.map((x, i) => `<button type="button" class="btn" data-i="${i}">${U.esc(x[0])}</button>`).join('')}</div>`;
+      el.querySelector('.sjx-ddm').addEventListener('click', e => { const b = e.target.closest('[data-i]'); if (!b) return; e.preventDefault(); el.open = false; items[+b.dataset.i][1](); }); }
+    if (!host.querySelector(':scope>.sp') && !host.classList.contains('sjx-act')) el.style.marginLeft = 'auto';
+    if (before && before.parentNode === host) host.insertBefore(el, before); else host.appendChild(el); return el; };
   const navDeco = () => { try { const pms = TOOL === 'pms', nav = document.querySelector(pms ? '#top .sj-nav' : 'header.top #nav'); if (!nav) return;
       const key = b => pms ? b.dataset.go : b.dataset.v, off = U.role() === 'office', v = off ? (C.get('view') || '') : (C.get('vessel') || '');
       const sp = (U.sum('pms') || {}).ships || {}, s = sp[v] || {}, r = ((U.sum('rsk') || {}).v || {})[v] || {};
@@ -229,12 +280,24 @@ html body #top .sj-nav>button[data-go=help],html body #top .sj-nav>button[data-g
     group() { const main = document.getElementById('main'); if (!main) return;
       const G = [['imp', '📥 ' + T('가져오기', 'Import'), ['spImport', 'impaImport', 'importCompany', 'ckImport', 'calImport', 'importMaster', 'eqImport', 'sfiImport'], T('엑셀·목록 파일에서 불러오기', 'Load from Excel / list files')],
                  ['exp', '📤 ' + T('내보내기', 'Export'), ['invErpXlsx', 'defXlsx', 'calXlsx'], T('ERP 업로드·보고용 엑셀', 'Excel for ERP upload / reports')],
-                 ['prt', '🖨 ' + T('출력', 'Print'), ['prt9', 'sfiPrint'], T('인쇄 · PDF로 저장', 'Print / save as PDF'), 2]];
+                 ['prt', '🖨 ' + T('출력', 'Print'), [], T('인쇄 · PDF로 저장', 'Print / save as PDF'), 99]];   /* 출력은 prtHead가 제목줄 오른쪽에 하나로 */
       for (const [k, label, acts, hint, min] of G) { const bs = acts.map(a => main.querySelector(`[data-act="${a}"]`)).filter(b => b && !b.closest('.sjx-dd'));
         if (bs.length < (min || 1)) continue; if (k === 'prt') { const lb = { prt9: '📋 ' + T('작업 목록 출력', 'Print job list'), sfiPrint: '🌳 ' + T('SFI 트리 출력', 'Print SFI tree') }; bs.forEach(b => { if (lb[b.dataset.act]) b.innerHTML = lb[b.dataset.act]; b.classList.remove('pri'); }); } const d = document.createElement('details'); d.className = 'sjx-dd'; d.dataset.k = k;
         d.innerHTML = `<summary class="${bs[0].className.replace(/\b(pri|danger|g)\b/g, '')}">${label} ▾</summary><div class="sjx-ddm"><span class="sjx-ddh">${hint}</span></div>`;
         bs[0].parentNode.insertBefore(d, bs[0]); const m = d.querySelector('.sjx-ddm'); bs.forEach(b => m.appendChild(b)); }
-      document.querySelectorAll('details.sjx-dd[open]').forEach(d => { if (!d.matches(':hover')) d.open = false; }); },
+      document.querySelectorAll('details.sjx-dd[open]').forEach(d => { if (!d.matches(':hover')) d.open = false; });
+      try { PMS.prtHead(); } catch (e) { console.warn('prt', e); } },
+    /* 제목줄 오른쪽 = [가져오기 ▾] [내보내기 ▾] [출력] [+ 주 동작] — 모든 계획정비 화면 같은 순서 */
+    prtHead() { const main = document.getElementById('main'); if (!main) return; const r = route();
+      if (r === 'home') { const hd = main.querySelector('.sjh-hd'); if (hd && !hd.querySelector('.sjx-prt')) prtNode(hd, hd.querySelector('.sp') ? hd.querySelector('.sp').nextElementSibling : null, [[T('월간 이행 보고서', 'Monthly report'), () => ACT.prt9()]]); return; }
+      const act = main.querySelector('.sjx-act'); if (!act) return;
+      ['imp', 'exp'].forEach(k => { const d = main.querySelector(`details.sjx-dd[data-k="${k}"]`); if (d && d.parentNode !== act) act.insertBefore(d, act.firstChild); });
+      if (act.querySelector('.sjx-prt')) return;
+      const L = { prt9: T('이 화면 출력 (목록·계획서·대장)', 'Print this screen'), sfiPrint: T('SFI 트리 출력', 'Print SFI tree'), ckBlankMenu: T('점검표 빈 서식·기록', 'Checklist forms'), clsPrint: T('선급 검사 목록 출력', 'Survey list'), clsBlank: T('선급 검사 빈 서식', 'Blank survey forms') };
+      const bs = Object.keys(L).map(k => main.querySelector(`[data-act="${k}"]`)).filter(b => b && !b.closest('table,.modal,#drawer'));
+      if (!bs.length) return; const items = bs.map(b => [L[b.dataset.act], () => { if (b.dataset.act === 'prt9') ACT.prt9(); else b.click(); }]);
+      const keep = document.createElement('div'); keep.hidden = true; keep.className = 'sjx-hidebtn'; bs.forEach(b => { const dd = b.closest('details.sjx-dd'); keep.appendChild(b); if (dd && !dd.querySelector('[data-act]')) dd.remove(); }); main.appendChild(keep);
+      const pri = [...act.children].find(x => x.matches('.btn.pri,.pri')); prtNode(act, pri || null, items); },
     /* 위험성 관리와 같은 화면 짜임: 제목줄(오른쪽에 동작) → 필터 카드 → 목록 */
     layout() { const main = document.getElementById('main'); if (!main || main.querySelector(':scope>.sjx-mark')) return;   /* 다시 그려지면 표시가 사라짐 → 다시 정리 */
       main.querySelectorAll('.banner').forEach(b => { if (/회신 파일|공유 폴더|reply file|shared folder/i.test(b.textContent)) b.remove(); });
@@ -245,7 +308,7 @@ html body #top .sj-nav>button[data-go=help],html body #top .sj-nav>button[data-g
       const flush = () => { if (run.length) { const fc = document.createElement('div'); fc.className = 'sjx-fc'; run[0].parentNode.insertBefore(fc, run[0]); run.forEach(e => fc.appendChild(e)); } run = []; };
       [...main.children].forEach(e => { const ok = FC.some(c => e.classList && e.classList.contains(c)) && !e.closest('.sjx-fc') && e.querySelector('button,input,select'); if (ok) run.push(e); else flush(); }); flush();
       /* 줄마다 이름 (위험성 평가 목록과 같게) + 상태 줄은 이어 붙인 선택 버튼 */
-      const r = route(), lab = e => { const c = e.classList; if (c.contains('toolbar')) return e.querySelector('input') ? '🔎 ' + T('검색', 'Search') : T('작업', 'Actions'); if (c.contains('sfibar')) return T('SFI 분류', 'SFI group');
+      const r = route(), lab = e => { const c = e.classList; if (c.contains('toolbar')) return e.querySelector('input') ? T('검색', 'Search') : T('작업', 'Actions'); if (c.contains('sfibar')) return T('SFI 분류', 'SFI group');
           if (c.contains('dfsub')) return T('진행 단계', 'Step'); if (c.contains('tabs9') || c.contains('caltabs')) return T('보기', 'View'); if (c.contains('chips')) return r === 'spares' ? T('구분', 'Category') : T('상태', 'Status'); return T('필터', 'Filter'); };
       const DOT = { od: '#E57373', d7: '#E3C26B', d30: '#C9B26B', nd: '#B8C0CC', ok: '#8BC34A', all: '#B8C0CC', def: '#E57373', low: '#E57373', crit: '#E8A400' };
       main.querySelectorAll('.sjx-fc').forEach(fc => [...fc.children].forEach(e => { if (e.classList.contains('sjx-row')) return; const w = document.createElement('div'); w.className = 'sjx-row'; w.innerHTML = `<span class="sjx-lb">${lab(e)}</span><div class="sjx-rc"></div>`; fc.insertBefore(w, e); w.lastChild.appendChild(e);
@@ -416,11 +479,22 @@ html body #top .sj-nav>button[data-go=help],html body #top .sj-nav>button[data-g
       try { const ix = {}, cut = x => String(x || '').slice(0, 80), add = (k, x, t) => ((ix[x.vessel || '—'] = ix[x.vessel || '—'] || []).push([k, x.id, x.no || '', cut(t)]));
         (DB.ras || []).forEach(x => add('ra', x, x.title)); (DB.ptws || []).forEach(x => add('ptw', x, x.desc || x.location)); (DB.mocs || []).forEach(x => add('moc', x, x.title)); (DB.rirs || []).forEach(x => add('rir', x, x.desc));
         localStorage.setItem('sejul_idx_rsk', JSON.stringify({ at: Date.now(), v: ix })); } catch (e) { } },
+    /* 출력 버튼 자리 통일: 모든 화면 제목줄 오른쪽 (주 버튼 왼쪽) — 목록 화면은 대장 출력, 문서 화면은 그 문서 출력 */
+    prtHead() { const main = document.getElementById('main'), ph = main && (main.querySelector(':scope>.page-h') || main.querySelector('.sjh-hd')); if (!ph || ph.querySelector('.sjx-prt')) return;
+      const vn = VIEW.name, LIST = ['home', 'raList', 'ptwList', 'mocList', 'rirList', 'register', 'dpa'], items = [];
+      const own = [...document.querySelectorAll('#main button[data-a], #foot button[data-a]')].filter(b => !ph.contains(b) && !b.closest('table,.modal,.sjx-prt') && (/^(print|pkgPdf)/i.test(b.dataset.a) || /^\s*🖨/.test(b.textContent)));
+      own.forEach(b => items.push([b.textContent.replace(/^\s*🖨\s*/, '').trim(), () => b.click()]));
+      if (!own.length) { const st = [...main.querySelectorAll('.steps button')].find(b => /출력|Print/.test(b.textContent)); if (st) items.push([T('출력 단계로 가기 — 문서 고르기', 'Go to the print step'), () => st.click()]); }
+      if (LIST.includes(vn)) { const R = [['printRegShip', T('위험성 등록부 (F-RSK-02 발췌)', 'Risk register (F-RSK-02)')], ['printMoCReg', T('변화관리 대장 (F-RSK-06)', 'MoC register (F-RSK-06)')], ['printPtwLog', T('작업허가서(PTW) 발행 대장', 'PTW log')]];
+        const first = vn === 'ptwList' ? 'printPtwLog' : vn === 'mocList' ? 'printMoCReg' : 'printRegShip'; R.sort((a, b) => (b[0] === first) - (a[0] === first));
+        R.forEach(([fn, l]) => { if (!items.some(x => x[0] === l) && typeof A[fn] === 'function') items.push([l, () => A[fn]({}, null, null)]); }); }
+      if (!items.length) return; const sp = ph.querySelector(':scope>.sp'), pri = ph.querySelector('.btn.p, .btn.big, .sjh-btn') || (sp && sp.nextElementSibling && sp.nextElementSibling.matches('.btn') ? sp.nextElementSibling : null); prtNode(ph, pri, items); },
     hookRender() { const r0 = render; render = function () { const v = C.get('view') || '', off = DB.settings.site === 'office', K = ['ras', 'ptws', 'mocs', 'rirs'], keep = {};
         if (off && v) K.forEach(k => { keep[k] = DB[k] || []; DB[k] = keep[k].filter(x => x.vessel === v); });   /* 사무실: 고른 선박만 보이게 (그리는 동안만) */
         let x; try { x = r0.apply(this, arguments); } finally { if (off && v) K.forEach(k => { const shown = DB[k]; DB[k] = keep[k].filter(y => y.vessel !== v || shown.includes(y)).concat(shown.filter(y => !keep[k].includes(y))); }); }
         try { if (off && v) { const h = document.querySelector('.page-h h2'); if (h && !h.querySelector('.sjv')) h.insertAdjacentHTML('beforeend', ` <span class="sjv" style="font-size:14px;color:#5B6474;font-weight:500">· ${U.esc(v)}</span>`); } } catch (e) { }
         try { RSK.shipStep(); } catch (e) { }
+        try { RSK.prtHead(); } catch (e) { console.warn('prt', e); }
         try { const n = NAV.find(z => z[0] === 'dpa'); if (n) { n[1] = 'DPA·회사 승인'; n[2] = 'Approvals'; } } catch (e) { }
         navDeco(); sumSoon(RSK); return x; }; }
   };
@@ -436,6 +510,9 @@ html body #top .sj-nav>button[data-go=help],html body #top .sj-nav>button[data-g
     X.hookRender(); try { render(); } catch (e) { } C.booted = 1;
     C.ensureBar(); setInterval(C.ensureBar, 1000); setInterval(U.syncPaint, 20e3); setTimeout(C.ready, 150);
     U.onView = v => { try { X.view(v); } catch (e) { } railRefresh(); };
+    /* 미리 준비된(prerender) 화면을 열 때: 그 사이 사무실에서 고른 선박이 바뀌었으면 맞춤, 요약·메뉴 새로 */
+    if (document.prerendering) { const k = () => U.role() === 'office' ? (C.get('view') || '') : (C.get('vessel') || ''), v0 = k();
+      document.addEventListener('prerenderingchange', () => { try { const v = k(); if (v !== v0) U.onView(v); else { railRefresh(); try { render(); } catch (e) { } } } catch (e) { } }, { once: true }); }
     /* PTW 만료 30분 전 — 이 기기에서 위험성 관리를 열어 둔 동안 (인터넷 없어도) */
     if (X === RSK && !BG) setInterval(() => { try { if (!('Notification' in window) || Notification.permission !== 'granted' || DB.settings.site === 'office') return; const pf = SJCLOUD.prefs ? SJCLOUD.prefs() : {}; if ((pf.types || {}).ptw === false) return; if (pf.quiet && !pf.ptw) { const d = new Date(), m = d.getHours() * 60 + d.getMinutes(), f = pf.from, t2 = pf.to; if (f !== t2 && (f < t2 ? m >= f && m < t2 : m >= f || m < t2)) return; } const v = vesselName(), now = Date.now(); let seen = {}; try { seen = JSON.parse(localStorage.getItem('sejul_ptw_alerted') || '{}'); } catch (e) { }
       (DB.ptws || []).forEach(p => { if (p.vessel !== v || ptwStatus(p)[0] !== 'act' || !p.to) return; const e = new Date(p.to).getTime(), k = p.id + ':' + p.to; if (seen[k] || e - now > 30 * 60e3 || now - e > 10 * 60e3) return; seen[k] = now;
