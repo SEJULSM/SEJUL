@@ -45,6 +45,8 @@ body{background:var(--sjx-bg)!important;font-family:'Pretendard','Noto Sans KR',
 .sjx-dd{position:relative;display:inline-block}.sjx-dd>summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:6px;user-select:none}.sjx-dd>summary::-webkit-details-marker{display:none}
 .sjx-ddm{position:absolute;z-index:60;top:calc(100% + 6px);left:0;min-width:260px;background:#fff;border:1px solid var(--sjx-line);border-radius:12px;box-shadow:0 12px 30px #0f172a26;padding:6px;display:flex;flex-direction:column;gap:2px}
 .sjx-ddm>*{width:100%;justify-content:flex-start!important;text-align:left;border:0!important;background:none!important;box-shadow:none!important;border-radius:8px!important;padding:10px 12px!important;margin:0!important}.sjx-ddm>*:hover{background:#F1F3F6!important}
+/* 각 도구의 '사용법' 탭 숨김 (내용이 지금 앱과 맞지 않음) */
+[data-go=help],button[data-v=help],#mtab [data-v=help]{display:none!important}
 .sjx-ddm .sjx-ddh{font-size:12px;color:var(--sjx-mut);padding:6px 12px 2px!important;pointer-events:none}
 .sjx-ph{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:2px 0 14px}.sjx-ph h1{margin:0!important;font-size:24px!important;flex:1;min-width:220px;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}.sjx-ph .sjx-act{display:flex;gap:8px;flex-wrap:wrap}
 .sjx-fc{background:#fff;border:1px solid var(--sjx-line);border-radius:14px;padding:12px 16px;margin:0 0 14px;display:flex;flex-direction:column;gap:10px}.sjx-fc>*{margin:0!important}.sjx-fc>*+*{border-top:1px dashed #E3E6EB;padding-top:10px!important}
@@ -111,7 +113,7 @@ html body #top .sjbar,html body header.top .bar{display:none!important}
 #main table.g thead th,#main table.g>tr:first-child>th{background:#F7F8FA!important;color:#5B6474!important;font-weight:700!important;font-size:12.5px!important;border-bottom:1px solid #E3E6EB!important;text-transform:none}
 #main table.g tbody tr:hover>td{background:#F7F9FC}
 /* 이전/다음 막대 없앰 (위 탭·왼쪽 메뉴로 이동) · 실행 취소 단추는 저장 알림의 [되돌리기]로 · 위험성 관리 '설정' 탭은 앱 설정으로 */
-#sjFoot{display:none!important}#top .sj-tool[data-act=undo],#top .sj-tool[data-act=redo]{display:none!important}#nav [data-v=settings],#mtab [data-v=settings]{display:none!important}
+#sjFoot{display:none!important}#top .sj-nav [data-go=help],#nav [data-v=help],#mtab [data-v=help],#mtsheet [data-v=help],#drawer [data-go=help],#drawer [data-v=help]{display:none!important}#top .sj-tool[data-act=undo],#top .sj-tool[data-act=redo]{display:none!important}#nav [data-v=settings],#mtab [data-v=settings]{display:none!important}
 #toasts .toast button:not(.tx){white-space:nowrap;flex:none;background:#F2B705!important;color:#14244A!important;border:0!important;border-radius:8px!important;font-weight:800!important;padding:5px 12px!important}
 @media (max-width:899px){
  html body #top .sjbar,html body header.top .bar,html body #mtab,html body #mtsheet{display:none!important}
@@ -161,6 +163,7 @@ html body #top .sjbar,html body header.top .bar{display:none!important}
       try { FOLDER_ASKED = true; } catch (e) { } try { folderGate = function () { }; } catch (e) { } try { SPF.lim = 1e6; } catch (e) { }
       try { const sm = setupMissing9; setupMissing9 = () => sm().filter(x => !['fs', 'pc', 'vessel'].includes(x[0])); } catch (e) { }
       try { pmsFolderCard = () => appCard('sj-card'); } catch (e) { }
+      if (BG) { try { persist = function () { }; } catch (e) { } try { const k0 = KV.set; KV.set = function (k) { return /^(ship|office)$/.test(k) ? Promise.resolve() : k0.apply(this, arguments); }; } catch (e) { } }   /* 요약만 만드는 보이지 않는 창: 저장하지 않음 */
       /* 저장할 때마다 알림에 [↶ 되돌리기] (위쪽 실행 취소 단추 대신) */
       try { const c0 = commit; let lc = 0, lu = 0; ['pointerdown', 'keydown'].forEach(ev => document.addEventListener(ev, () => lu = Date.now(), true)); commit = function () { const r = c0.apply(this, arguments); if (Date.now() - lu < 4000) lc = Date.now(); setTimeout(() => { if (Date.now() - lc < 1500 && !document.querySelector('#toasts .toast')) toast(T('저장했습니다', 'Saved'), true); }, 120); return r; };
         toast = function (msg, withUndo) { const box = document.getElementById('toasts'); if (!box) return; if (withUndo && !lu) return; box.innerHTML = ''; const u = (withUndo || Date.now() - lc < 1500) && Date.now() - lu < 6000; const t = document.createElement('div'); t.className = 'toast';
@@ -177,9 +180,10 @@ html body #top .sjbar,html body header.top .bar{display:none!important}
     /* 가져오기·내보내기 버튼을 한 곳으로 묶기 (인벤토리·결함·검교정·작업 목록) */
     group() { const main = document.getElementById('main'); if (!main) return;
       const G = [['imp', '📥 ' + T('가져오기', 'Import'), ['spImport', 'impaImport', 'importCompany', 'ckImport', 'calImport', 'importMaster', 'eqImport', 'sfiImport'], T('엑셀·목록 파일에서 불러오기', 'Load from Excel / list files')],
-                 ['exp', '📤 ' + T('내보내기', 'Export'), ['invErpXlsx', 'defXlsx', 'calXlsx'], T('ERP 업로드·보고용 엑셀', 'Excel for ERP upload / reports')]];
-      for (const [k, label, acts, hint] of G) { const bs = acts.map(a => main.querySelector(`[data-act="${a}"]`)).filter(b => b && !b.closest('.sjx-dd'));
-        if (!bs.length) continue; const d = document.createElement('details'); d.className = 'sjx-dd'; d.dataset.k = k;
+                 ['exp', '📤 ' + T('내보내기', 'Export'), ['invErpXlsx', 'defXlsx', 'calXlsx'], T('ERP 업로드·보고용 엑셀', 'Excel for ERP upload / reports')],
+                 ['prt', '🖨 ' + T('출력', 'Print'), ['prt9', 'sfiPrint'], T('인쇄 · PDF로 저장', 'Print / save as PDF'), 2]];
+      for (const [k, label, acts, hint, min] of G) { const bs = acts.map(a => main.querySelector(`[data-act="${a}"]`)).filter(b => b && !b.closest('.sjx-dd'));
+        if (bs.length < (min || 1)) continue; if (k === 'prt') { const lb = { prt9: '📋 ' + T('작업 목록 출력', 'Print job list'), sfiPrint: '🌳 ' + T('SFI 트리 출력', 'Print SFI tree') }; bs.forEach(b => { if (lb[b.dataset.act]) b.innerHTML = lb[b.dataset.act]; b.classList.remove('pri'); }); } const d = document.createElement('details'); d.className = 'sjx-dd'; d.dataset.k = k;
         d.innerHTML = `<summary class="${bs[0].className.replace(/\b(pri|danger|g)\b/g, '')}">${label} ▾</summary><div class="sjx-ddm"><span class="sjx-ddh">${hint}</span></div>`;
         bs[0].parentNode.insertBefore(d, bs[0]); const m = d.querySelector('.sjx-ddm'); bs.forEach(b => m.appendChild(b)); }
       document.querySelectorAll('details.sjx-dd[open]').forEach(d => { if (!d.matches(':hover')) d.open = false; }); },
@@ -187,7 +191,7 @@ html body #top .sjbar,html body header.top .bar{display:none!important}
     layout() { const main = document.getElementById('main'); if (!main || main.querySelector(':scope>.sjx-mark')) return;   /* 다시 그려지면 표시가 사라짐 → 다시 정리 */
       main.querySelectorAll('.banner').forEach(b => { if (/회신 파일|공유 폴더|reply file|shared folder/i.test(b.textContent)) b.remove(); });
       const h1 = [...main.children].find(e => e.tagName === 'H1'); if (h1 && !h1.closest('.sjx-ph')) { const ph = document.createElement('div'); ph.className = 'sjx-ph'; h1.parentNode.insertBefore(ph, h1); ph.appendChild(h1); const act = document.createElement('div'); act.className = 'sjx-act'; ph.appendChild(act);
-        const pr = h1.querySelector('[data-act=prt9]'); if (pr) { pr.innerHTML = '🖨 ' + T('출력', 'Print'); act.appendChild(pr); }
+        const pr = main.querySelector('[data-act=prt9]'), prd = pr && pr.closest('.sjx-dd'); if (prd) act.appendChild(prd); else if (pr && h1.contains(pr)) { pr.innerHTML = '🖨 ' + T('출력', 'Print'); act.appendChild(pr); }
         ['defNew', 'spNew', 'eqAdd', 'calAdd', 'clsNew'].forEach(a => { const b = main.querySelector(`.toolbar [data-act="${a}"]`); if (b) { b.classList.add('pri'); act.appendChild(b); } }); }
       const FC = ['sfibar', 'toolbar', 'chips', 'tabs9', 'caltabs', 'dfsub']; let run = [];
       const flush = () => { if (run.length) { const fc = document.createElement('div'); fc.className = 'sjx-fc'; run[0].parentNode.insertBefore(fc, run[0]); run.forEach(e => fc.appendChild(e)); } run = []; };
@@ -202,7 +206,8 @@ html body #top .sjbar,html body header.top .bar{display:none!important}
       const fc = main.querySelector('.sjx-fc'), tw = fc && fc.nextElementSibling; if (tw && tw.classList && tw.classList.contains('tw') && !main.querySelector('.sjx-cnt')) { let n = [...tw.querySelectorAll('tbody tr')].filter(t => !t.classList.contains('pgrp') && !t.hidden && t.querySelectorAll('td').length >= 3).length; const ac = fc.querySelector('.sjx-seg .chip.on, .sjx-seg .chip.active, .sjx-seg [aria-pressed="true"]'); const an = ac && (ac.textContent.match(/(\d[\d,]*)\s*$/) || [])[1]; if (n && an && +an.replace(/,/g, '') > n) n = +an.replace(/,/g, ''); if (n) tw.insertAdjacentHTML('beforebegin', `<div class="sjx-cnt">${n.toLocaleString()}${T('건', ' items')}</div>`); }
       if (!main.querySelector('.sjx-pcnote')) { const ph2 = main.querySelector('.sjx-ph'); if (ph2 && ['ck', 'cal', 'cls', 'spares', 'defects', 'jobs', 'due'].includes(route())) ph2.insertAdjacentHTML('afterend', `<div class="sjx-pcnote">📱 ${T('휴대폰 화면은 입력 위주로 간단히 보입니다 — 출력·엑셀·품목/장비 등록은 PC·노트북에서 하세요.', 'Phone view is simplified for data entry — printing, Excel and registration are on PC.')}</div>`); }
       main.dataset.sjx = route(); const mk = document.createElement('i'); mk.className = 'sjx-mark'; mk.hidden = true; main.appendChild(mk); },
-    after() { try { if (MODE === 'admin' && OFFICE.wiped) { OFFICE.wiped = false; if (typeof ensureVessels === 'function') ensureVessels(); KV.set('office', OFFICE); ['sejul_cloud_pms_seen', 'sejul_cloud_pms_pushed'].forEach(k => localStorage.removeItem(k)); setTimeout(() => { try { if (window.SJCLOUD && SJCLOUD.A) SJCLOUD.sync(SJCLOUD.A, true); } catch (e) { } }, 1500); setTimeout(() => { try { render(); } catch (e) { } }, 0); } } catch (e) { }
+    after() { setTimeout(() => { try { PMS.group(); } catch (e) { } }, 0);   /* 늦게 붙는 출력 버튼도 '출력 ▾'로 묶기 */
+      try { if (MODE === 'admin' && OFFICE.wiped) { OFFICE.wiped = false; if (typeof ensureVessels === 'function') ensureVessels(); KV.set('office', OFFICE); ['sejul_cloud_pms_seen', 'sejul_cloud_pms_pushed'].forEach(k => localStorage.removeItem(k)); setTimeout(() => { try { if (window.SJCLOUD && SJCLOUD.A) SJCLOUD.sync(SJCLOUD.A, true); } catch (e) { } }, 1500); setTimeout(() => { try { render(); } catch (e) { } }, 0); } } catch (e) { }
       try { const main = document.getElementById('main'); if (main) { main.querySelectorAll('select').forEach(sl => { const e = [...sl.options].filter(o => o.value === ''); if (e.length > 1) { const sel = sl.value === ''; e.slice(1).forEach(o => o.remove()); if (sel) sl.selectedIndex = [...sl.options].indexOf(e[0]); } });   /* 이름 없는 빈 선택 항목 정리 */ } } catch (e) { } try { PMS.group(); } catch (e) { } try { PMS.layout(); } catch (e) { console.warn('layout', e); } try { PMS.home(); } catch (e) { console.warn('home', e); } if (MODE !== 'admin') return; const main = document.getElementById('main'); if (!main) return; const view = C.get('view') || '';
       if (!view || route() === 'fleet') { const S = (U.sum('pms') || {}).ships || {};
         main.innerHTML = `<div class="sjx-empty"><h2>${T('선박을 고르세요', 'Choose a vessel')}</h2>${T('사무실 기기는 선박을 하나 골라 그 선박의 계획정비를 봅니다 (왼쪽 위 [보는 선박]으로도 바꿉니다). 선대 전체 현황은 <a href="../index.html">앱 홈</a>에 있습니다.', 'Pick one vessel (or use Viewing at top left). The fleet overview is on the <a href="../index.html">app home</a>.')}<div class="sjx-pick">${U.VES.map(v => `<button data-sjpick="${U.esc(v)}"><b>${U.esc(v)}</b><small>${OFFICE.ships[v] ? (S[v] ? T(`기한 초과 ${S[v].od} · 미결 결함 ${S[v].def}`, `Overdue ${S[v].od} · defects ${S[v].def}`) : T('자료 있음', 'Has data')) : T('아직 받은 자료 없음', 'No data yet')}</small></button>`).join('')}</div></div>`; return; }
