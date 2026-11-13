@@ -359,7 +359,8 @@ html body .sjx-hid,html body header.top #nav>button.sjx-hid,html body #nav butto
         <button class="btn pri big" data-v9due="${n ? 'od' : 'd30'}">${n ? T('바로 실시 입력 →', 'Record now →') : T('작업 목록 보기 →', 'Job list →')}</button>`;
       const h1 = main.querySelector('h1'), ph = (h1 && (h1.closest('.sjx-ph') || h1)) || main.firstElementChild; if (ph) ph.insertAdjacentElement('afterend', h); else main.prepend(h); },
     sum() { const ships = MODE === 'admin' ? OFFICE.ships : (SHIP ? { [SHIP.ship.name]: SHIP } : {}), out = {};
-      for (const [n, db] of Object.entries(ships)) { try { const { c } = shipStats(db), td = typeof opsTodo === 'function' ? opsTodo(db) : { O: [], S: [] };
+      for (const [n, db] of Object.entries(ships)) { try { try { if (typeof invSeed === 'function') invSeed(db); if (typeof invDedupe === 'function') invDedupe(db); } catch (e) { }   /* 인벤토리 기본 자료를 먼저 넣고 셈 — 재고 화면과 같은 숫자 */
+        const { c } = shipStats(db), td = typeof opsTodo === 'function' ? opsTodo(db) : { O: [], S: [] };
         out[n] = { od: c.od, d7: c.d7, d30: c.d30, nd: c.nd, cri: c.cri, def: c.def, defA: c.defA, low: c.low, n: c.n, E: c.E, S: td.S.slice(0, 15), O: td.O.slice(0, 15),
           D: td.O.filter(x => x[0] === 'def').slice(0, 30).map(x => [x[1], x[2], x[3]]),
           R: (typeof RQS === 'function' ? RQS(db) : []).filter(r => r.st === 'sent').slice(0, 30).map(r => [r.id, r.no + (r.kind === 'rep' ? ' (수리 repair)' : '') + ' · ' + (r.items || []).length + '건', r.urg === 'u' ? 'u' : 'n']),
