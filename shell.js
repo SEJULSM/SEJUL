@@ -556,7 +556,7 @@ html body .sjx-hid,html body header.top #nav>button.sjx-hid,html body #nav butto
       box.hidden = false; paint(); }
     function paint() { const f = box.querySelector('.sjph-f'); if (f) f.innerHTML = st.filters.map(([k, l]) => `<button type="button" data-phf="${k}" class="${st.f === k ? 'on' : ''}">${l}</button>`).join(''); paintList(); }
     function paintList() { let L = []; try { L = st.items(st.f, (st.q || '').trim().toLowerCase()); } catch (e) { console.warn(e); }
-      box.querySelector('.sjph-l').innerHTML = L.length ? L.slice(0, 200).map(x => `<button type="button" class="sjph-r" role="listitem" data-phi="${U.esc(x.id)}"><span class="tx"><b>${U.esc(x.t)}</b>${x.s ? `<small>${U.esc(x.s)}</small>` : ''}</span>${x.bd ? `<span class="bd ${x.bc || 'n'}">${U.esc(x.bd)}</span>` : ''}${U.ic('nx', 18)}</button>`).join('') + (L.length > 200 ? `<div class="sjph-e">${T('200건까지 보입니다 — 검색으로 좁히세요', 'First 200 shown — narrow with search')}</div>` : '')
+      box.querySelector('.sjph-l').innerHTML = L.length ? L.slice(0, 200).map(x => `<button type="button" class="sjph-r" role="listitem" data-phi="${U.esc(x.id)}"><span class="tx"><b>${U.esc(x.t)}</b>${x.s ? `<small>${U.esc(x.s)}</small>` : ''}</span>${x.bd ? `<span class="bd ${x.bc || 'n'}">${U.esc(x.bd)}</span>` : ''}${U.ic('M9 18l6-6-6-6', 18)}</button>`).join('') + (L.length > 200 ? `<div class="sjph-e">${T('200건까지 보입니다 — 검색으로 좁히세요', 'First 200 shown — narrow with search')}</div>` : '')
         : `<div class="sjph-e">${st.empty || T('해당 항목이 없습니다', 'Nothing here')}</div>`; }
     /* 고른 뒤 열린 입력 창이 닫히면 목록으로 돌아옴 (방금 기록한 것은 목록에서 빠짐) */
     function reopen() { if (st.stay === false) return; let n = 0; const iv = setInterval(() => { n++; const open = [...document.querySelectorAll('#mback .modal,.modal-bg .modal,.sgpanel-bg,.sjd:not([hidden])')].some(m => m.offsetParent || (m.style && m.style.display === 'flex'));
@@ -581,9 +581,99 @@ html body .sjx-hid,html body header.top #nav>button.sjx-hid,html body #nav butto
         sheet({ title: T('서명하기', 'Sign'), note: T('서명할 칸이 남은 문서입니다 — 누르면 서명 창이 열립니다 (손가락으로 서명)', 'Documents with unsigned slots — tap to sign with your finger'),
           items: () => L.filter(([k, d]) => k === 'ra' ? need(d, raSigSlots(d)) : need(d, ptwSigSlots(d))).map(([k, d]) => ({ id: k + ':' + d.id, t: (k === 'ra' ? T('위험성 평가', 'RA') + ' · ' + (d.title || '') : T('작업허가', 'Permit') + ' · ' + (d.desc || d.no || '')), s: (k === 'ra' ? raStatus(d) : ptwStatus(d))[1], bd: T('서명 필요', 'to sign'), bc: 'd7' })),
           empty: T('서명할 문서가 없습니다 ✓', 'Nothing to sign ✓'), pick: id => { const [k, i] = id.split(':'); sigPanel([[k, i]]); } }); } };
+    Object.assign(A, {
+      recv() { sheet({ title: T('예비품 입고', 'Receive spares'), search: T('품명·부품번호·장비 검색', 'Search name / part no. / equipment'), note: T('품목을 누르고 받은 수량을 입력합니다 (재고 부족 품목이 위에)', 'Tap an item and enter the quantity received (low stock first)'),
+        items: (f, q) => { const db = cur(), rob = robMap(db); return SPS(db).items.filter(x => !x.del && has(q, x.name, x.pno, x.eq, x.maker)).map(x => ({ x, r: rob[x.id] || 0 })).sort((a, b) => ((a.r < (a.x.min || 0)) === (b.r < (b.x.min || 0)) ? 0 : a.r < (a.x.min || 0) ? -1 : 1)).slice(0, 400)
+          .map(({ x, r }) => ({ id: x.id, t: x.name, s: [x.pno, x.eq].filter(Boolean).join(' · '), bd: 'ROB ' + r + (x.unit ? ' ' + x.unit : '') + (r < (x.min || 0) ? ' · ' + T('부족', 'low') : ''), bc: r < (x.min || 0) ? 'od' : 'ok' })); },
+        empty: T('검색어를 바꿔 보세요', 'Try another search'), pick: id => spTxForm(id, 'recv') }); },
+      /* 최근 실시 기록: 날짜 고치기·기록 삭제 — 고치면 새 기록으로 바꿔 넣고 이전 기록은 삭제 표시(다른 PC에도 반영) */
+      hist() { sheet({ title: T('최근 실시 기록', 'Recent records'), search: T('장비·작업·코드 검색', 'Search'), note: T('기록을 누르면 실시일을 고치거나 삭제할 수 있습니다 (최근 90일)', 'Tap a record to fix the date or delete it (last 90 days)'),
+        items: (f, q) => { const db = cur(), lim = new Date(Date.now() - 90 * 864e5).toISOString().slice(0, 10); return (db.hist || []).filter(h => h.date >= lim).map(h => ({ h, j: jobByCode(db, h.code) || {} })).filter(({ h, j }) => has(q, h.code, j.desc, j.mach)).sort((a, b) => a.h.date < b.h.date ? 1 : a.h.date > b.h.date ? -1 : (b.h.at || 0) - (a.h.at || 0))
+          .map(({ h, j }) => ({ id: h.id, t: j.desc || h.code, s: (j.mach || '') + ' · ' + h.code + (h.by ? ' · ' + h.by : ''), bd: h.date, bc: 'n' })); },
+        empty: T('최근 90일 실시 기록이 없습니다', 'No records in the last 90 days'), pick: id => histEdit(id) }); },
+      dsign() { const off = MODE === 'admin', keys = off ? ['tstl', 'dpa6'] : ['ce', 'master'], dbs = off ? Object.values(OFFICE.ships || {}) : [cur()];
+        sheet({ title: T('결함 보고서 서명', 'Defect report signatures'), note: T('STEP 6 서명이 남은 결함입니다 — 누르면 결함 보고서가 열리고 서명 칸에서 서명합니다', 'Defects waiting for STEP 6 signatures — tap to open and sign'),
+          items: () => dbs.flatMap(db => DFS(db).filter(d => d.st !== 'closed' && (d.steps || [])[5] && keys.some(k => !((d.sigs || {})[k]))).map(d => ({ id: d.id, t: d.no + ' · ' + (d.title || d.desc || ''), s: (db.ship && db.ship.name || '') + ' · ' + keys.filter(k => !((d.sigs || {})[k])).map(k => ({ ce: T('기관장', 'C/E'), master: T('선장', 'Master'), tstl: T('공무 팀장', 'TST leader'), dpa6: 'DPA' })[k]).join(', ') + ' ' + T('서명 필요', 'to sign'), bd: T('서명', 'Sign'), bc: 'd7' }))),
+          empty: T('서명할 결함 보고서가 없습니다 ✓', 'Nothing to sign ✓'), stay: false, pick: id => { PP.hide(); openDefect(id); } }); } });
+    function histEdit(id) { const db = cur(), h = (db.hist || []).find(x => x.id === id); if (!h) return; const j = jobByCode(db, h.code) || {};
+      modal({ title: T('실시 기록 고치기', 'Fix record'), body: `<div class="desc" style="margin-bottom:4px">${U.esc(j.desc || h.code)}</div><div class="small" style="margin-bottom:14px">${U.esc(j.mach || '')} · ${U.esc(h.code)}</div>
+        <label class="f"><span>${T('실시일', 'Date done')}</span><input type="date" id="phD" value="${h.date}" max="${today()}"></label><label class="f"><span>${T('비고', 'Remarks')}</span><textarea id="phR">${U.esc(h.rmk || '')}</textarea></label><div id="phE" class="err"></div>`,
+        buttons: [{ label: T('기록 삭제', 'Delete'), cls: 'danger', act: m => { if (!confirm(T('이 실시 기록을 삭제할까요? 다른 PC에서도 지워집니다.', 'Delete this record? It is removed on other PCs too.'))) return false; if ((db.locked || []).includes(h.date.slice(0, 7))) { m.querySelector('#phE').textContent = T('보고 완료로 잠긴 달의 기록은 지울 수 없습니다', 'That month is locked'); return false; } commit(T('실시 기록 삭제 ', 'Record deleted ') + h.code, () => { db.hist = db.hist.filter(x => x.id !== h.id); }); } },
+          { label: T('취소', 'Cancel') },
+          { label: T('저장', 'Save'), cls: 'grn', act: m => { const d = m.querySelector('#phD').value, r = m.querySelector('#phR').value.trim(), E = t => { m.querySelector('#phE').textContent = t; return false; };
+            if (!d) return E(T('실시일을 입력하세요', 'Enter the date')); if (d > today()) return E(T('미래 날짜는 안 됩니다', 'No future dates')); if ([d, h.date].some(x => (db.locked || []).includes(x.slice(0, 7)))) return E(T('보고 완료로 잠긴 달입니다', 'Month is locked'));
+            if (d === h.date && r === (h.rmk || '')) return;
+            commit(T('실시일 수정 ', 'Record date fixed ') + h.code + ' ' + h.date + ' → ' + d, () => { db.hist = db.hist.filter(x => x.id !== h.id); db.hist.push(Object.assign({}, h, { id: uid(), date: d, rmk: r, at: Date.now(), fix: h.id })); }); } }] }); }
     document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-sjm]'); if (!b) return; e.preventDefault(); const k = b.dataset.sjm; if (A[k]) wait(() => A[k]()); }, true);
     return { A, close }; })();
-  /* 휴대폰 간단 화면 안내 (도구마다 한 번) */
-  try { if (U.phone && U.phone() && !BG && !/[?&]go=/.test(location.search)) { const k = 'sejul_ph_tip_' + SUB; if (!sessionStorage.getItem(k)) { sessionStorage.setItem(k, '1'); setTimeout(() => { try { U.toast ? U.toast(T('휴대폰 간단 화면 — 보기·실시 입력·재고 사용·서명·승인. 작성·편집·출력은 PC·태블릿에서', 'Phone view — view, record, use stock, sign, approve. Writing & printing on PC / tablet')) : 0; } catch (e) { } }, 2500); } } } catch (e) { }
+  /* ===== 휴대폰 간단 화면 — 정비 · 위험성 페이지 (도구 원래 화면 대신 보이는 휴대폰 전용 첫 화면) =====
+     문서·목록을 누르면 도구 화면(보기 전용)으로 들어가고, 위 '‹ 정비 / ‹ 위험성' 단추로 돌아옴. PC 화면으로 보기(설정)면 쓰지 않음 */
+  const PP = (() => { let el = null, back = null, on = false;
+    const home = TOOL === 'rsk' || SUB === 'pms';
+    const name = TOOL === 'rsk' ? T('위험성', 'Risk') : T('정비', 'PMS');
+    const kpi = (n, l, c, act) => `<button type="button" class="sjpp-kp ${c || ''}" ${act ? `data-ppa="${act}"` : 'disabled'}><b>${n}</b><span>${l}</span></button>`;
+    const btn = (act, ic, l, sub, cls) => `<button type="button" class="sjpp-b ${cls || ''}" data-ppa="${act}">${U.ic(ic, 22)}<span>${l}${sub ? `<small>${sub}</small>` : ''}</span></button>`;
+    const row = (act, id, t, s2, bd, bc) => `<button type="button" class="sjph-r" data-ppa="${act}" data-id="${U.esc(id)}"><span class="tx"><b>${U.esc(t)}</b>${s2 ? `<small>${U.esc(s2)}</small>` : ''}</span>${bd ? `<span class="bd ${bc || 'n'}">${U.esc(bd)}</span>` : ''}${U.ic('M9 18l6-6-6-6', 18)}</button>`;
+    const sec = (title, body, more) => `<section class="sjpp-s"><h2>${title}${more || ''}</h2>${body}</section>`;
+    const low = db => { const rob = robMap(db); return SPS(db).items.filter(x => !x.del && (x.min || 0) > 0 && (rob[x.id] || 0) < x.min); };
+    const pmsShip = () => { const db = cur(); if (!db) return ''; const A = calcAll(db), od = A.filter(x => x.s.st === 'od').length, d7 = A.filter(x => x.s.st === 'd7').length, D = DFS(db).filter(d => d.st !== 'closed'), lw = low(db);
+      const due = A.filter(x => x.s.due && x.s.days <= 7).sort((a, b) => a.s.due < b.s.due ? -1 : 1).slice(0, 6);
+      const sg = D.filter(d => (d.steps || [])[5] && ['ce', 'master'].some(k => !((d.sigs || {})[k]))).length;
+      return `<div class="sjpp-k">${U.esc(db.ship.name)} · ${today()}</div><h1>${T('정비', 'Maintenance')}</h1>
+        <div class="sjpp-kg">${kpi(od, T('기한 초과', 'Overdue'), od ? 'r' : '', 'done')}${kpi(d7, T('7일 이내', 'Due ≤7d'), d7 ? 'y' : '', 'done')}${kpi(D.length, T('미결 결함', 'Open defects'), D.length ? 'p' : '', 'defs')}${kpi(lw.length, T('재고 부족', 'Low stock'), lw.length ? 'y' : '', 'recv')}</div>
+        <div class="sjpp-bg">${btn('done', 'M20 6 9 17l-5-5', T('작업 실시 완료', 'Job done'), T('기한 작업 → 기록', 'due job → record'), 'pri')}${btn('hist', 'M12 8v4l3 2M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5', T('최근 실시 기록', 'Recent records'), T('날짜 고치기 · 삭제', 'fix date · delete'))}${btn('use', 'M5 12h14', T('예비품 사용', 'Use spares'), T('재고 빼기', 'stock out'))}${btn('recv', 'M12 5v14M5 12h14', T('예비품 입고', 'Receive spares'), T('재고 더하기', 'stock in'))}${btn('dsign', 'M3 21c3-1 5-6 8-6s2 4 5 4 3-3 5-3M14 4l6 6-9 9H5v-6z', T('결함 보고서 서명', 'Sign defect reports'), sg ? sg + T('건 서명 필요', ' to sign') : T('서명할 것 없음', 'nothing to sign'), sg ? 'hl' : '')}</div>
+        ${sec(T('기한 다가온 작업', 'Due soon'), due.length ? due.map(x => row('job', x.j.code, x.j.desc, (x.j.mach || '') + ' · ' + T('기한', 'due') + ' ' + x.s.due, x.s.days < 0 ? T('초과', 'over') + ' ' + (-x.s.days) + T('일', 'd') : x.s.days + T('일', 'd'), x.s.days < 0 ? 'od' : 'd7')).join('') : `<div class="sjph-e">${T('7일 안에 할 작업이 없습니다 ✓', 'Nothing due in 7 days ✓')}</div>`, `<a href="#" data-ppa="done">${T('전체', 'All')} ›</a>`)}
+        ${sec(T('미결 결함', 'Open defects'), D.length ? D.slice(0, 5).map(d => row('def', d.id, d.no + ' · ' + (d.title || d.desc || ''), d.eq || d.mach || '', d.st === 'closed' ? '' : T('진행', 'open'), 'n')).join('') : `<div class="sjph-e">${T('미결 결함이 없습니다 ✓', 'No open defects ✓')}</div>`)}
+        ${sec(T('재고·구매 · 증서·검사', 'Stores · Certificates'), `<div class="sjpp-bg">${btn('inv', U.TOOLS()[2][2], T('재고·구매 보기', 'Stores (view)'), lw.length ? T('부족 ', 'low ') + lw.length : '')}${btn('cert', U.TOOLS()[3][2], T('증서·검사 보기', 'Certificates (view)'), '')}</div>`)}`; };
+    const pmsOffice = () => { const S = Object.entries(OFFICE.ships || {}); let tod = 0, tdef = 0;
+      const rows = S.map(([k, db]) => { let A = []; try { A = calcAll(db); } catch (e) { } const od = A.filter(x => x.s.st === 'od').length, d7 = A.filter(x => x.s.st === 'd7').length, df = DFS(db).filter(d => d.st !== 'closed').length; tod += od; tdef += df; return row('ship', k, k, T('7일 이내', '≤7d') + ' ' + d7 + ' · ' + T('미결 결함', 'defects') + ' ' + df, od ? T('초과', 'over') + ' ' + od : '✓', od ? 'od' : 'ok'); }).join('');
+      return `<div class="sjpp-k">${T('사무실', 'Office')} · ${today()}</div><h1>${T('정비 — 선대', 'Maintenance — fleet')}</h1>
+        <div class="sjpp-kg">${kpi(tod, T('기한 초과 (선대)', 'Overdue (fleet)'), tod ? 'r' : '')}${kpi(tdef, T('미결 결함', 'Open defects'), tdef ? 'p' : '')}</div>
+        <div class="sjpp-bg">${btn('apv', 'M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11', T('승인함', 'Approvals'), T('연기 · 청구 · 결함', 'postpone · requisition · defect'), 'pri')}${btn('dsign', 'M3 21c3-1 5-6 8-6s2 4 5 4 3-3 5-3M14 4l6 6-9 9H5v-6z', T('결함 보고서 서명', 'Sign defect reports'), T('공무 팀장 · DPA', 'TST leader · DPA'))}</div>
+        ${sec(T('선박별', 'By vessel') + ` <small>${T('누르면 그 선박 정비 화면(보기)', 'tap to view')}</small>`, rows || `<div class="sjph-e">${T('받은 선박 자료가 없습니다', 'No vessel data yet')}</div>`)}`; };
+    const rskShip = () => { const v = (DB.settings && DB.settings.vessel) || '', ras = DB.ras.filter(r => !v || !r.vessel || r.vessel === v), ptws = DB.ptws.filter(p => !v || !p.vessel || p.vessel === v);
+      const draft = ras.filter(r => raStatus(r)[0] === 'draft'), wait = ras.filter(r => raStatus(r)[0] === 'wait'), act = ptws.filter(p => ptwStatus(p)[0] === 'act'), pdr = ptws.filter(p => ptwStatus(p)[0] === 'draft');
+      const need = (doc, sl) => sl.some(x => x.name && !x.wait && !sigOK(doc, x.key, x.name)), sg = ras.filter(r => raStatus(r)[0] !== 'closed' && need(r, raSigSlots(r))).length + ptws.filter(p => ptwStatus(p)[0] !== 'closed' && need(p, ptwSigSlots(p))).length;
+      const gas = act.filter(p => Array.isArray(p.gas)).length;
+      return `<div class="sjpp-k">${U.esc(v)} · ${today()}</div><h1>${T('위험성 관리', 'Risk')}</h1>
+        <div class="sjpp-kg">${kpi(act.length, T('작업 중 허가서', 'Active permits'), act.length ? 'g' : '')}${kpi(draft.length + pdr.length, T('작성 중', 'Drafts'), '')}${kpi(wait.length, T('DPA 승인 대기', 'Awaiting DPA'), wait.length ? 'y' : '')}${kpi(sg, T('서명 필요', 'To sign'), sg ? 'y' : '', 'sign')}</div>
+        <div class="sjpp-bg">${btn('sign', 'M3 21c3-1 5-6 8-6s2 4 5 4 3-3 5-3M14 4l6 6-9 9H5v-6z', T('서명하기', 'Sign'), sg ? sg + T('건 — RA · TBM · PTW', ' — RA · TBM · PTW') : T('서명할 것 없음', 'nothing to sign'), sg ? 'pri' : '')}${btn('gas', 'M12 2v6M8 5h8M6 22h12l-1-12H7z', T('대기 측정 기록', 'Gas readings'), gas ? T('측정 대상 ', '') + gas + T('건', ' permits') : T('작업 중 허가서 없음', 'no active permit'))}</div>
+        ${sec(T('작업 중 작업허가 (PTW)', 'Active permits'), act.length ? act.map(p => row('ptw', p.id, p.desc || p.no || 'PTW', [p.no, p.loc, p.to ? T('~', 'until ') + String(p.to).replace('T', ' ').slice(5, 16) : ''].filter(Boolean).join(' · '), ptwStatus(p)[1], 'ok')).join('') : `<div class="sjph-e">${T('작업 중인 허가서가 없습니다', 'No active permits')}</div>`)}
+        ${sec(T('진행 중 위험성 평가', 'Risk assessments in progress'), draft.concat(wait).length ? draft.concat(wait).slice(0, 8).map(r => row('ra', r.id, r.title || r.no || 'RA', r.no || '', raStatus(r)[1], raStatus(r)[0] === 'wait' ? 'd7' : 'n')).join('') : `<div class="sjph-e">${T('진행 중인 평가가 없습니다', 'None in progress')}</div>`)}
+        <p class="sjpp-note">${T('새 위험성 평가·작업허가 작성은 PC·태블릿에서 합니다.', 'Write new RA / permits on PC or tablet.')}</p>`; };
+    const rskOffice = () => { const V = [...new Set([...DB.ras, ...DB.ptws].map(x => x.vessel).filter(Boolean))].sort();
+      const rows = V.map(v => { const r = DB.ras.filter(x => x.vessel === v), p = DB.ptws.filter(x => x.vessel === v), w = r.filter(x => raStatus(x)[0] === 'wait').length, a = p.filter(x => ptwStatus(x)[0] === 'act').length; return row('vsl', v, v, T('작업 중 PTW', 'active PTW') + ' ' + a + ' · ' + T('RA', 'RA') + ' ' + r.length, w ? 'DPA ' + w : '✓', w ? 'd7' : 'ok'); }).join('');
+      const w = DB.ras.filter(x => raStatus(x)[0] === 'wait').length, a = DB.ptws.filter(x => ptwStatus(x)[0] === 'act').length;
+      return `<div class="sjpp-k">${T('사무실', 'Office')} · ${today()}</div><h1>${T('위험성 — 선대', 'Risk — fleet')}</h1>
+        <div class="sjpp-kg">${kpi(w, T('DPA 승인 대기', 'Awaiting DPA'), w ? 'y' : '', 'apv')}${kpi(a, T('작업 중 허가서', 'Active permits'), a ? 'g' : '')}</div>
+        <div class="sjpp-bg">${btn('apv', 'M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11', T('승인함 (DPA)', 'Approvals (DPA)'), w ? w + T('건 대기', ' waiting') : T('대기 없음', 'none waiting'), w ? 'pri' : '')}</div>
+        ${sec(T('선박별', 'By vessel'), rows || `<div class="sjph-e">${T('받은 선박 자료가 없습니다', 'No vessel data yet')}</div>`)}`; };
+    const ready = () => TOOL === 'pms' ? (typeof cur === 'function' && (MODE === 'admin' ? !!OFFICE : !!cur())) : (typeof DB !== 'undefined' && DB && DB.ras);
+    function paint() { if (!el || !on) return; let h = ''; try { h = TOOL === 'rsk' ? (DB.settings.site === 'office' ? rskOffice() : rskShip()) : (MODE === 'admin' ? pmsOffice() : pmsShip()); } catch (e) { console.warn('pp', e); h = `<div class="sjph-e">${T('불러오는 중…', 'Loading…')}</div>`; }
+      const y = el.scrollTop; el.innerHTML = `<div class="sjpp-in">${h}<button type="button" class="sjpp-full" data-ppa="tool">${T('도구 화면 그대로 보기 (보기 전용)', 'Open the tool view (read-only)')} ›</button></div>`; el.scrollTop = y; }
+    function show() { if (!el) { el = document.createElement('div'); el.className = 'sjpp'; document.body.appendChild(el); el.addEventListener('click', click);
+        back = document.createElement('button'); back.type = 'button'; back.className = 'sjpp-back'; back.innerHTML = U.ic('M15 18l-6-6 6-6', 16) + '<span>' + name + ' ' + T('홈', 'home') + '</span>'; back.onclick = () => show(); document.body.appendChild(back); }
+      on = true; el.hidden = false; back.hidden = true; document.documentElement.classList.add('sjpp-on'); paint(); }
+    function hide() { if (!el) return; on = false; el.hidden = true; back.hidden = false; document.documentElement.classList.remove('sjpp-on'); }
+    function click(e) { const b = e.target.closest('[data-ppa]'); if (!b) return; e.preventDefault(); const a = b.dataset.ppa, id = b.dataset.id;
+      if (PH.A[a]) return PH.A[a]();
+      if (a === 'job') return doneDialog([id]);
+      if (a === 'defs') { hide(); return (location.hash = '#/defects'); }
+      if (a === 'def') { hide(); return openDefect(id); }
+      if (a === 'inv' || a === 'cert') return (location.href = U.toolUrl('../', a).replace('../tools/', ''));
+      if (a === 'apv') return U.inb && U.inb.open ? U.inb.open('apv') : document.querySelector('[data-sjinb]') && document.querySelector('[data-sjinb]').click();
+      if (a === 'ship') { OFFICE.sel = id; hide(); location.hash = '#/jobs'; try { render(); } catch (er) { } return; }
+      if (a === 'ptw') { hide(); return go({ name: 'ptw', id }); }
+      if (a === 'ra') { hide(); return go({ name: 'ra', id, step: 1 }); }
+      if (a === 'vsl') { hide(); try { DB.settings.vSel = id; } catch (er) { } return go({ name: 'ptwList' }); }
+      if (a === 'tool') return hide(); }
+    const start = () => { if (!U.phone || !U.phone() || BG || !home) return; if (/[?&]go=/.test(location.search) || /^#\/(?!home)./.test(location.hash)) { show(); hide(); return; }
+      let n = 0; const w = () => { if (ready()) { show(); return; } if (++n < 60) setTimeout(w, 300); }; w(); };
+    /* 기록하면 바로 숫자·목록 갱신 */
+    setInterval(() => { if (on && document.visibilityState === 'visible' && !document.querySelector('#mback.on,.sjph:not([hidden]),.sgpanel-bg[style*=flex]')) paint(); }, 4000);
+    return { start, show, hide, paint }; })();
+  if (document.readyState === 'complete') setTimeout(PP.start, 400); else addEventListener('load', () => setTimeout(PP.start, 400));
+  /* 재고·구매 / 증서·검사 (휴대폰): 위에 '‹ 정비' 단추 */
+  try { if (U.phone && U.phone() && !BG && TOOL === 'pms' && SUB !== 'pms') addEventListener('load', () => { const b = document.createElement('a'); b.className = 'sjpp-back'; b.href = 'pms.html'; b.innerHTML = U.ic('M15 18l-6-6 6-6', 16) + '<span>' + T('정비 홈', 'PMS home') + '</span>'; document.body.appendChild(b); }); } catch (e) { }
   if (document.readyState === 'complete') setTimeout(boot, 50); else addEventListener('load', () => setTimeout(boot, 50));
 })();
