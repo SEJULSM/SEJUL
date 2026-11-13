@@ -508,7 +508,7 @@ html.sj-railmin .sjr .sj-vtg{display:none}html.sj-railmin .sjr .sj-flr{margin-to
   /* 선대 목록에서 선박 고르기 (사무실) */
   /* 휴대폰(사무실): 선박을 고르면 도구 화면이 아니라 휴대폰 전용 선박 요약으로 */
   U.phoneShip = n => { if (U.onPhoneShip) return U.onPhoneShip(n); location.href = (/\/tools\//.test(location.pathname) ? '' : 'tools/') + 'pms.html?ppv=' + encodeURIComponent(n); };
-  document.addEventListener('click', e => { const a = e.target.closest && e.target.closest('[data-sjves]'); if (!a || !U.phone() || !a.dataset.sjves) return; e.preventDefault(); e.stopImmediatePropagation(); document.querySelectorAll('.sjs').forEach(sh => sh.hidden = true); C.set('view', a.dataset.sjves); U.phoneShip(a.dataset.sjves); }, true);
+  document.addEventListener('click', e => { const a = e.target.closest && e.target.closest('[data-sjves]'); if (!a || !U.phone() || (!a.dataset.sjves && !U.onPhoneShip)) return; e.preventDefault(); e.stopImmediatePropagation(); document.querySelectorAll('.sjs').forEach(sh => sh.hidden = true); C.set('view', a.dataset.sjves); U.phoneShip(a.dataset.sjves); }, true);
   document.addEventListener('click', e => { const a = e.target.closest && e.target.closest('[data-sjves]'); if (!a) return; const n = a.dataset.sjves; C.set('view', n);
     document.querySelectorAll('.sjs').forEach(sh => sh.hidden = true);
     if (!n && a.getAttribute('href') !== 'index.html') return; e.preventDefault(); if (U.onView) U.onView(n); }, true);

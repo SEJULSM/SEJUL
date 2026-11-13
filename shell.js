@@ -608,7 +608,10 @@ html body .sjx-hid,html body header.top #nav>button.sjx-hid,html body #nav butto
     return { A, close }; })();
   /* ===== 휴대폰 간단 화면 — 정비 · 위험성 페이지 (도구 원래 화면 대신 보이는 휴대폰 전용 첫 화면) =====
      문서·목록을 누르면 도구 화면(보기 전용)으로 들어가고, 위 '‹ 정비 / ‹ 위험성' 단추로 돌아옴. PC 화면으로 보기(설정)면 쓰지 않음 */
-  const PP = (() => { let el = null, back = null, on = false, vsh = (location.search.match(/[?&]ppv=([^&]+)/) || [])[1]; if (vsh) vsh = decodeURIComponent(vsh);
+  const PP = (() => { let el = null, back = null, on = false, vsh = (location.search.match(/[?&]ppv=([^&]+)/) || [])[1], vInit = !!vsh; if (vsh) vsh = decodeURIComponent(vsh);
+    /* 사무실 휴대폰: 위에서 고른 선박(선대 전체 / 선박)을 정비·위험성 탭 모두 똑같이 따름 */
+    const isOff = () => TOOL === 'rsk' ? DB.settings.site === 'office' : MODE === 'admin';
+    const setView = v => { try { C.set('view', v || ''); if (TOOL === 'pms' && v && OFFICE && OFFICE.ships[v]) OFFICE.sel = v; } catch (e) { } try { railRefresh(); } catch (e) { } };
     const home = TOOL === 'rsk' || SUB === 'pms';
     const name = TOOL === 'rsk' ? T('위험성', 'Risk') : T('정비', 'PMS');
     const kpi = (n, l, c, act) => `<button type="button" class="sjpp-kp ${c || ''}" ${act ? `data-ppa="${act}"` : 'disabled'}><b>${n}</b><span>${l}</span></button>`;
@@ -655,12 +658,13 @@ html body .sjx-hid,html body header.top #nav>button.sjx-hid,html body #nav butto
       const need = (doc, sl) => sl.some(x => x.name && !x.wait && !sigOK(doc, x.key, x.name)), sg = ras.filter(r => raStatus(r)[0] !== 'closed' && need(r, raSigSlots(r))).length + ptws.filter(p => ptwStatus(p)[0] !== 'closed' && need(p, ptwSigSlots(p))).length;
       const gas = act.filter(p => Array.isArray(p.gas)).length;
       return `${off ? `<button type="button" class="sjpp-up" data-ppa="fleet">${U.ic('M15 18l-6-6 6-6', 16)}${T('선대 전체', 'Whole fleet')}</button>` : ''}<div class="sjpp-k">${off ? T('사무실', 'Office') + ' · ' : ''}${U.esc(v)} · ${today()}</div><h1>${off ? U.esc(v) : T('위험성 관리', 'Risk')}</h1>
-        <div class="sjpp-kg">${kpi(act.length, T('작업 중 허가서', 'Active permits'), act.length ? 'g' : '')}${kpi(draft.length + pdr.length, T('작성 중', 'Drafts'), '')}${kpi(wait.length, T('DPA 승인 대기', 'Awaiting DPA'), wait.length ? 'y' : '')}${kpi(sg, T('서명 필요', 'To sign'), sg ? 'y' : '', 'sign')}</div>
-        <div class="sjpp-bg">${btn('sign', 'M3 21c3-1 5-6 8-6s2 4 5 4 3-3 5-3M14 4l6 6-9 9H5v-6z', T('서명하기', 'Sign'), sg ? sg + T('건 — RA · TBM · PTW', ' — RA · TBM · PTW') : T('서명할 것 없음', 'nothing to sign'), sg ? 'pri' : '')}${btn('gas', 'M12 2v6M8 5h8M6 22h12l-1-12H7z', T('대기 측정 기록', 'Gas readings'), gas ? T('측정 대상 ', '') + gas + T('건', ' permits') : T('작업 중 허가서 없음', 'no active permit'))}</div>
+        <div class="sjpp-kg">${kpi(act.length, T('작업 중 허가서', 'Active permits'), act.length ? 'g' : '')}${kpi(draft.length + pdr.length, T('작성 중', 'Drafts'), '')}${kpi(wait.length, T('DPA 승인 대기', 'Awaiting DPA'), wait.length ? 'y' : '')}${kpi(sg, T('서명 필요', 'To sign'), sg ? 'y' : '', off ? '' : 'sign')}</div>
+        ${off ? `<div class="sjpp-bg">${btn('apv', 'M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11', T('승인함 (DPA)', 'Approvals (DPA)'), wait.length ? wait.length + T('건 대기', ' waiting') : T('대기 없음', 'none waiting'), wait.length ? 'pri' : '')}</div>` : `<div class="sjpp-bg">${btn('sign', 'M3 21c3-1 5-6 8-6s2 4 5 4 3-3 5-3M14 4l6 6-9 9H5v-6z', T('서명하기', 'Sign'), sg ? sg + T('건 — RA · TBM · PTW', ' — RA · TBM · PTW') : T('서명할 것 없음', 'nothing to sign'), sg ? 'pri' : '')}${btn('gas', 'M12 2v6M8 5h8M6 22h12l-1-12H7z', T('대기 측정 기록', 'Gas readings'), gas ? T('측정 대상 ', '') + gas + T('건', ' permits') : T('작업 중 허가서 없음', 'no active permit'))}</div>`}
+
         ${sec(T('작업 중 작업허가 (PTW)', 'Active permits'), act.length ? act.map(p => row('ptw', p.id, p.desc || p.no || 'PTW', [p.no, p.loc, p.to ? T('~', 'until ') + String(p.to).replace('T', ' ').slice(5, 16) : ''].filter(Boolean).join(' · '), ptwStatus(p)[1], 'ok')).join('') : `<div class="sjph-e">${T('작업 중인 허가서가 없습니다', 'No active permits')}</div>`)}
         ${sec(T('진행 중 위험성 평가', 'Risk assessments in progress'), draft.concat(wait).length ? draft.concat(wait).slice(0, 8).map(r => row('ra', r.id, r.title || r.no || 'RA', r.no || '', raStatus(r)[1], raStatus(r)[0] === 'wait' ? 'd7' : 'n')).join('') : `<div class="sjph-e">${T('진행 중인 평가가 없습니다', 'None in progress')}</div>`)}
         <p class="sjpp-note">${T('새 위험성 평가·작업허가 작성은 PC·태블릿에서 합니다.', 'Write new RA / permits on PC or tablet.')}</p>`; };
-    const rskOffice = () => { const V = [...new Set([...DB.ras, ...DB.ptws].map(x => x.vessel).filter(Boolean))].sort();
+    const rskOffice = () => { const V = [...new Set([...(U.VES || []), ...DB.ras.map(x => x.vessel), ...DB.ptws.map(x => x.vessel)].filter(Boolean))];
       const rows = V.map(v => { const r = DB.ras.filter(x => x.vessel === v), p = DB.ptws.filter(x => x.vessel === v), w = r.filter(x => raStatus(x)[0] === 'wait').length, a = p.filter(x => ptwStatus(x)[0] === 'act').length; return row('vsl', v, v, T('작업 중 PTW', 'active PTW') + ' ' + a + ' · ' + T('RA', 'RA') + ' ' + r.length, w ? 'DPA ' + w : '✓', w ? 'd7' : 'ok'); }).join('');
       const w = DB.ras.filter(x => raStatus(x)[0] === 'wait').length, a = DB.ptws.filter(x => ptwStatus(x)[0] === 'act').length;
       return `<div class="sjpp-k">${T('사무실', 'Office')} · ${today()}</div><h1>${T('위험성 — 선대', 'Risk — fleet')}</h1>
@@ -668,7 +672,7 @@ html body .sjx-hid,html body header.top #nav>button.sjx-hid,html body #nav butto
         <div class="sjpp-bg">${btn('apv', 'M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11', T('승인함 (DPA)', 'Approvals (DPA)'), w ? w + T('건 대기', ' waiting') : T('대기 없음', 'none waiting'), w ? 'pri' : '')}</div>
         ${sec(T('선박별', 'By vessel'), rows || `<div class="sjph-e">${T('받은 선박 자료가 없습니다', 'No vessel data yet')}</div>`)}`; };
     const ready = () => TOOL === 'pms' ? (typeof cur === 'function' && (MODE === 'admin' ? !!OFFICE : !!cur())) : (typeof DB !== 'undefined' && DB && DB.ras);
-    function paint() { if (!el || !on) return; let h = ''; try { h = TOOL === 'rsk' ? (DB.settings.site === 'office' ? (vsh ? rskShip(vsh) : rskOffice()) : rskShip()) : (MODE === 'admin' ? (vsh ? pmsOfficeShip(vsh) : pmsOffice()) : pmsShip()); } catch (e) { console.warn('pp', e); h = `<div class="sjph-e">${T('불러오는 중…', 'Loading…')}</div>`; }
+    function paint() { if (!el || !on) return; let h = ''; if (!vInit) { vInit = true; try { if (isOff()) vsh = C.get('view') || null; } catch (e) { } } try { h = TOOL === 'rsk' ? (DB.settings.site === 'office' ? (vsh ? rskShip(vsh) : rskOffice()) : rskShip()) : (MODE === 'admin' ? (vsh ? pmsOfficeShip(vsh) : pmsOffice()) : pmsShip()); } catch (e) { console.warn('pp', e); h = `<div class="sjph-e">${T('불러오는 중…', 'Loading…')}</div>`; }
       const y = el.scrollTop; el.innerHTML = `<div class="sjpp-in">${h}<button type="button" class="sjpp-full" data-ppa="tool">${T('도구 화면 그대로 보기 (보기 전용)', 'Open the tool view (read-only)')} ›</button></div>`; el.scrollTop = y; }
     function show() { if (!el) { el = document.createElement('div'); el.className = 'sjpp'; document.body.appendChild(el); el.addEventListener('click', click);
         back = document.createElement('button'); back.type = 'button'; back.className = 'sjpp-back'; back.innerHTML = U.ic('M15 18l-6-6 6-6', 16) + '<span>' + name + ' ' + T('홈', 'home') + '</span>'; back.onclick = () => show(); document.body.appendChild(back); }
@@ -681,8 +685,8 @@ html body .sjx-hid,html body header.top #nav>button.sjx-hid,html body #nav butto
       if (a === 'def') { let d = id; if (id.includes('|')) { const [v, x] = id.split('|'); pickShip(v); d = x; } hide(); return openDefect(d); }
       if (a === 'inv' || a === 'cert') return (location.href = U.toolUrl('../', a).replace('../tools/', ''));
       if (a === 'apv') return U.inb && U.inb.open ? U.inb.open('apv') : document.querySelector('[data-sjinb]') && document.querySelector('[data-sjinb]').click();
-      if (a === 'ship' || a === 'vsl') { vsh = id; paint(); el.scrollTop = 0; return; }
-      if (a === 'fleet') { vsh = null; try { C.set('view', ''); } catch (er) { } paint(); el.scrollTop = 0; return; }
+      if (a === 'ship' || a === 'vsl') { vsh = id; setView(id); paint(); el.scrollTop = 0; return; }
+      if (a === 'fleet') { vsh = null; setView(''); paint(); el.scrollTop = 0; return; }
       if (a === 'req') { const [v, rid] = id.split('|'); pickShip(v); return reqShow(v, rid); }
       if (a === 'ptw') { hide(); return go({ name: 'ptw', id }); }
       if (a === 'ra') { hide(); return go({ name: 'ra', id, step: 1 }); }
@@ -691,7 +695,7 @@ html body .sjx-hid,html body header.top #nav>button.sjx-hid,html body #nav butto
       let n = 0; const w = () => { if (ready()) { show(); return; } if (++n < 60) setTimeout(w, 300); }; w(); };
     /* 기록하면 바로 숫자·목록 갱신 */
     setInterval(() => { if (on && document.visibilityState === 'visible' && !document.querySelector('#mback.on,.sjph:not([hidden]),.sgpanel-bg[style*=flex]')) paint(); }, 2500);
-    U.onPhoneShip = v => { vsh = v || null; show(); if (el) el.scrollTop = 0; };
+    U.onPhoneShip = v => { vInit = true; vsh = v || null; setView(vsh); show(); if (el) el.scrollTop = 0; };
     return { start, show, hide, paint }; })();
   if (document.readyState === 'complete') setTimeout(PP.start, 400); else addEventListener('load', () => setTimeout(PP.start, 400));
   /* 재고·구매 / 증서·검사 (휴대폰): 위에 '‹ 정비' 단추 */
