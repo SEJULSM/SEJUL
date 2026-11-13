@@ -215,7 +215,7 @@ html body .sjx-hid,html body header.top #nav>button.sjx-hid,html body #nav butto
       btns.forEach(b => { const k = key(b); if (!k) return; if (k === 'dpa' && /승인 코드/.test(b.textContent)) b.textContent = T('DPA·회사 승인', 'Approvals'); if (pms && k === 'home' && /선박 현황|Vessel/.test(b.textContent)) b.textContent = T('홈', 'Home');
         if (!b.querySelector('.sjtb-ic') && TBI[k]) b.insertAdjacentHTML('afterbegin', `<span class="sjtb-ic k-${k}">${U.ic(TBI[k], 16)}</span>`);
         b.querySelectorAll('.sjtb-n').forEach(x => x.remove()); const c = CNT[k]; if (c && c[0]) b.insertAdjacentHTML('beforeend', `<span class="sjtb-n ${c[1]}">${c[0]}</span>`); });
-      if (!pms) { let more = nav.querySelector('.sjtb-more'); const mv = btns.filter(b => ['rirList', 'register'].includes(key(b)));
+      if (!pms) { let more = nav.querySelector('.sjtb-more'); const mv = []; /* 위험성 식별 보고·등록부는 변화관리 옆 탭으로 그대로 둠 (더보기로 숨기지 않음) */
         if (mv.length) { if (!more) { more = document.createElement('details'); more.className = 'sjtb-more'; more.innerHTML = `<summary>${T('더보기', 'More')} ▾</summary><div class="sjtb-mm"></div>`; nav.appendChild(more); more.addEventListener('click', e => { if (e.target.closest('.sjtb-mm>button')) more.open = false; }); }
           mv.forEach(b => { if (b.parentNode !== more.querySelector('.sjtb-mm')) more.querySelector('.sjtb-mm').appendChild(b); }); more.classList.toggle('on', mv.some(b => b.classList.contains('on'))); } }
       let all = nav.querySelector('.sjtb-all'); if (!all) { nav.insertAdjacentHTML('beforeend', `<button type="button" class="sjtb-all" aria-label="${T('전체 메뉴', 'All sections')}"><span>${U.ic('M4 6h16M4 12h16M4 18h16', 18)}</span></button>`); all = nav.querySelector('.sjtb-all'); all.onclick = e => { e.stopPropagation(); navSheet(nav, key); }; }
@@ -365,6 +365,8 @@ html body .sjx-hid,html body header.top #nav>button.sjx-hid,html body #nav butto
           R: (typeof RQS === 'function' ? RQS(db) : []).filter(r => r.st === 'sent').slice(0, 30).map(r => [r.id, r.no + (r.kind === 'rep' ? ' (수리 repair)' : '') + ' · ' + (r.items || []).length + '건', r.urg === 'u' ? 'u' : 'n']),
           /* 작업 연기: P = 승인 대기(사무실 알림) / Q = 최근 30일 결정(선박 알림) */
           /* 그래프: 최근 12주 실시 건수 · 앞으로 8주 기한 건수 */
+          /* 실시율: 월간 보고서와 같은 계산 (실시 ÷ (계획 − 아직 기한 전)) — 이번 달 · 지난달 */
+          mr: (() => { try { if (typeof mrData !== 'function') return null; const t = today(), ym = t.slice(0, 7), d = new Date(Number(ym.slice(0, 4)), Number(ym.slice(5, 7)) - 2, 1), pm = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); return [ym, pm].map(m => { const r = mrData(db, m); return [m, r.plan, r.done, r.pend]; }); } catch (e) { return null; } })(),
           wk: (() => { const a = Array(26).fill(0), t0 = Date.parse(today()); (db.hist || []).forEach(h => { const d = Math.floor((t0 - Date.parse(h.date)) / (7 * 864e5)); if (d >= 0 && d < 26) a[25 - d]++; }); return a; })(),
           fw: (() => { const a = Array(26).fill(0), t0 = Date.parse(today()); try { calcAll(db).forEach(x => { if (!x.s.due) return; const d = Math.floor((Date.parse(x.s.due) - t0) / (7 * 864e5)); if (d >= 0 && d < 26) a[d]++; }); } catch (e) { } return a; })(),
           P: (db.ppr || []).filter(r => r.st === 'req').slice(0, 30).map(r => [r.id, r.no + ' ' + String(r.desc || '').slice(0, 50) + ' → ' + r.due + (r.cri ? ' (CRI)' : '')]),
