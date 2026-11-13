@@ -558,7 +558,7 @@ html body .sjx-hid,html body header.top #nav>button.sjx-hid,html body #nav butto
     addEventListener('pageshow', () => { try { X.apply(); } catch (er) { } railRefresh(); }); };
   /* ===== 긴 표 가볍게: 100줄 넘는 표는 80줄만 먼저 그리고, 아래로 내리면 200줄씩 더 보여 줌 (출력·검색은 전체 대상) ===== */
   try { if (!BG) { const io = 'IntersectionObserver' in window ? new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting && e.target._more) e.target._more(); }), { rootMargin: '600px' }) : null;
-      const lazy = () => { document.querySelectorAll('body #main table > tbody').forEach(tb => { if (tb._lz || tb.rows.length <= 100) return; tb._lz = 1; const rows = [...tb.rows]; let n = 80; rows.slice(n).forEach(r => r.classList.add('sjlz'));
+      const lazy = () => { document.querySelectorAll('body #main table > tbody').forEach(tb => { if (tb._lz || tb.rows.length <= 100 || tb.querySelector('tr.invg')) return;   /* 접고 펼치는 분류 표는 제외 */ tb._lz = 1; const rows = [...tb.rows]; let n = 80; rows.slice(n).forEach(r => r.classList.add('sjlz'));
           const tbl = tb.parentNode, m = document.createElement('button'); m.type = 'button'; m.className = 'sjlz-more';
           const lab = () => { m.textContent = T(`아래로 내리면 더 보입니다 — 남은 ${rows.length - n}줄 (누르면 바로 보기)`, `Scroll for more — ${rows.length - n} rows left (tap to show)`); };
           m._more = () => { rows.slice(n, n + 200).forEach(r => r.classList.remove('sjlz')); n += 200; if (n >= rows.length) { if (io) io.unobserve(m); m.remove(); } else lab(); };
