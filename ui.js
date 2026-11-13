@@ -8,10 +8,12 @@
   /* 기기 종류: 처음 설정에서 정함 (선박 / 사무실). 서버 등록 정보가 있으면 그것을 따름 */
   U.me = () => window.SJCLOUD && SJCLOUD.me ? SJCLOUD.me() : null;
   U.role = () => { const m = U.me(); if (m && m.role && m.status !== 'none') return m.role; return C.get('role') || ''; };
-  /* 기기 종류: PC · 노트북 · 태블릿 · 휴대폰 (처음 설정에서 자동으로 고르고 바꿀 수 있음) */
-  U.KINDS = [['pc', '🖥', 'PC', 'Desktop PC'], ['laptop', '💻', '노트북', 'Laptop'], ['tablet', '📟', '태블릿', 'Tablet'], ['phone', '📱', '휴대폰', 'Phone']];
+  /* 기기 종류: PC · 태블릿 · 휴대폰 (노트북은 PC로 합침 — 예전 '노트북' 기기는 PC로 보이고, 앱을 열면 PC로 바뀜) */
+  U.KINDS = [['pc', '🖥', 'PC', 'PC / laptop'], ['tablet', '📟', '태블릿', 'Tablet'], ['phone', '📱', '휴대폰', 'Phone']];
+  setTimeout(() => { try { if (C.get && C.get('kind') === 'laptop') { C.set('kind', 'pc'); const CL = window.SJCLOUD, m = CL && CL.me && CL.me();
+    if (m && m.role === 'ship' && m.status && m.status !== 'none' && navigator.onLine) CL.register('ship', C.get('vessel'), C.get('pcname'), null, 'pc').catch(() => { }); } } catch (e) { } }, 3000);
   U.kindGuess = () => { const ua = navigator.userAgent, touch = navigator.maxTouchPoints > 1; if (/iPad/.test(ua) || (/Macintosh/.test(ua) && touch) || (/Android/.test(ua) && !/Mobile/.test(ua))) return 'tablet'; if (/iPhone|Android.*Mobile|Mobile/.test(ua)) return 'phone'; return 'pc'; };
-  U.kindLabel = k => { const x = U.KINDS.find(y => y[0] === k); return x ? x[1] + ' ' + U.T(x[2], x[3]) : '—'; };
+  U.kindLabel = k => { const x = U.KINDS.find(y => y[0] === (k === 'laptop' ? 'pc' : k)); return x ? x[1] + ' ' + U.T(x[2], x[3]) : '—'; };
   U.officeOK = () => { const m = U.me(); return !!(m && m.role === 'office' && m.status === 'approved'); };
   U.code = id => { const h = String(id || '').replace(/-/g, '').toUpperCase(); return h ? h.slice(0, 4) + '-' + h.slice(4, 8) : '—'; };
   U.sum = k => { try { return JSON.parse(localStorage.getItem('sejul_sum_' + k) || 'null'); } catch (e) { return null; } };
@@ -387,11 +389,16 @@ html.sj-railmin .sjr .sj-vtg{display:none}html.sj-railmin .sjr .sj-flr{margin-to
   /* 도구 목록 (왼쪽 메뉴·휴대폰 탭·검색·알림이 같이 씀) — 재고·구매, 증서·검사는 계획정비와 같은 자료를 씀 */
   U.TOOLS = () => [['pms', U.T('계획정비', 'Maintenance'), 'pms'], ['rsk', U.T('위험성 관리', 'Risk'), 'rsk'], ['inv', U.T('재고·구매', 'Stores & purchasing'), 'M21 8 12 3 3 8v8l9 5 9-5zM3 8l9 5 9-5M12 13v8'], ['cert', U.T('증서·검사', 'Certificates & surveys'), 'M12 15a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM9 14.5 8 22l4-2 4 2-1-7.5M5 3h14']];
   U.toolOf = k => k === 'req' ? 'inv' : k === 'cls' || k === 'cal' ? 'cert' : 'pms';
+  /* 증서·검사 '할 일' — 배지·선박 고르기·증서 홈이 같은 정의: 선급 검사(기한 초과 + 검사 기간 중) + 검교정 기한 초과 */
+  U.certN = s => !s ? 0 : (s.cl != null ? s.cl : (s.O || []).filter(x => x[0] === 'cls').length) + (s.kod || 0);
+  U.certTxt = s => { const T = U.T, a = s.cl != null ? s.cl : (s.O || []).filter(x => x[0] === 'cls').length, k = s.kod || 0; return a + k ? T(`선급 검사 ${a}개 / 검교정 ${k}개`, `Surveys ${a} / calibration ${k}`) : T('할 일 없음', 'Nothing due'); };
+  U.certSplit = S => S.reduce((o, s) => { if (!s) return o; o.a += s.cl != null ? s.cl : (s.O || []).filter(x => x[0] === 'cls').length; o.k += s.kod || 0; return o; }, { a: 0, k: 0 });
   U.toolBadges = function (off, v) { const sp = U.sum('pms'), sr = U.sum('rsk'), B = { pms: '', rsk: '', inv: '', cert: '' }, bd = (n, y) => n ? `<span class="sj-bd ${y ? 'y' : ''}">${n}</span>` : '';
     if (sp && sp.ships) { const S = off ? Object.values(sp.ships) : [sp.ships[v] || {}], cnt = (L, f) => L.reduce((a, s) => a + (s[off ? 'O' : 'S'] || []).filter(f).length, 0);
-      B.pms = off ? bd(cnt(S, x => !['cls', 'req'].includes(x[0])), 1) : bd((S[0] || {}).od);
-      B.inv = off ? bd(cnt(S, x => x[0] === 'req'), 1) : bd((S[0] || {}).low, 1);
-      B.cert = bd(cnt(S, x => x[0] === 'cls'), 1); }
+      const sum = (k, f) => S.reduce((a, s) => a + (s[k] != null ? s[k] : (s[off ? 'O' : 'S'] || []).filter(f).length), 0);
+      B.pms = off ? bd(sum('on', x => !['cls', 'req'].includes(x[0])), 1) : bd((S[0] || {}).od);
+      B.inv = off ? bd(sum('rq', x => x[0] === 'req'), 1) : bd((S[0] || {}).low, 1);
+      { const CT = sp.cert ? (off ? Object.values(sp.cert) : [sp.cert[v]]) : S, c = U.certSplit(CT), n = c.a + c.k; B.cert = n ? `<span class="sj-bd y" title="${U.T(`선급 검사 ${c.a}개 / 검교정 ${c.k}개`, `Surveys ${c.a} / calibration ${c.k}`)}">${n}</span>` : ''; } }
     if (sr && sr.v) { const n = Object.entries(sr.v).filter(([k]) => off || k === v).reduce((a, [, s]) => a + (off ? s.wait : s.draft + s.wait + s.stop), 0); B.rsk = bd(n, 1); }
     return B; };
   /* 왼쪽 메뉴 (A안: 도구 → 선대 → 관리, 아래는 설정·동기화 한 줄 · [≪]로 아이콘만 남기기) */
