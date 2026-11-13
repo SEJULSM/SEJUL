@@ -2,6 +2,8 @@
    앱 홈(index.html)과 도구 페이지(shell.js)가 같은 메뉴를 그림. 도구를 옮겨도 위치가 같음. */
 (function () {
   const C = window.SJAPP = window.SJAPP || {}, U = window.SJUI = {};
+  /* 화면 들어올 때 한 번만 부드럽게 나타나게 (자료 새로 고침으로 다시 그릴 때는 움직이지 않음) */
+  { const de = document.documentElement, on = () => { de.classList.add('sj-anim'); clearTimeout(de._sja); de._sja = setTimeout(() => de.classList.remove('sj-anim'), 900); }; on(); addEventListener('hashchange', on); addEventListener('popstate', on); }
   const EN = () => (C.get && C.get('lang') || 'ko') === 'en'; U.T = (k, e) => EN() ? (e || k) : k;
   U.esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   U.VES = ['KTS GOLD', 'KTS SILVER', 'KTS RED', 'KTS WHITE', 'KTS GREEN', 'KTS BLUE', 'SKY ROYAL', 'SUNNY QUEEN'];
@@ -267,7 +269,7 @@ html body,html body :is(button,input,select,textarea,table){font-family:'Pretend
 /* 움직임: 짧고 가볍게 (움직임 줄이기 설정이면 끔) */
 @keyframes sjIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}@keyframes sjSide{from{transform:translateX(24px);opacity:.4}to{transform:none;opacity:1}}@keyframes sjPop{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}@keyframes sjFade{from{opacity:0}to{opacity:1}}
 .sji:not([hidden]) .sji-p{animation:sjSide .22s cubic-bezier(.2,.8,.2,1)}.sji:not([hidden]) .sji-bg,.sjd-bg,.sjq:not([hidden]) .sjq-bg{animation:sjFade .18s ease}.sjd-p,.sjq:not([hidden]) .sjq-p{animation:sjPop .18s cubic-bezier(.2,.8,.2,1)}.sjs:not([hidden]) .sjs-p{animation:sjIn .2s ease}
-.sjh>*{animation:sjIn .25s ease both}.sjh>*:nth-child(2){animation-delay:.03s}.sjh>*:nth-child(3){animation-delay:.06s}.sjh>*:nth-child(4){animation-delay:.09s}.sjh>*:nth-child(n+5){animation-delay:.12s}
+html.sj-anim .sjh>*{animation:sjIn .25s ease both}html.sj-anim .sjh>*:nth-child(2){animation-delay:.03s}html.sj-anim .sjh>*:nth-child(3){animation-delay:.06s}html.sj-anim .sjh>*:nth-child(4){animation-delay:.09s}html.sj-anim .sjh>*:nth-child(n+5){animation-delay:.12s}
 :is(.sjh-btn,.sjd-ft button,.sji-go,.qi,.kc,.sjc-hr){transition:transform .12s ease,box-shadow .15s ease,background-color .15s ease}:is(.sjh-btn,.sjd-ft button,.sji-go):active{transform:scale(.97)}.sjh .sjh-k>.kc:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(20,36,74,.10)}
 .sjr .sj-it,.sjr .sj-vs{transition:background-color .15s ease,color .15s ease}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
