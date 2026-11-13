@@ -216,6 +216,11 @@ html.sj-hasupd .sjpp-back{top:108px}
 html.sj-phone body:not(.x) #top .sj-nav,html.sj-phone header.top #nav{scrollbar-width:none}
 html.sj-phone #top.sj-top,html.sj-phone body header.top{display:none!important}
 html.sj-phone:not(.sjpp-on) #main{padding-top:44px!important}
+.sjpp-up{display:inline-flex;align-items:center;gap:4px;margin:0 0 10px -4px;padding:6px 10px 6px 6px;border:0;border-radius:999px;background:var(--sj-sf3,#EEF1F6);color:var(--sj-tx2,#4A5568);font-size:13px;font-weight:700}
+.sjpp .sjpp-ro{cursor:default}.sjpp .sjpp-ro:active{transform:none}
+.sjrq-h{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:8px}.sjrq-h small{color:var(--sj-tx3,#6B7588);font-size:12.5px}.sjrq-t{font-size:16px;font-weight:700;margin:4px 0}.sjrq-n{font-size:13px;color:var(--sj-tx2,#4A5568);margin-bottom:6px}
+.sjrq-l{border:1px solid var(--sj-bd,#E1E6EE);border-radius:12px;overflow:hidden;margin:10px 0}.sjrq-i{display:flex;justify-content:space-between;gap:10px;padding:10px 12px;border-bottom:1px solid var(--sj-sf3,#EEF1F6)}.sjrq-i:last-child{border-bottom:0}.sjrq-i b{font-size:14px}.sjrq-i small{display:block;font-size:12px;color:var(--sj-tx3,#6B7588);margin-top:2px}.sjrq-i>span{text-align:right;white-space:nowrap;font-size:13px}
+.sjrq-g{font-size:12px;color:var(--sj-tx3,#6B7588);line-height:1.6}
 @font-face{font-family:'Pretendard';font-weight:100 550;font-display:swap;src:url(${FB}fonts/Pretendard-Regular.subset.woff2) format('woff2')}@font-face{font-family:'Pretendard';font-weight:551 900;font-display:swap;src:url(${FB}fonts/Pretendard-Bold.subset.woff2) format('woff2')}
 html body,html body :is(button,input,select,textarea,table){font-family:'Pretendard','Noto Sans KR','Malgun Gothic','Apple SD Gothic Neo',system-ui,sans-serif}
 :root{--sj-brand:var(--sj-blu,#1F64B8);--sj-brand2:var(--sj-blu,#1F64B8);--sj-focus:var(--sj-blu,#1F64B8)}
@@ -501,6 +506,9 @@ html.sj-railmin .sjr .sj-vtg{display:none}html.sj-railmin .sjr .sj-flr{margin-to
   /* 선박 고르기 시트 열고 닫기 (좁은 화면) */
   document.addEventListener('click', e => { const a = e.target.closest && e.target.closest('[data-sjsheet]'); if (!a) return; e.preventDefault(); const sh = document.querySelector('.sjs.sjves'); if (sh) sh.hidden = !sh.hidden; });
   /* 선대 목록에서 선박 고르기 (사무실) */
+  /* 휴대폰(사무실): 선박을 고르면 도구 화면이 아니라 휴대폰 전용 선박 요약으로 */
+  U.phoneShip = n => { if (U.onPhoneShip) return U.onPhoneShip(n); location.href = (/\/tools\//.test(location.pathname) ? '' : 'tools/') + 'pms.html?ppv=' + encodeURIComponent(n); };
+  document.addEventListener('click', e => { const a = e.target.closest && e.target.closest('[data-sjves]'); if (!a || !U.phone() || !a.dataset.sjves) return; e.preventDefault(); e.stopImmediatePropagation(); document.querySelectorAll('.sjs').forEach(sh => sh.hidden = true); C.set('view', a.dataset.sjves); U.phoneShip(a.dataset.sjves); }, true);
   document.addEventListener('click', e => { const a = e.target.closest && e.target.closest('[data-sjves]'); if (!a) return; const n = a.dataset.sjves; C.set('view', n);
     document.querySelectorAll('.sjs').forEach(sh => sh.hidden = true);
     if (!n && a.getAttribute('href') !== 'index.html') return; e.preventDefault(); if (U.onView) U.onView(n); }, true);
