@@ -214,13 +214,27 @@ html.sj-hasupd .sjpp{top:100px}
 .sjpp-back{position:fixed;left:10px;top:62px;z-index:945;display:inline-flex;align-items:center;gap:4px;padding:7px 12px 7px 8px;border-radius:999px;border:1px solid var(--sj-bd2,#C9D1DD);background:var(--sj-sf,#FFFFFF);color:var(--sj-tx,#1A2233);font-size:13px;font-weight:700;box-shadow:var(--sj-sh2);text-decoration:none}.sjpp-back[hidden]{display:none}
 html.sj-hasupd .sjpp-back{top:108px}
 html.sj-phone body:not(.x) #top .sj-nav,html.sj-phone header.top #nav{scrollbar-width:none}
-html.sj-phone #top.sj-top,html.sj-phone body header.top{display:none!important}
+html.sj-phone #top.sj-top,html.sj-phone.sj-intool body header.top{display:none!important}
 html.sj-phone:not(.sjpp-on) #main{padding-top:44px!important}
 .sjpp-up{display:inline-flex;align-items:center;gap:4px;margin:0 0 10px -4px;padding:6px 10px 6px 6px;border:0;border-radius:999px;background:var(--sj-sf3,#EEF1F6);color:var(--sj-tx2,#4A5568);font-size:13px;font-weight:700}
 .sjpp .sjpp-ro{cursor:default}.sjpp .sjpp-ro:active{transform:none}
 .sjrq-h{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:8px}.sjrq-h small{color:var(--sj-tx3,#6B7588);font-size:12.5px}.sjrq-t{font-size:16px;font-weight:700;margin:4px 0}.sjrq-n{font-size:13px;color:var(--sj-tx2,#4A5568);margin-bottom:6px}
 .sjrq-l{border:1px solid var(--sj-bd,#E1E6EE);border-radius:12px;overflow:hidden;margin:10px 0}.sjrq-i{display:flex;justify-content:space-between;gap:10px;padding:10px 12px;border-bottom:1px solid var(--sj-sf3,#EEF1F6)}.sjrq-i:last-child{border-bottom:0}.sjrq-i b{font-size:14px}.sjrq-i small{display:block;font-size:12px;color:var(--sj-tx3,#6B7588);margin-top:2px}.sjrq-i>span{text-align:right;white-space:nowrap;font-size:13px}
 .sjrq-g{font-size:12px;color:var(--sj-tx3,#6B7588);line-height:1.6}
+
+/* 휴대폰: 가로로 넘치지 않게 (글자 크게 설정한 기기 포함) */
+html.sj-phone,html.sj-phone body{overflow-x:hidden;max-width:100%}
+html.sj-phone .row{grid-template-columns:minmax(0,1fr)!important}html.sj-phone .row>*{min-width:0}
+html.sj-phone .gr2{grid-template-columns:minmax(0,1fr)!important}
+html.sj-phone .seg{display:flex!important;flex-wrap:wrap;max-width:100%}html.sj-phone .seg button{flex:1 1 auto;white-space:nowrap;min-height:40px}
+html.sj-phone input.i,html.sj-phone .row input,html.sj-phone .row select{min-width:0;max-width:100%}
+html.sj-phone .wrap{max-width:100%;box-sizing:border-box}html.sj-phone .card{max-width:100%;box-sizing:border-box}
+/* 휴대폰 설정 간소화: 회사 정보·도구별 설정·기기 형태·자료 복구·백업 폴더·설치는 PC에서 */
+html.sj-phone:not(.sj-full) :is(#s-co,#s-tools){display:none!important}
+html.sj-phone:not(.sj-full) #s-dev .row:has([data-kindset]),html.sj-phone:not(.sj-full) #s-sync .row:has([data-act=restore]),html.sj-phone:not(.sj-full) #s-sync .row:has([data-act=dir]){display:none!important}
+html.sj-phone #s-sync>p,html.sj-phone #s-push>p,html.sj-phone #s-dev>p{display:none}
+html.sj-phone .sec{padding:4px 16px 6px}html.sj-phone .sec h2{font-size:17px}
+.sjset-note{display:none}html.sj-phone .sjset-note{display:block;margin:4px 4px 18px;font-size:12.5px;color:var(--sj-tx3,#6B7588);line-height:1.6}
 @font-face{font-family:'Pretendard';font-weight:100 550;font-display:swap;src:url(${FB}fonts/Pretendard-Regular.subset.woff2) format('woff2')}@font-face{font-family:'Pretendard';font-weight:551 900;font-display:swap;src:url(${FB}fonts/Pretendard-Bold.subset.woff2) format('woff2')}
 html body,html body :is(button,input,select,textarea,table){font-family:'Pretendard','Noto Sans KR','Malgun Gothic','Apple SD Gothic Neo',system-ui,sans-serif}
 :root{--sj-brand:var(--sj-blu,#1F64B8);--sj-brand2:var(--sj-blu,#1F64B8);--sj-focus:var(--sj-blu,#1F64B8)}

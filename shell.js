@@ -6,7 +6,7 @@
    · 앱 홈에서 누른 항목으로 바로 이동 (?go=data-속성 JSON) */
 (function () {
   const C = window.SJAPP; if (!C || C.isHub) return; C.shell = true;
-  const U = window.SJUI, T = U.T;
+  const U = window.SJUI, T = U.T; try { document.documentElement.classList.add('sj-intool'); } catch (e) { }
   const CO0 = { dpaName: 'Noh You Seok', dpaPhone: '+82-10-6588-7959', dpaEmail: 'nohys@sejulsm.com', sqEmail: 'sjsm@sejulsm.com' };
   C.company = () => { let o = {}; try { o = JSON.parse(C.get('company') || '{}') || {}; } catch (e) { } Object.keys(CO0).forEach(k => { if (!o[k]) o[k] = CO0[k]; }); return o; };
   C.mode = () => U.role() === 'office' && U.officeOK() ? 'office' : 'ship';
