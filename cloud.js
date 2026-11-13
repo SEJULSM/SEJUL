@@ -30,10 +30,12 @@
     try { const tool = A.tool, pushed = JSON.parse(LS('sejul_cloud_' + tool + '_pushed') || '{}'), seen = JSON.parse(LS('sejul_cloud_' + tool + '_seen') || '{}');
       const files = A.files(m) || [], mine = new Set(files.map(f => f.name)); C.state.up = 0; C.state.down = 0;
       const bg = !!(window.SJAPP && SJAPP.bg);   /* 앱 홈이 요약만 만들려고 연 보이지 않는 창: 올리기·저장 없이 받아서 계산만 (열려 있는 도구 화면의 자료를 덮어쓰지 않게) */
+      const d0 = LS('sejul_cloud_' + tool + '_dirty') || '', pushAt0 = +LS('sejul_cloud_' + tool + '_pushAt') || 0; let pre = null; try { pre = !bg && A.track ? A.track() : null; } catch (e) { }
       for (const f of bg ? [] : files) { const core = JSON.stringify(f.core), h = hash(core); if (!force && pushed[f.name] === h) continue;
         const at = new Date().toISOString(), body = await C.gz(JSON.stringify(Object.assign({}, f.obj, { savedAt: at })));
         await C.rpc('sj_put', { p_tool: tool, p_name: f.name, p_ship: f.ship, p_body: body, p_size: body.length, p_saved_at: at, p_pc: A.pc() }); pushed[f.name] = h; seen[f.name] = at; C.state.up++; }
       if (!bg) LSS('sejul_cloud_' + tool + '_pushed', JSON.stringify(pushed));
+      if (!bg) { if ((LS('sejul_cloud_' + tool + '_dirty') || '') === d0) LSS('sejul_cloud_' + tool + '_dirty', ''); LSS('sejul_cloud_' + tool + '_pushAt', String(Date.now())); }   /* 보낼 변경 표시 지움 */
       const list = await C.rpc('sj_list', { p_tool: tool }) || [];
       for (const r of list) { if (r.mine || mine.has(r.name)) continue; const at = new Date(r.saved_at).toISOString(); if (!force && !bg && seen[r.name] && seen[r.name] >= at) continue;
         const b64 = await C.rpc('sj_get', { p_tool: tool, p_name: r.name }); if (!b64) continue;
@@ -41,6 +43,10 @@
         seen[r.name] = at; C.state.down++; }
       if (!bg) LSS('sejul_cloud_' + tool + '_seen', JSON.stringify(seen));
       if (n) { if (bg) { try { render(); } catch (e) { } } else await A.after(n); }
+      /* 충돌 알림: 지난 동기화 뒤 이 기기에서 고친 항목을 다른 기기의 더 새 내용이 덮었을 때 */
+      try { if (n && pre && pushAt0) { const post = A.track(), lost = []; pre.forEach((v, k) => { if (v[0] > pushAt0) { const q = post.get(k); if (!q || q[0] !== v[0]) lost.push(v[1]); } });
+        if (lost.length && window.SJUI && SJUI.toast) { const en = (SJAPP.get('lang') || 'ko') === 'en', names = lost.slice(0, 3).join(', ') + (lost.length > 3 ? ' …' : '');
+          SJUI.toast(en ? `Another device changed ${lost.length} item(s) after you did — showing the newer version: ${names}` : `다른 기기에서 더 나중에 고친 항목 ${lost.length}건 — 이 기기에서 고친 내용 대신 최신 내용으로 맞췄습니다: ${names}`, 12000); C.state.conf = { at: Date.now(), items: lost }; } } } catch (e) { console.warn('conflict check', e); }
       C.state.last = Date.now(); C.state.err = '';
       setTimeout(() => C.sumPush().catch(() => {}), 2500);
     } catch (e) { C.state.err = e.message; console.warn('cloud', e); }
@@ -84,7 +90,9 @@
   C.start = function (A) { if (!C.url || /__CLOUD/.test(C.url)) return; C.A = A; let t;
     const kick = (d) => { clearTimeout(t); t = setTimeout(() => C.sync(A), d); };
     kick(5000); setInterval(() => C.sync(A), 2 * 60e3); addEventListener('online', () => kick(3000)); addEventListener('focus', () => kick(2000));
-    C.onSave = () => kick(15000); };
+    C.onSave = () => { try { if (!LS('sejul_cloud_' + A.tool + '_dirty')) LSS('sejul_cloud_' + A.tool + '_dirty', String(Date.now())); } catch (e) { } C.badge(); kick(15000); }; };
+  /* 서버로 아직 안 보낸 변경이 있는지 (도구별 표시 시각) */
+  C.dirty = () => ['pms', 'rsk'].map(t => +LS('sejul_cloud_' + t + '_dirty') || 0).filter(Boolean).sort()[0] || 0;
 })();
 
 /* ===== 도구별 연결 (도구 페이지에서만) ===== */
@@ -95,6 +103,7 @@
       if (MODE === 'admin') { if (m.role !== 'office') return []; return Object.entries(OFFICE.ships || {}).map(([k, d]) => ({ name: `PMS_OFFICE_${s}__${fs(k)}.json`, ship: k, core: d, obj: Object.assign({ type: 'office', app: APP.name, schema: APP.schema, office: { ships: { [k]: d }, adminHash: OFFICE.adminHash } }, base) })); }
       if (!SHIP || /^__/.test(SHIP.ship.name)) return []; if (m.role === 'ship' && SHIP.ship.name !== m.ship) return [];
       return [{ name: `PMS_${fs(SHIP.ship.name)}_${s}.json`, ship: SHIP.ship.name, core: SHIP, obj: Object.assign(wrapShipData(SHIP), base) }]; },
+    track() { const M = new Map(), dbs = MODE === 'admin' ? Object.entries(OFFICE.ships || {}) : (SHIP ? [[SHIP.ship.name, SHIP]] : []); for (const [v, d] of dbs) { (d.reqs || []).forEach(r => M.set(v + '|rq|' + r.id, [r.upd || 0, (r.no || L('청구서', 'Requisition'))])); (d.defects || []).forEach(x => M.set(v + '|df|' + x.id, [x.upd || 0, (x.no || L('결함', 'Defect'))])); ((d.cls || {}).items || []).forEach(x => { if (x.upd !== x.kra) M.set(v + '|cl|' + x.id, [x.upd || 0, x.ko || '']); }); } return M; },
     apply(o) { if (MODE !== 'admin' && o.type === 'office' && SHIP && !(o.office.ships || {})[SHIP.ship.name]) return 0; return pmsApplyObj(o); },
     async after(n) { SY.base = {}; trackAll(); await KV.set('ship', SHIP); await KV.set('office', OFFICE); try { resetHistory(); } catch (e) { } if (pmsBusy()) { SY.pending += n; renderTop(); } else { render(); toast(L('🔄 최신 자료로 갱신됨', '🔄 Updated with the latest data')); } } };
   const RSK = { tool: 'rsk', pc: () => fsPcLabel(),
@@ -104,6 +113,7 @@
           return { name: `RSK_OFFICE_${fs(fsPcLabel())}__${fs(v)}.json`, ship: v, core: d, obj: Object.assign({ vessel: v, data: d }, base) }; }); }
       const v = vesselName(); if (!v || /^__/.test(v) || (m.role === 'ship' && v !== m.ship)) return [];
       return [{ name: fsName(), ship: v, core: DB, obj: Object.assign({ vessel: v, data: DB }, base) }]; },
+    track() { const M = new Map(); [['ras', 'RA'], ['ptws', 'PTW'], ['mocs', 'MoC'], ['rirs', 'RIR']].forEach(([k, n]) => (DB[k] || []).forEach(x => M.set(k + ':' + x.id, [x.updatedAt || 0, n + ' ' + (x.no || x.title || x.desc || '')]))); return M; },
     apply(j) { return j && j.data ? fsMerge(migrate(j.data)) : 0; },
     async after(n) { _save0(); try { applyStd && applyStd(); } catch (e) { } if (fsTyping() || MODAL) { FS.pending = (FS.pending || 0) + n; fsBadge(); } else { render(); toast(t('🔄 최신 자료로 갱신됨', '🔄 Updated with the latest data')); } } };
   const boot = () => { let A = null;

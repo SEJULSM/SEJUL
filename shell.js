@@ -167,7 +167,16 @@ html body .sjx-hid,html body header.top #nav>button.sjx-hid,html body #nav butto
   /* 불러오는 동안 보이는 화면 (빈 화면 대신) */
   if (!BG) { const l = document.createElement('div'); l.id = 'sjxLoad'; const nm = SUBN();
     l.innerHTML = `<style>#sjxLoad{position:fixed;inset:0;z-index:890;background:var(--sj-bg,#F3F5F9);font-family:'Pretendard','Noto Sans KR','Malgun Gothic',system-ui,sans-serif;padding:26px 28px;overflow:hidden;transition:opacity .2s}@media (min-width:900px){#sjxLoad{left:var(--sjr-w,248px)}}@media (max-width:899px){#sjxLoad{top:54px;bottom:66px;padding:18px 16px}}#sjxLoad .lb{display:flex;align-items:center;gap:10px;color:var(--sj-tx2,#4A5568);font-size:13px;font-weight:600;margin-bottom:18px}#sjxLoad .lb u{width:14px;height:14px;border-radius:50%;border:2px solid var(--sj-blu-bd,#B5CDEE);border-top-color:var(--sj-blu,#1F64B8);animation:sjxsp .8s linear infinite}#sjxLoad i{display:block;border-radius:10px;background:linear-gradient(90deg,var(--sj-sf3,#EEF1F6) 0,var(--sj-bd,#E1E6EE) 40%,var(--sj-sf3,#EEF1F6) 80%) 0 0/200% 100%;animation:sjxsk 1.2s linear infinite}#sjxLoad .t{height:14px;width:180px;margin-bottom:10px}#sjxLoad .h{height:30px;width:260px;margin-bottom:22px}#sjxLoad .hero{height:110px;margin-bottom:14px;border-radius:14px}#sjxLoad .k{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:14px}#sjxLoad .k i{height:84px;border-radius:12px}#sjxLoad .c{display:grid;grid-template-columns:2fr 1fr;gap:14px}#sjxLoad .c i{height:260px;border-radius:12px}@media (max-width:899px){#sjxLoad .c{grid-template-columns:1fr}}@keyframes sjxsp{to{transform:rotate(360deg)}}@keyframes sjxsk{to{background-position:-200% 0}}@media (prefers-reduced-motion:reduce){#sjxLoad *{animation:none!important}}</style><div class="lb" role="status"><u></u>${nm} ${T('불러오는 중…', 'loading…')} <small style="font-weight:400;color:var(--sj-tx3,#6B7588)">${T('처음 열 때는 몇 초 걸릴 수 있습니다', 'The first open can take a few seconds')}</small></div><i class="t"></i><i class="h"></i><i class="hero"></i><div class="k"><i></i><i></i><i></i><i></i><i></i></div><div class="c"><i></i><i></i></div>`;
-    document.documentElement.appendChild(l); }
+    /* PC: 지난번에 본 같은 화면을 먼저 보여 줌 (같은 탭에서 도구를 오갈 때) — 도구가 준비되면 실제 화면으로 바뀜. 누를 수는 없음(잠깐) */
+    let snap = null; const snapKey = () => 'sejul_snap|' + TOOL + '|' + SUB + '|' + (location.hash.replace(/^#\/?/, '').replace(/^home$/, '')) + '|' + (C.get('view') || '') + '|' + (C.get('vessel') || '') + '|' + (C.get('theme') || '') + '|' + (C.get('lang') || '');
+    try { if (!(U.phone && U.phone())) snap = JSON.parse(sessionStorage.getItem(snapKey()) || 'null'); } catch (e) { }
+    if (snap && snap.main) try { const na = document.createElement('style'); na.textContent = '.sjh>*{animation:none!important}'; document.documentElement.appendChild(na); const iv = setInterval(() => { if (!document.getElementById('sjxLoad')) { clearInterval(iv); setTimeout(() => na.remove(), 1200); } }, 300); } catch (e) { }   /* 지난 화면 → 실제 화면으로 바뀔 때 깜빡임(다시 나타나는 효과) 없이 */
+    if (snap && snap.main) { l.className = 'snap pre'; { const iv = setInterval(() => { if (window.SJLOOK || !l.isConnected) { clearInterval(iv); l.classList.remove('pre'); } }, 40); }   /* 도구 모양(CSS)이 준비된 뒤에 보여 줌 — 옛 모양이 잠깐 보이지 않게 */
+      l.className = 'snap pre'; l.innerHTML = `<style>#sjxLoad.snap{position:fixed;inset:0;z-index:890;background:var(--sj-bg,#F3F5F9);overflow:hidden;transition:opacity .15s}@media (min-width:900px){#sjxLoad.snap{left:var(--sjr-w,248px)}}#sjxLoad.snap.pre>:not(style){visibility:hidden}#sjxLoad.snap *{pointer-events:none!important;animation:none!important;transition:none!important}#sjxLoad .snapb{position:fixed;right:18px;bottom:18px;z-index:5;display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;background:var(--sj-inv,#2A3242);color:var(--sj-on,#FFFFFF);font:600 13px 'Pretendard','Malgun Gothic',sans-serif}#sjxLoad .snapb u{width:12px;height:12px;border-radius:50%;border:2px solid var(--sj-bd3,#9AA4B2);border-top-color:var(--sj-on,#FFFFFF);animation:sjxsp .8s linear infinite!important}@keyframes sjxsp{to{transform:rotate(360deg)}}</style><div class="snapb" role="status"><u></u>${T('최신 자료 확인 중…', 'Refreshing…')}</div><div id="top" class="${snap.tc || ''}" inert>${snap.top || ''}</div><${snap.mt || 'main'} id="main" class="${snap.mc || ''}" inert>${snap.main}</${snap.mt || 'main'}>`; }
+    /* 실제 #top·#main 보다 뒤에 오도록 body 뒤에 붙임 (id 조회는 항상 실제 화면이 먼저) */
+    const put = () => { if (!document.body) return false; document.documentElement.appendChild(l); if (snap && snap.y) { try { l.scrollTop = snap.y; } catch (e) { } } return true; };
+    if (!put()) { document.documentElement.appendChild(l); const mo = new MutationObserver(() => { if (document.body) { mo.disconnect(); put(); } }); mo.observe(document.documentElement, { childList: true }); }
+    addEventListener('pagehide', () => { try { if (!C.booted || (U.phone && U.phone()) || document.querySelector('#mback.on,.modal-bg[style*=flex]')) return; const m = document.querySelector('body #main'), t = document.querySelector('body #top'); if (!m) return; const o = { main: m.innerHTML, mc: m.className, mt: m.tagName.toLowerCase(), top: t ? t.innerHTML : '', tc: t ? t.className : '', y: 0 }; const j = JSON.stringify(o); if (j.length < 400000) sessionStorage.setItem(snapKey(), j); else sessionStorage.removeItem(snapKey()); } catch (e) { } }); }
   C.ready = () => { const w = document.getElementById('sjxWait'); if (w) w.remove(); const l = document.getElementById('sjxLoad'); if (l) { l.style.opacity = '0'; setTimeout(() => l.remove(), 220); } };
   /* 비상용: 도구가 끝내 준비되지 않을 때만 가림막을 걷음 (느린 휴대폰에서 예전 화면이 먼저 보이지 않도록 넉넉히) */
   setTimeout(() => { if (!C.booted) C.ready(); }, 20000); setTimeout(C.ready, 30000);
@@ -266,7 +275,7 @@ html body .sjx-hid,html body header.top #nav>button.sjx-hid,html body #nav butto
       try { const ph = document.querySelector('#main .sjx-ph'); if (ph) descFold(ph, ph.querySelector('h1')); } catch (e) { } },
     /* 제목줄 오른쪽 = [가져오기 ▾] [내보내기 ▾] [출력] [+ 주 동작] — 모든 계획정비 화면 같은 순서 */
     prtHead() { const main = document.getElementById('main'); if (!main) return; const r = route();
-      if (r === 'home') { const hd = main.querySelector('.sjh-hd'); if (hd && !hd.querySelector('.sjx-prt')) prtNode(hd, hd.querySelector('.sp') ? hd.querySelector('.sp').nextElementSibling : null, [[T('월간 이행 보고서', 'Monthly report'), () => ACT.prt9()]]); return; }
+      if (r === 'home') { const hd = main.querySelector('.sjh-hd'); if (hd && !hd.querySelector('.sjx-prt')) prtNode(hd, hd.querySelector('.sp') ? hd.querySelector('.sp').nextElementSibling : null, [[T('월간 보고서', 'Monthly report'), () => ACT.prt9()]]); return; }
       const act = main.querySelector('.sjx-act'); if (!act) return;
       ['imp', 'exp'].forEach(k => { const d = main.querySelector(`details.sjx-dd[data-k="${k}"]`); if (d && d.parentNode !== act) act.insertBefore(d, act.firstChild); });
       if (act.querySelector('.sjx-prt')) return;
@@ -324,12 +333,12 @@ html body .sjx-hid,html body header.top #nav>button.sjx-hid,html body #nav butto
       const items = U.items(v, '../').filter(x => x.k !== 'r');
       const quick = H.quick(off ? [{ d: { sjgo: 'defects' }, bg: 'var(--sj-red-bg,#FDECEC)', fg: 'var(--sj-red-fg,#C62828)', ic: 'M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z', t: T('결함 확인·서명', 'Review defects'), sub: T('선박이 보낸 결함 보고', 'Defect reports from the ship') },
         { d: { sjgo: 'spares' }, bg: 'var(--sj-grn-bg,#E6F5EC)', fg: 'var(--sj-grn-fg,#1E7A45)', ic: 'M3 7h18M6 7v13h12V7M9 11h6', t: T('청구서 처리', 'Requisitions'), sub: T('접수 · 발주 · 취소', 'Ack · order · cancel') },
-        { d: { act: 'monthlyReport' }, bg: 'var(--sj-blu-bg,#E8F0FB)', fg: 'var(--sj-tx,#1A2233)', ic: 'M7 3h7l5 5v13H7zM14 3v5h5', t: T('월간 이행 보고서', 'Monthly report'), sub: T('출력', 'Print') }]
+        { d: { act: 'monthlyReport' }, bg: 'var(--sj-blu-bg,#E8F0FB)', fg: 'var(--sj-tx,#1A2233)', ic: 'M7 3h7l5 5v13H7zM14 3v5h5', t: T('월간 보고서', 'Monthly report'), sub: T('출력', 'Print') }]
         : [{ d: { v9due: 'od' }, bg: 'var(--sj-blu-bg,#E8F0FB)', fg: 'var(--sj-tx,#1A2233)', ic: 'M20 6 9 17l-5-5', t: T('작업 실시 입력', 'Record a job'), sub: T('기한 초과부터', 'Overdue first') },
         { d: { act: 'defNew' }, bg: 'var(--sj-red-bg,#FDECEC)', fg: 'var(--sj-red-fg,#C62828)', ic: 'M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z', t: T('결함 등록', 'Report a defect'), sub: T('결함 보고서 STEP 1~7', 'Defect report steps 1–7') },
         { d: { sjgo: 'ck' }, bg: 'var(--sj-amb-bg,#FFF6D6)', fg: 'var(--sj-amb-fg,#8A6400)', ic: 'M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11', t: T('점검표 입력', 'Checklists'), sub: T('회사 서식 9종', 'Company forms') },
         { d: { act: 'reqNew' }, bg: 'var(--sj-grn-bg,#E6F5EC)', fg: 'var(--sj-grn-fg,#1E7A45)', ic: 'M3 7h18M6 7v13h12V7M9 11h6', t: T('청구서 작성', 'New requisition'), sub: T('예비품 · 선용품', 'Spares · stores') },
-        { d: { act: 'monthlyReport' }, bg: 'var(--sj-sf2,#F7F9FC)', fg: 'var(--sj-tx2,#4A5568)', ic: 'M7 3h7l5 5v13H7zM14 3v5h5', t: T('월간 이행 보고서', 'Monthly report'), sub: T('출력', 'Print') }]);
+        { d: { act: 'monthlyReport' }, bg: 'var(--sj-sf2,#F7F9FC)', fg: 'var(--sj-tx2,#4A5568)', ic: 'M7 3h7l5 5v13H7zM14 3v5h5', t: T('월간 보고서', 'Monthly report'), sub: T('출력', 'Print') }]);
       const keep = { sfi: [...main.querySelectorAll('.sech,.sfitiles')], grp: [...main.querySelectorAll('.homeg')] };
       const w = document.createElement('div'); w.className = 'sjh';
       w.innerHTML = H.page({ kicker: U.esc(v) + ' · ' + new Date().toLocaleDateString(T('ko-KR', 'en-GB'), { month: 'long', day: 'numeric', weekday: 'short' }), title: T('계획정비', 'Planned maintenance'), actions: off ? '' : H.btn('＋ ' + T('결함 등록', 'Report defect'), { d: { act: 'defNew' } }) + ' ' + H.btn(T('📝 실시 입력', '📝 Record job'), d('od'), true) })
@@ -481,6 +490,9 @@ html body .sjx-hid,html body header.top #nav>button.sjx-hid,html body #nav butto
       (DB.ptws || []).forEach(p => { if (st(ptwStatus, p) !== 'act') return; const b = g(p.vessel || '—'); b.act++; const e = p.to ? new Date(p.to) : null; if (e && !isNaN(e)) (b.ptw = b.ptw || []).push({ id: p.id, no: p.no || 'PTW', t: String(p.desc || p.location || '').slice(0, 60), end: e.toISOString() }); });
       (DB.ras || []).forEach(r => { const dec = r.apv && r.apv.dpaDecision; if (dec) (g(r.vessel || '—').dpa = g(r.vessel || '—').dpa || []).push({ id: r.id, no: r.no || '', t: String(r.title || '').slice(0, 60), dec }); });
       (DB.mocs || []).forEach(m => { if (!(m.close && m.close.apvDate)) g(m.vessel || '—').moc++; let ms = ''; try { ms = mocStatus(m)[0]; } catch (e) { } if (ms === 'wait' && m.cls !== 'emg') { const b = g(m.vessel || '—'); b.wait++; if (b.items.length < 12) b.items.push(['mocw', m.id, 'MoC ' + (m.no || '') + ' ' + (m.title || '')]); } });
+      /* 월별 건수 (월간 보고서용): 위험성 평가 · 작업허가 · TBM · MoC */
+      const mo = (v, d, k) => { const ym = String(d || '').slice(0, 7); if (!/^\d{4}-\d{2}$/.test(ym)) return; const b = g(v || '—'); b.mo = b.mo || {}; (b.mo[ym] = b.mo[ym] || { ra: 0, ptw: 0, tbm: 0, moc: 0 })[k]++; };
+      (DB.ras || []).forEach(r => { mo(r.vessel, r.date, 'ra'); if (r.tbm && r.tbm.date) mo(r.vessel, r.tbm.date, 'tbm'); }); (DB.ptws || []).forEach(p => mo(p.vessel, p.from || p.issuedAt, 'ptw')); (DB.mocs || []).forEach(m => mo(m.vessel, m.date || m.propDate, 'moc'));
       localStorage.setItem('sejul_sum_rsk', JSON.stringify({ at: Date.now(), site: DB.settings.site, crew: (DB.settings.crew || []).length, v: by }));
       try { const ix = {}, cut = x => String(x || '').slice(0, 80), add = (k, x, t) => ((ix[x.vessel || '—'] = ix[x.vessel || '—'] || []).push([k, x.id, x.no || '', cut(t)]));
         (DB.ras || []).forEach(x => add('ra', x, x.title)); (DB.ptws || []).forEach(x => add('ptw', x, x.desc || x.location)); (DB.mocs || []).forEach(x => add('moc', x, x.title)); (DB.rirs || []).forEach(x => add('rir', x, x.desc));
@@ -542,6 +554,18 @@ html body .sjx-hid,html body header.top #nav>button.sjx-hid,html body #nav butto
     const q = BG ? null : new URLSearchParams(location.search).get('go'); if (q) { setTimeout(() => { try { const o = JSON.parse(q); if (o.view && typeof MODE !== 'undefined' && MODE === 'admin' && OFFICE.ships[o.view]) { OFFICE.sel = o.view; } if (o.hash) location.hash = o.hash; if (o.attrs) setTimeout(() => fire(o.attrs), 300); } catch (e) { } history.replaceState(null, '', location.pathname + location.hash); }, 900); }
     addEventListener('storage', e => { if (/^sejul_common_(vessel|role|lang|company|pcname)$/.test(e.key || '')) { try { X.apply(); } catch (er) { } railRefresh(); } });
     addEventListener('pageshow', () => { try { X.apply(); } catch (er) { } railRefresh(); }); };
+  /* ===== 긴 표 가볍게: 100줄 넘는 표는 80줄만 먼저 그리고, 아래로 내리면 200줄씩 더 보여 줌 (출력·검색은 전체 대상) ===== */
+  try { if (!BG) { const io = 'IntersectionObserver' in window ? new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting && e.target._more) e.target._more(); }), { rootMargin: '600px' }) : null;
+      const lazy = () => { document.querySelectorAll('body #main table > tbody').forEach(tb => { if (tb._lz || tb.rows.length <= 100) return; tb._lz = 1; const rows = [...tb.rows]; let n = 80; rows.slice(n).forEach(r => r.classList.add('sjlz'));
+          const tbl = tb.parentNode, m = document.createElement('button'); m.type = 'button'; m.className = 'sjlz-more';
+          const lab = () => { m.textContent = T(`아래로 내리면 더 보입니다 — 남은 ${rows.length - n}줄 (누르면 바로 보기)`, `Scroll for more — ${rows.length - n} rows left (tap to show)`); };
+          m._more = () => { rows.slice(n, n + 200).forEach(r => r.classList.remove('sjlz')); n += 200; if (n >= rows.length) { if (io) io.unobserve(m); m.remove(); } else lab(); };
+          m.onclick = () => { while (m.isConnected) m._more(); }; lab(); (tbl.closest('.tw') || tbl).after(m); if (io) io.observe(m); }); };
+      let lt; const kick = () => { clearTimeout(lt); lt = setTimeout(lazy, 60); };
+      const st2 = document.createElement('style'); st2.textContent = 'tr.sjlz{display:none}.sjlz-more{display:block;width:100%;margin:8px 0 16px;padding:10px;border:1px dashed var(--sj-bd2,#C9D1DD);border-radius:10px;background:var(--sj-sf2,#F7F9FC);color:var(--sj-tx2,#4A5568);font-size:13px;cursor:pointer}@media print{tr.sjlz{display:table-row!important}.sjlz-more{display:none!important}}'; document.documentElement.appendChild(st2);
+      addEventListener('load', () => { const m = document.querySelector('body #main'); if (m) { new MutationObserver(kick).observe(m, { childList: true, subtree: true }); kick(); } });
+      /* 찾기(Ctrl+F)·출력 전에는 전부 펼침 */
+      addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && (e.key === 'f' || e.key === 'p')) document.querySelectorAll('.sjlz-more').forEach(m => m.click()); }, true); addEventListener('beforeprint', () => document.querySelectorAll('.sjlz-more').forEach(m => m.click())); } } catch (e) { console.warn('lazy rows', e); }
   /* ===== 휴대폰 간단 화면 — 현장 기록 (작업 실시 완료 · 예비품 사용 · 대기 측정 · 서명) =====
      작성·편집·출력·첨부는 PC·태블릿에서 (sjphone.css 가 해당 단추를 숨김). 여기는 휴대폰에서 고르기 쉬운 목록 창만 만듦 */
   const PH = (() => { let box = null, st = null;
@@ -673,12 +697,22 @@ html body .sjx-hid,html body header.top #nav>button.sjx-hid,html body #nav butto
         ${sec(T('선박별', 'By vessel'), rows || `<div class="sjph-e">${T('받은 선박 자료가 없습니다', 'No vessel data yet')}</div>`)}`; };
     const ready = () => TOOL === 'pms' ? (typeof cur === 'function' && (MODE === 'admin' ? !!OFFICE : !!cur())) : (typeof DB !== 'undefined' && DB && DB.ras);
     function paint() { if (!el || !on) return; let h = ''; if (!vInit) { vInit = true; try { if (isOff()) vsh = C.get('view') || null; } catch (e) { } } try { h = TOOL === 'rsk' ? (DB.settings.site === 'office' ? (vsh ? rskShip(vsh) : rskOffice()) : rskShip()) : (MODE === 'admin' ? (vsh ? pmsOfficeShip(vsh) : pmsOffice()) : pmsShip()); } catch (e) { console.warn('pp', e); h = `<div class="sjph-e">${T('불러오는 중…', 'Loading…')}</div>`; }
-      const y = el.scrollTop; el.innerHTML = `<div class="sjpp-in">${h}<button type="button" class="sjpp-full" data-ppa="tool">${T('도구 화면 그대로 보기 (보기 전용)', 'Open the tool view (read-only)')} ›</button></div>`; el.scrollTop = y; }
-    function show() { if (!el) { el = document.createElement('div'); el.className = 'sjpp'; document.body.appendChild(el); el.addEventListener('click', click);
-        back = document.createElement('button'); back.type = 'button'; back.className = 'sjpp-back'; back.innerHTML = U.ic('M15 18l-6-6 6-6', 16) + '<span>' + name + ' ' + T('홈', 'home') + '</span>'; back.onclick = () => show(); document.body.appendChild(back); }
+      const html = `<div class="sjpp-in">${h}<button type="button" class="sjpp-full" data-ppa="tool">${T('도구 화면 그대로 보기 (보기 전용)', 'Open the tool view (read-only)')} ›</button></div>`;
+      const live = ready(); if (html !== last || el.dataset.stale) { const y = el.scrollTop; el.innerHTML = html; el.scrollTop = y; last = html; if (live) { try { localStorage.setItem(snapKey(), html); } catch (e) { } } }
+      if (live && el.dataset.stale) { delete el.dataset.stale; if (pend) { const q = pend; pend = null; setTimeout(() => { const b = el.querySelector(`[data-ppa="${q.a}"]` + (q.id ? `[data-id="${CSS.escape(q.id)}"]` : '')); if (b) b.click(); }, 30); } } }
+    /* 빠른 첫 화면: 지난번에 본 화면을 먼저 보여 주고(0.1초 안), 도구가 준비되면 최신 자료로 바꿈. 그 사이 누른 단추는 준비되는 즉시 실행 */
+    let last = '', pend = null;
+    const snapKey = () => 'sejul_pp_' + TOOL + '_' + (vsh || '');
+    function mk() { if (el) return; el = document.createElement('div'); el.className = 'sjpp'; document.body.appendChild(el); el.addEventListener('click', click);
+      back = document.createElement('button'); back.type = 'button'; back.className = 'sjpp-back'; back.hidden = true; back.innerHTML = U.ic('M15 18l-6-6 6-6', 16) + '<span>' + name + ' ' + T('홈', 'home') + '</span>'; back.onclick = () => show(); document.body.appendChild(back); }
+    function early() { try { if (!U.phone || !U.phone() || BG || !home || /[?&]go=/.test(location.search) || /^#\/(?!home)./.test(location.hash)) return; if (!vsh) { try { if ((C.get('role') || (U.role && U.role())) === 'office') vsh = C.get('view') || null; } catch (e) { } }
+        const h = localStorage.getItem(snapKey()); if (!h) return; const put = () => { if (el || !document.body) return !!el; mk(); el.dataset.stale = '1'; el.innerHTML = h; last = h; on = true; document.documentElement.classList.add('sjpp-on'); return true; };
+        if (!put()) { const mo = new MutationObserver(() => { if (put()) mo.disconnect(); }); mo.observe(document.documentElement, { childList: true }); } } catch (e) { } }
+    function show() { mk();
       on = true; el.hidden = false; back.hidden = true; document.documentElement.classList.add('sjpp-on'); paint(); }
     function hide() { if (!el) return; on = false; el.hidden = true; back.hidden = false; document.documentElement.classList.remove('sjpp-on'); }
     function click(e) { const b = e.target.closest('[data-ppa]'); if (!b) return; e.preventDefault(); const a = b.dataset.ppa, id = b.dataset.id;
+      if (el.dataset.stale && !ready()) { pend = { a, id }; b.classList.add('sjpp-wait'); return; }
       if (PH.A[a]) return PH.A[a]();
       if (a === 'job') return doneDialog([id]);
       if (a === 'defs') { hide(); return (location.hash = '#/defects'); }
@@ -692,12 +726,13 @@ html body .sjx-hid,html body header.top #nav>button.sjx-hid,html body #nav butto
       if (a === 'ra') { hide(); return go({ name: 'ra', id, step: 1 }); }
       if (a === 'tool') return hide(); }
     const start = () => { if (!U.phone || !U.phone() || BG || !home) return; if (/[?&]go=/.test(location.search) || /^#\/(?!home)./.test(location.hash)) { show(); hide(); return; }
-      let n = 0; const w = () => { if (ready()) { show(); return; } if (++n < 60) setTimeout(w, 300); }; w(); };
+      let n = 0; const w = () => { if (ready()) { show(); return; } if (++n < 200) setTimeout(w, 100); }; w(); };
     /* 기록하면 바로 숫자·목록 갱신 */
     setInterval(() => { if (on && document.visibilityState === 'visible' && !document.querySelector('#mback.on,.sjph:not([hidden]),.sgpanel-bg[style*=flex]')) paint(); }, 2500);
     U.onPhoneShip = v => { vInit = true; vsh = v || null; setView(vsh); show(); if (el) el.scrollTop = 0; };
+    early();
     return { start, show, hide, paint }; })();
-  if (document.readyState === 'complete') setTimeout(PP.start, 400); else addEventListener('load', () => setTimeout(PP.start, 400));
+  if (document.readyState !== 'loading') setTimeout(PP.start, 0); else addEventListener('DOMContentLoaded', () => setTimeout(PP.start, 0));
   /* 재고·구매 / 증서·검사 (휴대폰): 위에 '‹ 정비' 단추 */
   try { if (U.phone && U.phone() && !BG && TOOL === 'pms' && SUB !== 'pms') addEventListener('load', () => { const b = document.createElement('a'); b.className = 'sjpp-back'; b.href = 'pms.html'; b.innerHTML = U.ic('M15 18l-6-6 6-6', 16) + '<span>' + T('정비 홈', 'PMS home') + '</span>'; document.body.appendChild(b); }); } catch (e) { }
   if (document.readyState === 'complete') setTimeout(boot, 50); else addEventListener('load', () => setTimeout(boot, 50));
