@@ -355,7 +355,7 @@ html body .sjx-hid,html body header.top #nav>button.sjx-hid,html body #nav butto
         + H.cols(H.card(T('처리할 일', 'To do') + ` <small>${T('결함 · 청구 · 선급 검사 · 재고', 'defects · requisitions · class · stock')}</small>`, H.rows(items)), H.card(T('빠른 작업', 'Quick actions'), quick))
         + (keep.sfi.length ? H.extra('🗂 ' + T('SFI 분류 바로가기', 'SFI shortcuts'), '', 'sjhSfi') : '') + (keep.grp.length ? H.extra('🔔 ' + T('담당자별 작업 알림 · 최근 기록 · 미결 결함', 'By rank · recent · open defects'), '', 'sjhGrp') : '')
         + H.foot(`${T('기준일', 'As of')} ${today()} · ${T('작업', 'Jobs')} ${c.n} · ${T('마스터', 'Master')} v${(db.master && db.master.version) || 0}`);
-      const put = (id, nodes) => { const x = w.querySelector('#' + id + ' .in'); if (x) nodes.forEach(n => x.appendChild(n)); };
+      const put = (id, nodes) => { const x = w.querySelector('#' + id + ' .sjh-in'); if (x) nodes.forEach(n => x.appendChild(n)); };
       put('sjhSfi', keep.sfi.filter(n => !n.classList.contains('sech'))); put('sjhGrp', keep.grp);
       try { const k = 'sejul_home_open', o = JSON.parse(localStorage.getItem(k) || '{}'); w.querySelectorAll('details.sjh-x').forEach(dt => { if (o[dt.id]) dt.open = true; dt.addEventListener('toggle', () => { o[dt.id] = dt.open; localStorage.setItem(k, JSON.stringify(o)); }); }); } catch (e) { }
       main.innerHTML = ''; main.appendChild(w); },
