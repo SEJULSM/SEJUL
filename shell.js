@@ -369,7 +369,7 @@ html body .sjx-hid,html body header.top #nav>button.sjx-hid,html body #nav butto
         out[n] = { od: c.od, d7: c.d7, d30: c.d30, nd: c.nd, cri: c.cri, def: c.def, defA: c.defA, low: c.low, n: c.n, E: c.E, S: td.S.slice(0, 15), O: td.O.slice(0, 15),
           /* 배지·선박 고르기용 전체 개수 (목록은 15개까지만 보내므로 따로 셈) — cl: 선급 검사(기한 초과·검사 기간 중) · kod: 검교정 기한 초과 */
           on: td.O.filter(x => !['cls', 'req'].includes(x[0])).length, rq: td.O.filter(x => x[0] === 'req').length, cl: td.O.filter(x => x[0] === 'cls').length,
-          kod: (() => { try { return typeof calRows === 'function' ? calRows(db).filter(x => x.s.st === 'od').length : 0; } catch (e) { return 0; } })(),
+          kod: (() => { try { return typeof calRows === 'function' ? calRows(db).filter(x => ['od', 'd7', 'd30'].includes(x.s.st)).length : 0; } catch (e) { return 0; } })(),   /* 검교정 할 일 = 기한 초과 + 30일 안 */
           /* 재고·구매 요약 (인벤토리 화면과 같은 계산) */
           lawBad: (() => { try { return typeof lawStat === 'function' ? lawStat(db).bad : null; } catch (e) { return null; } })(),
           medBad: (() => { try { return typeof medLawStat === 'function' ? medLawStat(db).bad : null; } catch (e) { return null; } })(),
@@ -388,7 +388,7 @@ html body .sjx-hid,html body header.top #nav>button.sjx-hid,html body #nav butto
       /* 증서·검사: 선급 검사는 KR 증서 자료에서 오므로 사무실은 8척 모두 셈 (그 선박의 계획정비 자료가 아직 없어도) */
       const cert = {}; try { const names = new Set(Object.keys(ships)); if (MODE === 'admin' && typeof KR_DB !== 'undefined') Object.keys(KR_DB).forEach(k => names.add(k));
         names.forEach(n => { try { const db = ships[n] || newDB(n), CI = typeof clsItems === 'function' ? clsItems(db) : [], st = CI.map(x => clsSt(x).st), coc = CI.filter((x, i) => x.cat === 'coc' && st[i] === 'd30').length, K = ships[n] && typeof calRows === 'function' ? calRows(db).map(x => x.s.st) : [];
-          cert[n] = { cl: typeof clsAlerts === 'function' ? clsAlerts(db).length : 0, od: st.filter(x => x === 'od').length, win: st.filter(x => x === 'd7' || x === 'win').length, coc, soon: st.filter(x => x === 'd30').length - coc, kod: K.filter(x => x === 'od').length, ksoon: K.filter(x => x === 'd7' || x === 'd30').length }; } catch (e) { } }); } catch (e) { }
+          cert[n] = { cl: typeof clsAlerts === 'function' ? clsAlerts(db).length : 0, od: st.filter(x => x === 'od').length, win: st.filter(x => x === 'd7' || x === 'win').length, soon: st.filter(x => x === 'd30').length, kod: K.filter(x => ['od', 'd7', 'd30'].includes(x)).length, kover: K.filter(x => x === 'od').length }; } catch (e) { } }); } catch (e) { }
       localStorage.setItem('sejul_sum_pms', JSON.stringify({ at: Date.now(), mode: MODE, ships: out, cert }));
       /* 앱 전체 검색용 목록 (장비 · 작업 · 결함 · 품목) */
       try { const ix = {}; for (const [n, db] of Object.entries(ships)) { const cut = x => String(x || '').slice(0, 70);
