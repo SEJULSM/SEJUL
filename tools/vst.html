@@ -167,6 +167,10 @@ const UI = window.SJUI || null;
 const FORM = { code: 'SMM-3C-01F/R-4/2026.11.18', co: 'SEJUL SHIP MANAGEMENT CO., LTD.' };
 const VES0 = ['KTS GOLD', 'KTS SILVER', 'KTS RED', 'KTS WHITE', 'KTS GREEN', 'KTS BLUE', 'SKY ROYAL', 'SUNNY QUEEN'];
 const VES = () => (UI && UI.VES && UI.VES.length ? UI.VES : VES0);
+/* 외항선은 별도 양식(하드카피) 방선 보고서 사용 — 이 도구로 만들 수 없음 */
+const FOREIGN = ['SUNNY QUEEN', 'KTS WHITE'];
+const isForeign = v => FOREIGN.includes(String(v || '').toUpperCase().trim());
+const FMSG = '외항선은 이 보고서를 사용할 수 없습니다.';
 
 /* ---------- 점검 항목 (최종 서식 그대로) ---------- */
 const I = (no, t, te, p, pe, ph, b, q, sh) => ({ no, t, te, p, pe, ph, b, q: !!q, sh: sh || '' });
@@ -355,39 +359,54 @@ function viewList() { const ms = myShip(); let list = Object.values(R).filter(li
   if (ms) list = list.filter(x => x.h.ship === ms);
   const fs = S.fship || ''; if (fs) list = list.filter(x => x.h.ship === fs);
   list.sort((a, b) => (b.h.date || '').localeCompare(a.h.date || '') || b.ct - a.ct);
-  const ships = ms ? [ms] : VES(), mon = ymd().slice(0, 7), mp = myPart(), tm = TEAMS.find(t => t[0] === teamCode());
-  const prog = list.filter(x => !repState(x).done), done = list.filter(x => repState(x).done), showDone = S.showDone ? done : done.slice(0, 5);
+  const cur = ymd().slice(0, 7), mon = S.mon && S.mon <= cur ? S.mon : cur, ships = ms ? [ms] : VES(), mp = myPart(), tm = TEAMS.find(t => t[0] === teamCode());
+  const mAdd = (m, k) => { const d = new Date(+m.slice(0, 4), +m.slice(5, 7) - 1 + k, 1); return d.getFullYear() + '-' + d2(d.getMonth() + 1); };
+  /* 진행 중 = 끝나지 않은 보고서 전부 (지난달 것 포함) · 완료 = 고른 달의 완료 보고서 */
+  const prog = list.filter(x => !repState(x).done), done = list.filter(x => repState(x).done && (x.h.date || '').startsWith(mon)), showDone = S.showDone ? done : done.slice(0, 5);
   /* 이번 달 선박별 현황 */
-  const cell = v => { const L = Object.values(R).filter(x => live(x) && x.h.ship === v && (x.h.date || '').startsWith(mon)).sort((a, b) => (b.h.date || '').localeCompare(a.h.date || ''));
+  const cell = v => { if (isForeign(v)) return `<button class="vs no" data-foreign="${esc(v)}" style="opacity:.6"><b>${esc(v)}</b><small>⛔ 외항선 · 별도 양식</small></button>`; const L = Object.values(R).filter(x => live(x) && x.h.ship === v && (x.h.date || '').startsWith(mon)).sort((a, b) => (b.h.date || '').localeCompare(a.h.date || ''));
     const x = L[0]; let cls = 'no', t = '방선 없음';
     if (x) { const st = repState(x), my = mp ? st.sp[PARTS.findIndex(p => p.k === mp)] : null; if (st.done) { cls = 'ok'; t = '완료'; } else if (my && my.signed) { cls = 'ok'; t = '우리 팀 완료'; } else { cls = 'warn'; t = mp ? '우리 팀 미완료' : '진행 중'; } }
-    return `<button class="vs ${cls}" ${L.length > 1 ? `data-pick="${esc(v)}"` : x ? `data-open="${x.id}"` : `data-newv="${esc(v)}"`}><b>${esc(v)}${L.length > 1 ? ` <span class="chip q" style="font-size:11px;padding:0 6px">${L.length}건</span>` : ''}</b><small>${x ? dot(x.h.date).slice(5) + ' ' : ''}${x ? (cls === 'ok' ? '✓ ' : '◐ ') : '＋ '}${t}</small></button>`; };
+    return `<button class="vs ${cls}" ${L.length > 1 ? `data-pick="${esc(v)}"` : x ? `data-open="${x.id}"` : mon === cur ? `data-newv="${esc(v)}"` : 'disabled'}><b>${esc(v)}${L.length > 1 ? ` <span class="chip q" style="font-size:11px;padding:0 6px">${L.length}건</span>` : ''}</b><small>${x ? dot(x.h.date).slice(5) + ' ' : ''}${x ? (cls === 'ok' ? '✓ ' : '◐ ') : mon === cur ? '＋ ' : ''}${t}</small></button>`; };
   $('#app').innerHTML = header('감독 방선 보고서', `Supervisor's Visit Report · SMM-3C-01F R-4${tm ? ' · ' + tm[0] + ' ' + tm[2] : ''}`) + `<main>
     <style>.vg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}@media(min-width:640px){.vg{grid-template-columns:repeat(4,minmax(0,1fr))}}.vs{text-align:left;border:1px solid var(--line);background:#fff;border-radius:10px;padding:6px 9px;min-width:0}.vs b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vs small{display:block;font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vs.no{background:#F7F9FC}.vs.no b{color:var(--mut);font-weight:600}.vs.ok{border-color:#BFE5CF;background:var(--okBg)}.vs.warn{border-color:#F0C46A;background:var(--warnBg)}.sec{display:flex;align-items:center;gap:8px;margin:18px 0 8px}.sec h3{margin:0}</style>
     <div class="row" style="margin-bottom:12px"><button class="btn p sp" id="newB">＋ 새 방선 시작 <span class="en" style="color:#C9D6EE">New visit</span></button><button class="btn" id="impB" title="파일 가져오기">📥</button><button class="btn" id="setB" title="설정">⚙</button></div>
+    ${dupGroups().map((g, i) => `<div class="issues" style="background:var(--warnBg);border-color:#F0C46A">⚠ <b>${esc(g[0].h.ship)} ${+g[0].h.date.slice(5, 7)}월 보고서 ${g.length}건</b> — 선박당 한 달에 1건이어야 합니다. <button class="btn s g" data-mg="${i}" style="margin-left:6px">하나로 합치기</button></div>`).join('')}
     ${isOffice() && !teamCode() ? `<div class="issues" style="background:var(--warnBg);border-color:#F0C46A">이 기기의 소속 팀이 정해지지 않아 모든 파트가 보입니다. <button class="btn s" id="teamB" style="margin-left:6px">팀 고르기</button></div>` : ''}
-    <div class="card" style="padding:12px"><div class="row" style="margin-bottom:8px;gap:6px"><h3 style="margin:0">${+mon.slice(5)}월 방선 현황</h3><span class="en">This month</span><span class="sp"></span><span class="muted" style="font-size:12px">${ships.filter(v => Object.values(R).some(x => live(x) && x.h.ship === v && (x.h.date || '').startsWith(mon))).length}/${ships.length}척</span></div><div class="vg">${ships.map(cell).join('')}</div></div>
+    <div class="card" style="padding:12px"><div class="row" style="margin-bottom:8px;gap:6px"><button class="btn s" id="mPrev" aria-label="이전 달" style="min-height:32px;padding:2px 10px">‹</button><h3 style="margin:0">${mon.slice(0, 4) !== cur.slice(0, 4) ? mon.slice(0, 4) + '년 ' : ''}${+mon.slice(5)}월 방선 현황</h3><button class="btn s" id="mNext" aria-label="다음 달" style="min-height:32px;padding:2px 10px" ${mon >= cur ? 'disabled' : ''}>›</button>${mon !== cur ? '<button class="btn s" id="mNow" style="min-height:32px;padding:2px 10px">이번 달</button>' : ''}<span class="sp"></span><span class="muted" style="font-size:12px">${ships.filter(v => !isForeign(v) && Object.values(R).some(x => live(x) && x.h.ship === v && (x.h.date || '').startsWith(mon))).length}/${ships.filter(v => !isForeign(v)).length}척</span></div><div class="vg">${ships.map(cell).join('')}</div></div>
     ${!ms && list.length ? `<select class="i" id="fship"><option value="">전체 선박 All vessels</option>${VES().map(s => `<option ${s === fs ? 'selected' : ''}>${esc(s)}</option>`).join('')}</select>` : ''}
     <div class="sec"><h3>진행 중</h3><span class="chip warn">${prog.length}</span></div>
     ${prog.length ? prog.map(repCard).join('') : '<div class="muted" style="padding:6px 2px 4px">진행 중인 방선이 없습니다.</div>'}
-    <div class="sec"><h3>완료</h3><span class="chip ok">${done.length}</span><span class="muted" style="font-size:13px">파트 3개·확인 서명 4개 모두 완료</span></div>
+    <div class="sec"><h3>완료 · ${mon.slice(0, 4) !== cur.slice(0, 4) ? mon.slice(0, 4) + '년 ' : ''}${+mon.slice(5)}월</h3><span class="chip ok">${done.length}</span><span class="muted" style="font-size:13px">파트 3개·확인 서명 4개 모두 완료</span></div>
     ${done.length ? showDone.map(repCard).join('') + (done.length > 5 && !S.showDone ? `<button class="btn w" id="moreB">완료 ${done.length - 5}건 더 보기</button>` : '') : '<div class="muted" style="padding:6px 2px">완료된 방선이 없습니다.</div>'}
   </main>`;
   $('#newB').onclick = () => newVisit(); $('#setB').onclick = () => go('#/set'); $('#impB').onclick = importFile;
   const tb = $('#teamB'); if (tb) tb.onclick = pickTeam;
   const mb = $('#moreB'); if (mb) mb.onclick = () => { S.showDone = 1; render(); };
+  $('#mPrev').onclick = () => { S.mon = mAdd(mon, -1); S.showDone = 0; render(); }; $('#mNext').onclick = () => { S.mon = mAdd(mon, 1); S.showDone = 0; render(); };
+  const mn = $('#mNow'); if (mn) mn.onclick = () => { S.mon = ''; render(); };
   const f = $('#fship'); if (f) f.onchange = () => { S.fship = f.value; render(); };
   $('#app').onclick = e => { const mn = e.target.closest('[data-menu]'); if (mn) { e.stopPropagation(); return repMenu(R[mn.dataset.menu]); }
+    const mg = e.target.closest('[data-mg]'); if (mg) return mergeAsk(dupGroups()[+mg.dataset.mg]);
+    const fg = e.target.closest('[data-foreign]'); if (fg) return toast(`${fg.dataset.foreign} — ${FMSG}`, 3500);
     const nv = e.target.closest('[data-newv]'); if (nv) return newVisit(nv.dataset.newv);
     const pk = e.target.closest('[data-pick]'); if (pk) return pickRep(pk.dataset.pick, mon);
     const o = e.target.closest('[data-open]'); if (o && !e.target.closest('select')) go('#/r/' + o.dataset.open); };
   paintSync(); }
+const sameMonth = (v, d) => Object.values(R).filter(x => live(x) && x.h.ship === v && (x.h.date || '').slice(0, 7) === String(d || '').slice(0, 7)).sort((a, b) => (a.ct || 0) - (b.ct || 0));
+/* 중복 합치기: 같은 선박·같은 달 보고서를 가장 먼저 만든 보고서 하나로 (항목·서명은 나중에 고친 쪽, 지적사항은 모두) */
+async function mergeDup(list) { if (list.length < 2) return; const [a, ...rest] = list; let o = JSON.parse(JSON.stringify(a));
+  for (const b of rest) { o.parts = mrg(o.parts, b.parts); o.fnd = mrg(o.fnd, b.fnd); o.fin = mrg(o.fin, b.fin); o.ext = mrg(o.ext, b.ext);
+    if (b.h.q && !o.h.q) o.h = Object.assign({}, o.h, { q: true, u: now() }); if (!o.h.port && b.h.port) o.h = Object.assign({}, o.h, { port: b.h.port, u: now() }); }
+  norm(o); await save(o); for (const b of rest) { b.del = { v: true, u: now(), into: a.id }; await save(b, true); } toast(`${list.length}건을 한 보고서로 합쳤습니다`); return o; }
+function dupGroups() { const G = {}; Object.values(R).filter(live).forEach(x => { const k = x.h.ship + '|' + (x.h.date || '').slice(0, 7); (G[k] = G[k] || []).push(x); }); return Object.values(G).filter(g => g.length > 1).map(g => g.sort((a, b) => (a.ct || 0) - (b.ct || 0))); }
+function mergeAsk(g) { const a = g[0]; ask(`${a.h.ship} ${+a.h.date.slice(5, 7)}월 보고서 ${g.length}건을 하나로 합칠까요?\n· 남는 보고서: ${dot(a.h.date)} ${a.h.q ? '분기' : '월간'} (가장 먼저 만든 것)\n· 점검 결과·사진·서명: 나중에 입력한 내용 우선\n· 지적사항: 모두 모음\n· 분기가 하나라도 있으면 분기로`, async () => { const o = await mergeDup(g); render(); if (o) go('#/r/' + o.id); }, '합치기'); }
 /* 같은 선박에 이번 달 보고서가 여러 건(월간·분기 등)일 때 고르기 */
 function pickRep(v, mon) { const L = Object.values(R).filter(x => live(x) && x.h.ship === v && (x.h.date || '').startsWith(mon)).sort((a, b) => (b.h.date || '').localeCompare(a.h.date || '') || b.ct - a.ct);
-  modal(`<h3>${esc(v)} · ${+mon.slice(5)}월 방선 ${L.length}건 <button class="x" data-x>✕</button></h3><p class="muted" style="margin-top:0">열 보고서를 고르세요.</p>${L.map(repCard).join('')}
-    <button class="btn w" id="pnew" style="margin-top:4px">＋ ${esc(v)} 새 방선 시작</button>`, (m, close) => {
+  modal(`<h3>${esc(v)} · ${+mon.slice(5)}월 방선 ${L.length}건 <button class="x" data-x>✕</button></h3><div class="issues" style="background:var(--warnBg);border-color:#F0C46A;margin-top:0">선박당 한 달에 1건이어야 합니다. 같은 달 보고서가 나뉘어 있으니 하나로 합쳐 주세요.<div style="margin-top:8px"><button class="btn s g" id="pmg">🔗 ${L.length}건 하나로 합치기</button></div></div>${L.map(repCard).join('')}`, (m, close) => {
+    $('#pmg', m).onclick = () => { close(); mergeAsk(sameMonth(v, mon + '-01')); };
     m.onclick = e => { const mn = e.target.closest('[data-menu]'); if (mn) { e.stopPropagation(); close(); return repMenu(R[mn.dataset.menu]); } const o = e.target.closest('[data-open]'); if (o) { close(); go('#/r/' + o.dataset.open); } };
-    $('#pnew', m).onclick = () => { close(); newVisit(v); }; }); }
+  }); }
 function repMenu(r) { if (!r) return; modal(`<h3>${esc(r.h.ship)} · ${dot(r.h.date)} <button class="x" data-x>✕</button></h3>
     <div style="display:grid;gap:8px"><button class="btn w" id="m1">📂 열기</button><button class="btn w" id="m2">📄 보고서 보기 · PDF</button><button class="btn w" id="m3">📤 파일로 내보내기</button><button class="btn r w" id="m4">🗑 보고서 삭제</button></div>`, (m, close) => {
     $('#m1', m).onclick = () => { close(); go('#/r/' + r.id); }; $('#m2', m).onclick = () => { close(); go('#/p/' + r.id); }; $('#m3', m).onclick = () => { close(); exportRep(r); };
@@ -399,19 +418,27 @@ function pickTeam() { modal(`<h3>이 기기의 소속 팀 <button class="x" data
     $$('[data-tm]', m).forEach(b => b.onclick = () => { APP.set('team', b.dataset.tm); close(); toast('저장했습니다'); render(); }); }); }
 
 function newVisit(v0) { const ms = myShip(), V = VES(), t = ymd();
+  if (ms && isForeign(ms)) return modal(`<h3>⛔ 외항선 <button class="x" data-x>✕</button></h3><div class="issues"><b>${FMSG}</b><br>${esc(ms)}은(는) 별도 양식(하드카피) 방선 보고서를 사용합니다.</div><button class="btn p w" data-x>확인</button>`);
+  if (isForeign(v0)) return toast(`${v0} — ${FMSG}`, 3500);
   modal(`<h3>새 방선 New visit <button class="x" data-x>✕</button></h3>
-    <label class="f">선명 Ship's name</label><select class="i" id="nv">${(ms ? [ms] : V).map(v => `<option ${v === v0 ? 'selected' : ''}>${esc(v)}</option>`).join('')}</select>
+    <label class="f">선명 Ship's name</label><select class="i" id="nv">${(ms ? [ms] : V).map(v => isForeign(v) ? `<option disabled>${esc(v)} — 외항선 (사용 불가)</option>` : `<option ${v === v0 ? 'selected' : ''}>${esc(v)}</option>`).join('')}</select>
+    <p class="muted" style="margin:6px 0 0;font-size:13px">⛔ ${FOREIGN.join(' · ')}: ${FMSG}</p>
     <label class="f">방선 일자 Date</label><input class="i" type="date" id="nd" value="${t}">
     <label class="f">항구 Port</label><input class="i" id="np" placeholder="예: 울산, 여수 GSC">
     <label class="f">방선 구분 Type of visit</label><div class="seg" id="nq"><button data-q="0" class="on">월간 Monthly</button><button data-q="1">분기 Quarterly</button></div>
     <p class="muted" style="margin:8px 0 0">분기 방선은 각 파트의 '분기 추가 항목'까지 점검합니다.</p>
     <div id="dup"></div>
     <div class="row" style="margin-top:14px"><button class="btn sp" data-x>취소</button><button class="btn p sp" id="nok">시작</button></div>`, (m, close) => {
-    let q = false; $$('#nq button', m).forEach(b => b.onclick = () => { q = b.dataset.q === '1'; $$('#nq button', m).forEach(x => x.classList.toggle('on', x === b)); });
-    const dupChk = () => { const v = $('#nv', m).value, d = $('#nd', m).value, ex = Object.values(R).filter(live).find(x => x.h.ship === v && x.h.date === d);
-      $('#dup', m).innerHTML = ex ? `<div class="issues" style="background:var(--warnBg);border-color:#F0C46A">같은 선박·같은 날짜 보고서가 이미 있습니다 — 다른 감독이 시작한 보고서라면 그 보고서에 이어서 작성하세요.<div style="margin-top:8px"><a class="btn s p" href="#/r/${ex.id}" data-x>그 보고서 열기</a></div></div>` : ''; };
+    let q = false, ex = null; $$('#nq button', m).forEach(b => b.onclick = () => { q = b.dataset.q === '1'; $$('#nq button', m).forEach(x => x.classList.toggle('on', x === b)); dupChk(); });
+    /* 선박당 한 달에 보고서 1건 (분기 방선은 그달 월간을 겸함) */
+    const dupChk = () => { const v = $('#nv', m).value, d = $('#nd', m).value || t; ex = sameMonth(v, d)[0] || null;
+      $('#nok', m).style.display = ex ? 'none' : '';
+      $('#dup', m).innerHTML = ex ? `<div class="issues" style="background:var(--warnBg);border-color:#F0C46A"><b>${esc(v)} ${+d.slice(5, 7)}월 보고서가 이미 있습니다</b> — ${dot(ex.h.date)} ${ex.h.q ? '분기' : '월간'}${ex.h.port ? ' · ' + esc(ex.h.port) : ''}<br>선박당 한 달에 1건만 만듭니다. 그 보고서에 이어서 작성하세요.
+        <div class="row" style="margin-top:8px"><button class="btn s p" id="exo">그 보고서 열기</button>${q && !ex.h.q ? '<button class="btn s g" id="exq">분기로 바꿔서 열기</button>' : ''}</div></div>` : '';
+      const o = $('#exo', m); if (o) o.onclick = () => { close(); go('#/r/' + ex.id + '/' + (myPart() || 'S')); };
+      const qq = $('#exq', m); if (qq) qq.onclick = async () => { ex.h = Object.assign({}, ex.h, { q: true, u: now() }); await save(ex); close(); toast('분기 방선으로 바꿨습니다'); go('#/r/' + ex.id + '/' + (myPart() || 'S')); }; };
     $('#nv', m).onchange = dupChk; $('#nd', m).onchange = dupChk; dupChk();
-    $('#nok', m).onclick = async () => { const r = newRep({ ship: $('#nv', m).value, date: $('#nd', m).value || t, port: $('#np', m).value.trim(), q }); await save(r); close(); go('#/r/' + r.id + '/' + (myPart() || ME.get().team || 'S')); };
+    $('#nok', m).onclick = async () => { if (isForeign($('#nv', m).value)) return toast(FMSG, 3500); dupChk(); if (ex) return; const r = newRep({ ship: $('#nv', m).value, date: $('#nd', m).value || t, port: $('#np', m).value.trim(), q }); await save(r); close(); go('#/r/' + r.id + '/' + (myPart() || ME.get().team || 'S')); };
   }); }
 
 /* ---------- 보고서 ---------- */
