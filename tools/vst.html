@@ -78,6 +78,9 @@ textarea.i{min-height:84px;resize:vertical}
 .act{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
 .th{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
 .th img{width:72px;height:72px;object-fit:cover;border-radius:10px;border:1px solid var(--line)}
+.tw{position:relative;display:inline-block}
+.tw .dx{position:absolute;top:-8px;right:-8px;width:28px;height:28px;border-radius:50%;border:2px solid #fff;background:var(--err);color:#fff;font-size:15px;font-weight:800;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.th{padding-top:6px}
 .memo{margin-top:8px;font-size:14px;background:#F7F9FC;border-radius:10px;padding:8px 10px;white-space:pre-wrap}
 .qh{background:var(--bluBg);color:var(--blu);border-radius:12px;padding:10px 12px;font-weight:700;margin:16px 0 10px}
 .qh small{display:block;font-weight:400;font-size:13px}
@@ -428,9 +431,11 @@ function itemCard(r, it, locked) { const P = r.parts[it.part], x = P.items[it.no
       <div class="tags"><span class="tag">근거 ${esc(it.b)}</span>${it.ph ? `<span class="tag ${need ? 'miss' : 'ph'}">● 사진 필수${need ? ' — 미첨부' : ''}</span>` : ''}</div></div></div>
     <div class="yn">${yb('Y', 'y', '적합')}${yb('N', 'n', '부적합')}${yb('NA', 'x', '해당없음')}</div>
     ${x.m ? `<div class="memo">📝 ${esc(x.m)}</div>` : ''}
-    ${n ? `<div class="th">${all.map(id => `<img data-ph="${id}" alt="사진" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=">`).join('')}</div>${x.r === 'N' && findings(r).some(f => f.item === it.no) ? '<div class="muted" style="font-size:12.5px;margin-top:4px">📎 이 항목 사진은 지적사항 사진으로도 함께 쓰입니다</div>' : ''}` : ''}
+    ${n ? `<div class="th">${all.map(id => thumb(id, !locked)).join('')}</div>${x.r === 'N' && findings(r).some(f => f.item === it.no) ? '<div class="muted" style="font-size:12.5px;margin-top:4px">📎 이 항목 사진은 지적사항 사진으로도 함께 쓰입니다</div>' : ''}` : ''}
     ${locked || (!it.ph && x.r !== 'N') ? '' : `<div class="act">${it.ph ? '<button class="btn s" data-a="cam">📷 촬영</button><button class="btn s" data-a="alb">🖼 앨범</button><button class="btn s" data-a="memo">📝 메모</button>' : ''}${x.r === 'N' ? '<button class="btn s r" data-a="fnd">＋ 지적사항</button>' : ''}</div>`}</div>`; }
 
+const GIF = 'data:image/gif;base64,R0lGODlhAQABAAAAACw=';
+const thumb = (id, del) => `<span class="tw"><img data-ph="${id}" alt="사진" src="${GIF}">${del ? `<button class="dx" data-dx="${id}" aria-label="사진 삭제" title="사진 삭제">✕</button>` : ''}</span>`;
 async function fillThumbs(root) { for (const im of $$('img[data-ph]', root)) { const s = await photo(im.dataset.ph); if (s) im.src = s; else im.style.background = '#EEF1F5'; } }
 
 function partView(r, k) { const p = PART[k], P = r.parts[k], locked = sig(P.sign), st = partStat(r, k), mon = p.items.filter(i => !i.q), qi = p.items.filter(i => i.q);
@@ -455,7 +460,10 @@ function partView(r, k) { const p = PART[k], P = r.parts[k], locked = sig(P.sign
         await save(r); refreshItem(r, it, el); toast(`사진 ${shots.length}장 첨부`); }
       if (a === 'memo') memoEdit(P.items[no] && P.items[no].m || '', async v => { const x = Object.assign({}, P.items[no] || {}); x.m = v; x.u = now(); P.items[no] = x; await save(r); refreshItem(r, it, el); });
       if (a === 'fnd') findEdit(r, null, no); });
-    el.addEventListener('click', e => { const im = e.target.closest('img[data-ph]'); if (!im) return; viewPhoto(im.dataset.ph, locked ? null : async () => { const id = im.dataset.ph, x = Object.assign({}, P.items[no] || {}); x.ph = (x.ph || []).filter(i => i !== id); x.u = now(); P.items[no] = x;
+    const delPh = async id => { const x = Object.assign({}, P.items[no] || {}); x.ph = (x.ph || []).filter(i => i !== id); x.u = now(); P.items[no] = x;
+      findings(r).filter(f => f.item === no && (f.ph || []).includes(id)).forEach(f => { const o = Object.assign({}, r.fnd[f.id]); o.ph = o.ph.filter(i => i !== id); o.u = now(); r.fnd[f.id] = o; }); await save(r); toast('사진을 삭제했습니다'); refreshItem(r, it, el); };
+    el.addEventListener('click', e => { const dx = e.target.closest('[data-dx]'); if (dx) { e.stopPropagation(); return ask('이 사진을 삭제할까요?' + (x0 => x0 ? '\n(이 항목의 지적사항 사진에서도 빠집니다)' : '')(findings(r).some(f => f.item === no && (f.ph || []).includes(dx.dataset.dx))), () => delPh(dx.dataset.dx), '삭제', true); }
+      const im = e.target.closest('img[data-ph]'); if (!im) return; viewPhoto(im.dataset.ph, locked ? null : async () => { const id = im.dataset.ph, x = Object.assign({}, P.items[no] || {}); x.ph = (x.ph || []).filter(i => i !== id); x.u = now(); P.items[no] = x;
       findings(r).filter(f => f.item === no && (f.ph || []).includes(id)).forEach(f => { const o = Object.assign({}, r.fnd[f.id]); o.ph = o.ph.filter(i => i !== id); o.u = now(); r.fnd[f.id] = o; }); await save(r); refreshItem(r, it, el); }); }); });
   const ds = $('#dosig'); if (ds) ds.onclick = async () => {
     const is = partIssues(r, k); if (is.length) { $('#iss').innerHTML = `<div class="issues"><b>서명 전에 확인해 주세요 (${is.length})</b><ul style="margin:6px 0 0;padding-left:18px">${is.map(s => `<li>${esc(s)}</li>`).join('')}</ul></div>`; $('#iss').scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
@@ -491,9 +499,9 @@ function findEdit(r, fid, item0) { const f = fid ? Object.assign({}, r.fnd[fid])
       <label class="f">조치완료일 Done</label><input class="i" type="date" id="fdone" value="${esc(f.done)}">
       <label class="f">현장확인일 Verified</label><input class="i" type="date" id="fver" value="${esc(f.ver)}"></details>
     <div class="row" style="margin-top:14px">${fid ? '<button class="btn r" id="fdel">삭제</button>' : ''}<span class="sp"></span><button class="btn" data-x>취소</button><button class="btn p" id="fok">저장</button></div>`, (m, close) => {
-    const th = async () => { for (const [el, L] of [['#fth', ph], ['#cth', cph]]) { $(el, m).innerHTML = L.map(id => `<img data-ph="${id}" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=">`).join(''); fillThumbs($(el, m)); } }; th();
-    $('#fth', m).onclick = e => { const im = e.target.closest('img[data-ph]'); if (im) ask('이 사진을 지울까요?', () => { ph = ph.filter(i => i !== im.dataset.ph); th(); }, '삭제', true); };
-    $('#cth', m).onclick = e => { const im = e.target.closest('img[data-ph]'); if (im) ask('이 사진을 지울까요?', () => { cph = cph.filter(i => i !== im.dataset.ph); th(); }, '삭제', true); };
+    const th = async () => { for (const [el, L] of [['#fth', ph], ['#cth', cph]]) { $(el, m).innerHTML = L.map(id => thumb(id, true)).join(''); fillThumbs($(el, m)); } }; th();
+    $('#fth', m).onclick = e => { const d = e.target.closest('[data-dx]'); if (d) { e.stopPropagation(); return ask('이 사진을 삭제할까요?', () => { ph = ph.filter(i => i !== d.dataset.dx); th(); }, '삭제', true); } const im = e.target.closest('img[data-ph]'); if (im) viewPhoto(im.dataset.ph, () => { ph = ph.filter(i => i !== im.dataset.ph); th(); }); };
+    $('#cth', m).onclick = e => { const d = e.target.closest('[data-dx]'); if (d) { e.stopPropagation(); return ask('이 사진을 삭제할까요?', () => { cph = cph.filter(i => i !== d.dataset.dx); th(); }, '삭제', true); } const im = e.target.closest('img[data-ph]'); if (im) viewPhoto(im.dataset.ph, () => { cph = cph.filter(i => i !== im.dataset.ph); th(); }); };
     const add = async (cam, L) => { const s = await pickPhotos(cam); for (const d of s) { const id = uid('P'); await photoPut(id, d, r.id, true); L.push(id); } th(); };
     $('#fcam', m).onclick = () => add(true, ph); $('#falb', m).onclick = () => add(false, ph);
     $('#ccam', m).onclick = () => add(true, cph); $('#calb', m).onclick = () => add(false, cph);
