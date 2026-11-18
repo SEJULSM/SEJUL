@@ -95,6 +95,57 @@
   C.dirty = () => ['pms', 'rsk', 'vst'].map(t => +LS('sejul_cloud_' + t + '_dirty') || 0).filter(Boolean).sort()[0] || 0;
 })();
 
+/* ===== 감독 방선 보고서 알림 (사무실 기기) =====
+   방선 보고서가 등록·변경·삭제되면 사무실 기기 알림함에 쌓고, 앱이 뒤에 있으면 휴대폰·PC 알림도 띄움.
+   · 방선 보고서 화면: 다른 감독의 내용을 받을 때 바로 확인 (SJ_VST.apply)
+   · 앱 홈·다른 도구 화면: 2분마다 서버 목록(sj_list 'vst')을 보고 바뀐 보고서만 받아서 확인
+   · 이 기기에서 고친 내용은 알리지 않음 (vstNote(rep, true)로 기준만 맞춤) · 처음 한 번은 조용히 기준만 만듦 */
+(function () { const C = window.SJCLOUD; if (!C) return;
+  const LS = k => { try { return localStorage.getItem(k); } catch (e) { return null; } }, LSS = (k, v) => { try { localStorage.setItem(k, v); } catch (e) { } };
+  const J = (k, d) => { try { return JSON.parse(LS(k) || 'null') || d; } catch (e) { return d; } };
+  const PN = { S: ['안품', 'S&Q'], T: ['공무', 'Technical'], M: ['해무', 'Marine'] }, FN = { master: ['선장', 'Master'], ce: ['기관장', 'C/E'], dpa: ['D.P.A', 'D.P.A'], ceo: ['C.E.O', 'C.E.O'] };
+  const T = (k, e) => window.SJUI && SJUI.T ? SJUI.T(k, e) : k;
+  const sg = x => !!(x && x.img && !x.cleared);
+  const mrg = (a, b) => { if (a == null) return b; if (b == null) return a; if (typeof a !== 'object' || typeof b !== 'object' || Array.isArray(a) || Array.isArray(b)) return b;
+    if ('u' in a || 'u' in b) return (b.u || 0) > (a.u || 0) ? b : a; const o = {}; new Set([...Object.keys(a), ...Object.keys(b)]).forEach(k => o[k] = mrg(a[k], b[k])); return o; };
+  C.vstMerge = mrg;
+  /* 보고서 요약 (알림 비교용) */
+  const dig = r => { const h = r.h || {}, P = r.parts || {}, F = Object.entries(r.fnd || {}).filter(([, f]) => f && !f.del);
+    return { s: h.ship || '', d: h.date || '', q: !!h.q, p: h.port || '', del: !!(r.del && r.del.v),
+      sg: Object.fromEntries(['S', 'T', 'M'].map(k => [k, sg(P[k] && P[k].sign) ? P[k].sign.name || '✓' : ''])),
+      f: Object.fromEntries(F.map(([id, f]) => [id, [f.desc || '', f.done || '', (f.cph || []).length]])),
+      fin: Object.fromEntries(Object.keys(FN).map(k => [k, sg((r.fin || {})[k]) ? r.fin[k].name || '✓' : ''])) }; };
+  C.vstNote = function (r, quiet) { if (!r || !r.id) return 0; const S = J('sejul_vst_sum', {}), o = S[r.id], n = dig(r); S[r.id] = n; LSS('sejul_vst_sum', JSON.stringify(S));
+    const role = window.SJUI && SJUI.role ? SJUI.role() : ''; if (quiet || role !== 'office') return 0;
+    const head = `${n.s} ${String(n.d).replace(/-/g, '.')}`, E = [], K = (k, t, b) => E.push({ k: `vst:${r.id}:${k}`, g: 'vst', t: `${head} · ${t}`, b: b || '', href: 'tools/vst.html#/r/' + r.id });
+    if (!o) { if (!n.del) K('new', T('방선 보고서 등록', 'Visit report created'), `${n.q ? T('분기', 'Quarterly') : T('월간', 'Monthly')}${n.p ? ' · ' + n.p : ''}`); }
+    else if (n.del && !o.del) K('del:' + Date.now(), T('방선 보고서 삭제', 'Visit report deleted'));
+    else if (!n.del) {
+      if (o.d !== n.d || o.q !== n.q || o.p !== n.p || o.s !== n.s) K('h:' + n.s + n.d + n.q + n.p, T('보고서 정보 변경', 'Report details changed'), `${n.q ? T('분기', 'Quarterly') : T('월간', 'Monthly')}${n.p ? ' · ' + n.p : ''}`);
+      Object.keys(PN).forEach(k => { if (n.sg[k] && n.sg[k] !== (o.sg || {})[k]) K(`sg:${k}:${n.sg[k]}:${Date.now()}`, T(`${PN[k][0]} 파트 점검 완료`, `${PN[k][1]} part completed`), n.sg[k]);
+        else if (!n.sg[k] && (o.sg || {})[k]) K(`un:${k}:${Date.now()}`, T(`${PN[k][0]} 파트 서명 취소 — 수정 중`, `${PN[k][1]} part reopened`), o.sg[k]); });
+      const nf = Object.keys(n.f).filter(id => !(o.f || {})[id]); if (nf.length) K('f:' + nf.join(','), T(`지적사항 ${nf.length}건 추가`, `${nf.length} finding(s) added`), nf.map(id => n.f[id][0]).join(' / ').slice(0, 120));
+      Object.keys(n.f).forEach(id => { const a = (o.f || {})[id], b = n.f[id]; if (a && b[1] && !a[1]) K('fd:' + id, T('지적사항 조치 완료', 'Finding closed'), b[0].slice(0, 80)); });
+      Object.keys(FN).forEach(k => { if (n.fin[k] && n.fin[k] !== (o.fin || {})[k]) K(`fin:${k}:${n.fin[k]}`, T(`${FN[k][0]} 확인 서명`, `${FN[k][1]} signed`), n.fin[k]); }); }
+    if (!E.length) return 0;
+    try { if (window.SJUI && SJUI.inb && SJUI.inb.add) SJUI.inb.add(E); } catch (e) { }
+    try { if (document.visibilityState !== 'visible' && 'Notification' in window && Notification.permission === 'granted' && navigator.serviceWorker) navigator.serviceWorker.ready.then(reg => E.slice(0, 3).forEach(x => reg.showNotification(x.t, { body: x.b, tag: x.k.slice(0, 60), icon: (/\/tools\//.test(location.pathname) ? '../' : '') + 'sj2-icon-192.png', data: { url: x.href } }))); } catch (e) { }
+    return E.length; };
+  /* 앱 홈·다른 도구: 서버 목록에서 바뀐 방선 보고서만 받아 확인 (사무실 승인 기기만) */
+  C.vstPoll = async function () { if (window.SJ_VST || C.vstBusy || !navigator.onLine) return; const m = C.me(); if (!m || m.status !== 'approved' || m.role !== 'office') return;
+    C.vstBusy = true; try { const list = await C.rpc('sj_list', { p_tool: 'vst' }) || [], first = LS('sejul_vst_hubseen') == null, seen = J('sejul_vst_hubseen', {}), R = J('sejul_vst_hubrep', {});
+      for (const r of list) { if (!/^VST_/.test(r.name)) continue; const at = new Date(r.saved_at).toISOString(); if (seen[r.name] && seen[r.name] >= at) continue;
+        try { const b64 = await C.rpc('sj_get', { p_tool: 'vst', p_name: r.name }); if (b64) { const o = JSON.parse(await C.ungz(b64)); if (o && o.rep && o.rep.id) { const x = mrg(R[o.rep.id], o.rep); R[o.rep.id] = x; C.vstNote(x, first || r.mine); } } } catch (e) { console.warn('vst poll', r.name, e); }
+        seen[r.name] = at; }
+      /* 오래된 보고서 정리 (200일) */
+      const cut = Date.now() - 200 * 864e5; Object.keys(R).forEach(k => { if ((R[k].lu || 0) < cut) delete R[k]; });
+      LSS('sejul_vst_hubseen', JSON.stringify(seen)); try { LSS('sejul_vst_hubrep', JSON.stringify(R)); } catch (e) { } } catch (e) { console.warn('vst poll', e); }
+    C.vstBusy = false; };
+  const tick = () => { if (window.SJ_VST || window.top !== window || (window.SJAPP && SJAPP.bg) || /[?&]bg\b/.test(location.search)) return; C.vstPoll().catch(() => { }); };
+  if (document.readyState === 'complete') setTimeout(tick, 6000); else addEventListener('load', () => setTimeout(tick, 6000));
+  setInterval(tick, 2 * 60e3); addEventListener('focus', () => setTimeout(tick, 1500));
+})();
+
 /* ===== 도구별 연결 (도구 페이지에서만) ===== */
 (function () { const C = window.SJCLOUD; if (!C || (window.SJAPP && SJAPP.isHub)) return;
   const fs = s => String(s || '').replace(/[^A-Za-z0-9가-힣_-]+/g, '_');

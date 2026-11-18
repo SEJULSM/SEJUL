@@ -12,6 +12,9 @@
   U.role = () => { const m = U.me(); if (m && m.role && m.status !== 'none') return m.role; return C.get('role') || ''; };
   /* 기기 종류: PC · 태블릿 · 휴대폰 (노트북은 PC로 합침 — 예전 '노트북' 기기는 PC로 보이고, 앱을 열면 PC로 바뀜) */
   U.KINDS = [['pc', '🖥', 'PC', 'PC / laptop'], ['tablet', '📟', '태블릿', 'Tablet'], ['phone', '📱', '휴대폰', 'Phone']];
+  /* 사무실 기기 소속 팀 — 감독 방선 보고서에서 자기 팀 파트만 보임 (S 안품 · T 공무 · M 해무 · ALL 전체) */
+  U.TEAMS = [['SQOT', '안품', 'Safety & Quality', 'S'], ['TST', '공무', 'Technical', 'T'], ['MAT', '해무', 'Marine', 'M'], ['ALL', '전체 (DPA·관리자)', 'All (DPA / management)', '']];
+  U.team = () => C.get('team') || '';
   setTimeout(() => { try { if (C.get && C.get('kind') === 'laptop') { C.set('kind', 'pc'); const CL = window.SJCLOUD, m = CL && CL.me && CL.me();
     if (m && m.role === 'ship' && m.status && m.status !== 'none' && navigator.onLine) CL.register('ship', C.get('vessel'), C.get('pcname'), null, 'pc').catch(() => { }); } } catch (e) { } }, 3000);
   U.kindGuess = () => { const ua = navigator.userAgent, touch = navigator.maxTouchPoints > 1; if (/iPad/.test(ua) || (/Macintosh/.test(ua) && touch) || (/Android/.test(ua) && !/Mobile/.test(ua))) return 'tablet'; if (/iPhone|Android.*Mobile|Mobile/.test(ua)) return 'phone'; return 'pc'; };
@@ -622,8 +625,8 @@ html.sj-railmin .sjr .sj-vtg{display:none}html.sj-railmin .sjr .sj-flr{margin-to
     const add = (x, scope) => { const n = put(Array.isArray(x) ? x : [x], scope); paint(); return n; };
     const unread = () => load().it.filter(x => !x.rd).length;
     function paint() { let p = 0; try { p = pend().filter(x => x.st !== 'mine').length; } catch (e) { } const n = unread() + p; document.querySelectorAll('[data-sjinbn]').forEach(b => { b.hidden = !n; b.textContent = n > 99 ? '99+' : n; b.title = U.T(`승인·처리 ${p} · 새 알림 ${n - p}`, `${p} to decide · ${n - p} new`); }); document.querySelectorAll('[data-sjapvn]').forEach(b => { b.hidden = !p; b.textContent = p > 99 ? '99+' : p; }); if (box && !box.hidden) list(); }
-    const G = () => ({ all: U.T('전체', 'All'), un: U.T('안 읽음', 'Unread'), pms: U.T('계획정비', 'Maintenance'), rsk: U.T('위험성', 'Risk'), apv: U.T('승인·결정', 'Approvals') });
-    const IC = { pms: 'pms', rsk: 'rsk', apv: 'M20 6 9 17l-5-5', rej: 'M9 14 4 9l5-5M4 9h11a5 5 0 0 1 0 10h-1', dev: 'dev' };
+    const G = () => ({ all: U.T('전체', 'All'), un: U.T('안 읽음', 'Unread'), pms: U.T('계획정비', 'Maintenance'), rsk: U.T('위험성', 'Risk'), vst: U.T('방선', 'Visits'), apv: U.T('승인·결정', 'Approvals') });
+    const IC = { pms: 'pms', rsk: 'rsk', vst: 'M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2', apv: 'M20 6 9 17l-5-5', rej: 'M9 14 4 9l5-5M4 9h11a5 5 0 0 1 0 10h-1', dev: 'dev' };
     let tab = '', PL = [];
     function list() { const T = U.T, o = load(), P = pend(); PL = P; if (!tab) tab = P.some(x => x.st !== 'mine') ? 'apv' : 'news';
       const off = U.role() === 'office', un = o.it.filter(x => !x.rd).length;
