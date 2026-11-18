@@ -358,7 +358,7 @@ function viewList() { const ms = myShip(); let list = Object.values(R).filter(li
   const cell = v => { const L = Object.values(R).filter(x => live(x) && x.h.ship === v && (x.h.date || '').startsWith(mon)).sort((a, b) => (b.h.date || '').localeCompare(a.h.date || ''));
     const x = L[0]; let cls = 'no', t = '방선 없음';
     if (x) { const st = repState(x), my = mp ? st.sp[PARTS.findIndex(p => p.k === mp)] : null; if (st.done) { cls = 'ok'; t = '완료'; } else if (my && my.signed) { cls = 'ok'; t = '우리 팀 완료'; } else { cls = 'warn'; t = mp ? '우리 팀 미완료' : '진행 중'; } }
-    return `<button class="vs ${cls}" ${x ? `data-open="${x.id}"` : `data-newv="${esc(v)}"`}><b>${esc(v)}</b><small>${x ? dot(x.h.date).slice(5) + ' ' : ''}${x ? (cls === 'ok' ? '✓ ' : '◐ ') : '＋ '}${t}</small></button>`; };
+    return `<button class="vs ${cls}" ${L.length > 1 ? `data-pick="${esc(v)}"` : x ? `data-open="${x.id}"` : `data-newv="${esc(v)}"`}><b>${esc(v)}${L.length > 1 ? ` <span class="chip q" style="font-size:11px;padding:0 6px">${L.length}건</span>` : ''}</b><small>${x ? dot(x.h.date).slice(5) + ' ' : ''}${x ? (cls === 'ok' ? '✓ ' : '◐ ') : '＋ '}${t}</small></button>`; };
   $('#app').innerHTML = header('감독 방선 보고서', `Supervisor's Visit Report · SMM-3C-01F R-4${tm ? ' · ' + tm[0] + ' ' + tm[2] : ''}`) + `<main>
     <style>.vg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}@media(min-width:640px){.vg{grid-template-columns:repeat(4,minmax(0,1fr))}}.vs{text-align:left;border:1px solid var(--line);background:#fff;border-radius:10px;padding:6px 9px;min-width:0}.vs b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vs small{display:block;font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vs.no{background:#F7F9FC}.vs.no b{color:var(--mut);font-weight:600}.vs.ok{border-color:#BFE5CF;background:var(--okBg)}.vs.warn{border-color:#F0C46A;background:var(--warnBg)}.sec{display:flex;align-items:center;gap:8px;margin:18px 0 8px}.sec h3{margin:0}</style>
     <div class="row" style="margin-bottom:12px"><button class="btn p sp" id="newB">＋ 새 방선 시작 <span class="en" style="color:#C9D6EE">New visit</span></button><button class="btn" id="impB" title="파일 가져오기">📥</button><button class="btn" id="setB" title="설정">⚙</button></div>
@@ -376,8 +376,15 @@ function viewList() { const ms = myShip(); let list = Object.values(R).filter(li
   const f = $('#fship'); if (f) f.onchange = () => { S.fship = f.value; render(); };
   $('#app').onclick = e => { const mn = e.target.closest('[data-menu]'); if (mn) { e.stopPropagation(); return repMenu(R[mn.dataset.menu]); }
     const nv = e.target.closest('[data-newv]'); if (nv) return newVisit(nv.dataset.newv);
+    const pk = e.target.closest('[data-pick]'); if (pk) return pickRep(pk.dataset.pick, mon);
     const o = e.target.closest('[data-open]'); if (o && !e.target.closest('select')) go('#/r/' + o.dataset.open); };
   paintSync(); }
+/* 같은 선박에 이번 달 보고서가 여러 건(월간·분기 등)일 때 고르기 */
+function pickRep(v, mon) { const L = Object.values(R).filter(x => live(x) && x.h.ship === v && (x.h.date || '').startsWith(mon)).sort((a, b) => (b.h.date || '').localeCompare(a.h.date || '') || b.ct - a.ct);
+  modal(`<h3>${esc(v)} · ${+mon.slice(5)}월 방선 ${L.length}건 <button class="x" data-x>✕</button></h3><p class="muted" style="margin-top:0">열 보고서를 고르세요.</p>${L.map(repCard).join('')}
+    <button class="btn w" id="pnew" style="margin-top:4px">＋ ${esc(v)} 새 방선 시작</button>`, (m, close) => {
+    m.onclick = e => { const mn = e.target.closest('[data-menu]'); if (mn) { e.stopPropagation(); close(); return repMenu(R[mn.dataset.menu]); } const o = e.target.closest('[data-open]'); if (o) { close(); go('#/r/' + o.dataset.open); } };
+    $('#pnew', m).onclick = () => { close(); newVisit(v); }; }); }
 function repMenu(r) { if (!r) return; modal(`<h3>${esc(r.h.ship)} · ${dot(r.h.date)} <button class="x" data-x>✕</button></h3>
     <div style="display:grid;gap:8px"><button class="btn w" id="m1">📂 열기</button><button class="btn w" id="m2">📄 보고서 보기 · PDF</button><button class="btn w" id="m3">📤 파일로 내보내기</button><button class="btn r w" id="m4">🗑 보고서 삭제</button></div>`, (m, close) => {
     $('#m1', m).onclick = () => { close(); go('#/r/' + r.id); }; $('#m2', m).onclick = () => { close(); go('#/p/' + r.id); }; $('#m3', m).onclick = () => { close(); exportRep(r); };
