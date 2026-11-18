@@ -93,13 +93,13 @@ textarea.i{min-height:84px;resize:vertical}
 .bar{position:fixed;left:0;right:0;bottom:0;z-index:45;background:#fff;border-top:1px solid var(--line);padding:10px 12px calc(10px + env(safe-area-inset-bottom));display:flex;gap:8px}
 .bar .btn{flex:1}
 /* 모달 */
-.mb{position:fixed;inset:0;z-index:200;background:rgba(10,18,36,.55);display:flex;align-items:flex-end;justify-content:center}
+.mb{position:fixed;inset:0;z-index:1000;background:rgba(10,18,36,.55);display:flex;align-items:flex-end;justify-content:center}
 .md{background:#fff;width:100%;max-width:620px;max-height:92vh;overflow:auto;border-radius:18px 18px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom))}
 @media(min-width:700px){.mb{align-items:center}.md{border-radius:18px}}
 .md h3{font-size:18px;display:flex;align-items:center;gap:8px}
 .md .x{margin-left:auto;background:none;border:0;font-size:22px;color:var(--mut)}
 canvas.pad{width:100%;height:220px;border:2px dashed #C9D1DD;border-radius:12px;background:#FCFDFE;touch-action:none;display:block}
-.toast{position:fixed;left:50%;top:calc(120px + env(safe-area-inset-top));transform:translateX(-50%);z-index:300;background:#1A2233;color:#fff;padding:10px 16px;border-radius:12px;font-size:14px;max-width:92vw;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+.toast{z-index:1100!important;position:fixed;left:50%;top:calc(120px + env(safe-area-inset-top));transform:translateX(-50%);z-index:300;background:#1A2233;color:#fff;padding:10px 16px;border-radius:12px;font-size:14px;max-width:92vw;box-shadow:0 6px 20px rgba(0,0,0,.25)}
 .empty{text-align:center;color:var(--mut);padding:34px 10px}
 .seg{display:flex;border:1px solid #C9D1DD;border-radius:12px;overflow:hidden}
 .seg button{flex:1;border:0;background:#fff;padding:11px 8px;font-weight:700}
@@ -108,6 +108,10 @@ canvas.pad{width:100%;height:220px;border:2px dashed #C9D1DD;border-radius:12px;
 .kv b{color:var(--mut);font-weight:600}
 /* PC: 왼쪽 메뉴 */
 @media(min-width:900px){body.rail{padding-left:var(--sjr-w,248px)}body.rail .bar{left:var(--sjr-w,248px)}}
+body.bnav main{padding-bottom:calc(96px + env(safe-area-inset-bottom))}
+.sjb a,.sjr a{text-decoration:none}
+body.bnav .pvbar{top:0}
+@media print{.sjb{display:none!important}}
 /* ============ 출력 (서식 SMM-3C-01F R-4) ============ */
 .pv{background:#E6E9EF;padding:12px 0 40px;overflow-x:auto}
 .pvbar{position:sticky;top:0;z-index:60;background:#fff;border-bottom:1px solid var(--line);padding:10px 12px;display:flex;gap:8px;flex-wrap:wrap}
@@ -347,14 +351,14 @@ function viewList() { const ms = myShip(); let list = Object.values(R).filter(li
   const prog = list.filter(x => !repState(x).done), done = list.filter(x => repState(x).done), showDone = S.showDone ? done : done.slice(0, 5);
   /* 이번 달 선박별 현황 */
   const cell = v => { const L = Object.values(R).filter(x => live(x) && x.h.ship === v && (x.h.date || '').startsWith(mon)).sort((a, b) => (b.h.date || '').localeCompare(a.h.date || ''));
-    const x = L[0]; let cls = '', t = '방선 없음';
+    const x = L[0]; let cls = 'no', t = '방선 없음';
     if (x) { const st = repState(x), my = mp ? st.sp[PARTS.findIndex(p => p.k === mp)] : null; if (st.done) { cls = 'ok'; t = '완료'; } else if (my && my.signed) { cls = 'ok'; t = '우리 팀 완료'; } else { cls = 'warn'; t = mp ? '우리 팀 미완료' : '진행 중'; } }
-    return `<button class="vs ${cls}" ${x ? `data-open="${x.id}"` : `data-newv="${esc(v)}"`}><b>${esc(v)}</b><small>${x ? dot(x.h.date).slice(5) + ' · ' : ''}${t}</small></button>`; };
+    return `<button class="vs ${cls}" ${x ? `data-open="${x.id}"` : `data-newv="${esc(v)}"`}><b>${esc(v)}</b><small>${x ? dot(x.h.date).slice(5) + ' ' : ''}${x ? (cls === 'ok' ? '✓ ' : '◐ ') : '＋ '}${t}</small></button>`; };
   $('#app').innerHTML = header('감독 방선 보고서', `Supervisor's Visit Report · SMM-3C-01F R-4${tm ? ' · ' + tm[0] + ' ' + tm[2] : ''}`) + `<main>
-    <style>.vg{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}.vs{text-align:left;border:1px solid var(--line);background:#fff;border-radius:12px;padding:9px 11px}.vs b{display:block;font-size:15px}.vs small{display:block;font-size:12.5px;color:var(--mut)}.vs.ok{border-color:#BFE5CF;background:var(--okBg)}.vs.warn{border-color:#F0C46A;background:var(--warnBg)}.sec{display:flex;align-items:center;gap:8px;margin:18px 0 8px}.sec h3{margin:0}</style>
+    <style>.vg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}@media(min-width:640px){.vg{grid-template-columns:repeat(4,minmax(0,1fr))}}.vs{text-align:left;border:1px solid var(--line);background:#fff;border-radius:10px;padding:6px 9px;min-width:0}.vs b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vs small{display:block;font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vs.no{background:#F7F9FC}.vs.no b{color:var(--mut);font-weight:600}.vs.ok{border-color:#BFE5CF;background:var(--okBg)}.vs.warn{border-color:#F0C46A;background:var(--warnBg)}.sec{display:flex;align-items:center;gap:8px;margin:18px 0 8px}.sec h3{margin:0}</style>
     <div class="row" style="margin-bottom:12px"><button class="btn p sp" id="newB">＋ 새 방선 시작 <span class="en" style="color:#C9D6EE">New visit</span></button><button class="btn" id="impB" title="파일 가져오기">📥</button><button class="btn" id="setB" title="설정">⚙</button></div>
     ${isOffice() && !teamCode() ? `<div class="issues" style="background:var(--warnBg);border-color:#F0C46A">이 기기의 소속 팀이 정해지지 않아 모든 파트가 보입니다. <button class="btn s" id="teamB" style="margin-left:6px">팀 고르기</button></div>` : ''}
-    <div class="card"><div class="row" style="margin-bottom:8px"><h3 style="margin:0">${mon.replace('-', '년 ')}월 방선 현황</h3><span class="en">This month</span><span class="sp"></span><span class="muted" style="font-size:13px">누르면 열기·시작</span></div><div class="vg">${ships.map(cell).join('')}</div></div>
+    <div class="card" style="padding:12px"><div class="row" style="margin-bottom:8px;gap:6px"><h3 style="margin:0">${+mon.slice(5)}월 방선 현황</h3><span class="en">This month</span><span class="sp"></span><span class="muted" style="font-size:12px">${ships.filter(v => Object.values(R).some(x => live(x) && x.h.ship === v && (x.h.date || '').startsWith(mon))).length}/${ships.length}척</span></div><div class="vg">${ships.map(cell).join('')}</div></div>
     ${!ms && list.length ? `<select class="i" id="fship"><option value="">전체 선박 All vessels</option>${VES().map(s => `<option ${s === fs ? 'selected' : ''}>${esc(s)}</option>`).join('')}</select>` : ''}
     <div class="sec"><h3>진행 중</h3><span class="chip warn">${prog.length}</span></div>
     ${prog.length ? prog.map(repCard).join('') : '<div class="muted" style="padding:6px 2px 4px">진행 중인 방선이 없습니다.</div>'}
@@ -638,7 +642,10 @@ window.SJ_VST = {
 /* ---------- 시작 ---------- */
 (async function boot() {
   /* PC 넓은 화면: 앱 공통 왼쪽 메뉴 */
-  try { if (UI && UI.rail && UI.css && !(UI.phone && UI.phone()) && innerWidth >= 900) { const st = document.createElement('style'); st.textContent = UI.css; document.head.appendChild(st); const w = document.createElement('div'); w.innerHTML = UI.rail('vst', '../'); [...w.children].forEach(x => document.body.appendChild(x)); document.body.classList.add('rail'); UI.syncPaint && UI.syncPaint(); } } catch (e) { console.warn('rail', e); }
+  try { if (UI && UI.css) { const st = document.createElement('style'); st.textContent = UI.css; document.head.appendChild(st); const w = document.createElement('div');
+      if (UI.rail && !(UI.phone && UI.phone()) && innerWidth >= 900) { w.innerHTML = UI.rail('vst', '../'); document.body.classList.add('rail'); }
+      else if (UI.mobPhone) { w.innerHTML = UI.mobPhone('vst', '../', { off: isOffice() }); document.body.classList.add('bnav'); }   /* 휴대폰: 앱 공통 아래 탭 (선대·승인·정비·위험성·방선) */
+      [...w.children].forEach(x => document.body.appendChild(x)); UI.syncPaint && UI.syncPaint(); try { UI.inb && UI.inb.paint && UI.inb.paint(); } catch (e) { } } } catch (e) { console.warn('frame', e); }
   try { await loadAll(); } catch (e) { $('#app').innerHTML = '<main><div class="issues">이 기기의 저장소를 열 수 없습니다 (사생활 보호 모드?): ' + esc(e.message || e) + '</div></main>'; return; }
   /* 올릴 사진 미리 불러오기 */
   for (const id of PEND.get()) { try { await photo(id); } catch (e) { } }
