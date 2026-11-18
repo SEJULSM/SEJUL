@@ -398,7 +398,7 @@ const sameMonth = (v, d) => Object.values(R).filter(x => live(x) && x.h.ship ===
 async function mergeDup(list) { if (list.length < 2) return; const [a, ...rest] = list; let o = JSON.parse(JSON.stringify(a));
   for (const b of rest) { o.parts = mrg(o.parts, b.parts); o.fnd = mrg(o.fnd, b.fnd); o.fin = mrg(o.fin, b.fin); o.ext = mrg(o.ext, b.ext);
     if (b.h.q && !o.h.q) o.h = Object.assign({}, o.h, { q: true, u: now() }); if (!o.h.port && b.h.port) o.h = Object.assign({}, o.h, { port: b.h.port, u: now() }); }
-  norm(o); await save(o); for (const b of rest) { b.del = { v: true, u: now(), into: a.id }; await save(b, true); } toast(`${list.length}건을 한 보고서로 합쳤습니다`); return o; }
+  norm(o); await save(o); for (const b of rest) { b.del = { v: true, u: now(), into: a.id }; await save(b, true); } pushNow(); toast(`${list.length}건을 한 보고서로 합쳤습니다`); return o; }
 function dupGroups() { const G = {}; Object.values(R).filter(live).forEach(x => { const k = x.h.ship + '|' + (x.h.date || '').slice(0, 7); (G[k] = G[k] || []).push(x); }); return Object.values(G).filter(g => g.length > 1).map(g => g.sort((a, b) => (a.ct || 0) - (b.ct || 0))); }
 function mergeAsk(g) { const a = g[0]; ask(`${a.h.ship} ${+a.h.date.slice(5, 7)}월 보고서 ${g.length}건을 하나로 합칠까요?\n· 남는 보고서: ${dot(a.h.date)} ${a.h.q ? '분기' : '월간'} (가장 먼저 만든 것)\n· 점검 결과·사진·서명: 나중에 입력한 내용 우선\n· 지적사항: 모두 모음\n· 분기가 하나라도 있으면 분기로`, async () => { const o = await mergeDup(g); render(); if (o) go('#/r/' + o.id); }, '합치기'); }
 /* 같은 선박에 이번 달 보고서가 여러 건(월간·분기 등)일 때 고르기 */
@@ -412,7 +412,7 @@ function repMenu(r) { if (!r) return; modal(`<h3>${esc(r.h.ship)} · ${dot(r.h.d
     $('#m1', m).onclick = () => { close(); go('#/r/' + r.id); }; $('#m2', m).onclick = () => { close(); go('#/p/' + r.id); }; $('#m3', m).onclick = () => { close(); exportRep(r); };
     $('#m4', m).onclick = () => { close(); delRep(r); }; }); }
 function delRep(r) { const st = repState(r), sg = PARTS.filter((p, i) => st.sp[i].signed).length + st.fin;
-  ask(`${r.h.ship} ${dot(r.h.date)} 방선 보고서를 삭제할까요?\n${sg ? `서명 ${sg}개가 들어 있는 보고서입니다.\n` : ''}동기화된 다른 감독의 기기에서도 함께 사라집니다.`, async () => { r.del = { v: true, u: now(), by: ME.get().name || '' }; await save(r); toast('삭제했습니다'); go('#/'); render(); }, '삭제', true); }
+  ask(`${r.h.ship} ${dot(r.h.date)} 방선 보고서를 삭제할까요?\n${sg ? `서명 ${sg}개가 들어 있는 보고서입니다.\n` : ''}동기화된 다른 감독의 기기에서도 함께 사라집니다.`, async () => { r.del = { v: true, u: now(), by: ME.get().name || '' }; await save(r); pushNow(); toast('삭제했습니다 — 다른 기기에도 바로 반영됩니다'); go('#/'); render(); }, '삭제', true); }
 function pickTeam() { modal(`<h3>이 기기의 소속 팀 <button class="x" data-x>✕</button></h3><p class="muted" style="margin-top:0">방선 보고서에서 우리 팀 파트만 보이고 작성합니다. (앱 설정 › 이 기기 › 소속 팀과 같음)</p>
     <div style="display:grid;gap:8px">${TEAMS.map(([v, k, ko, en]) => `<button class="btn w ${teamCode() === v ? 'p' : ''}" data-tm="${v}">${v === 'ALL' ? '' : v + ' · '}${ko} <span class="en">${en}</span></button>`).join('')}</div>`, (m, close) => {
     $$('[data-tm]', m).forEach(b => b.onclick = () => { APP.set('team', b.dataset.tm); close(); toast('저장했습니다'); render(); }); }); }
@@ -674,6 +674,8 @@ function syncInfo() { const C = window.SJCLOUD; if (!C || !C.me) return ['', '�
   if (!navigator.onLine) return ['warn', '오프라인']; if (!m || m.status === 'none') return ['', '서버 미등록']; if (m.status === 'pending') return ['warn', '승인 대기'];
   if (m.status !== 'approved') return ['err', '동기화 해제']; if (s.err) return ['err', '동기화 오류']; if (s.busy) return ['ok', '동기화 중…']; if (LS.get('sejul_cloud_vst_dirty')) return ['warn', '보낼 변경']; return ['ok', s.last ? '동기화됨' : '대기']; }
 function paintSync() { const [c, t] = syncInfo(), d = $('#sdot'), x = $('#stxt'); if (d) d.className = 'sd ' + c; if (x) x.textContent = t; const b = $('#syncB'); if (b && !b.__s) { b.__s = 1; b.onclick = () => { const C = window.SJCLOUD, s = C && C.state; modal(`<h3>서버 동기화 <button class="x" data-x>✕</button></h3><p>${esc(syncInfo()[1])}${s && s.err ? '<br><span class="muted">' + esc(s.err) + '</span>' : ''}</p><p class="muted">감독들이 각자 쓴 파트는 서버를 거쳐 하나의 보고서로 합쳐집니다. 서버를 쓸 수 없으면 '확인·출력 › 파일로 내보내기'로 합칠 수 있습니다.</p><div class="row"><button class="btn sp" data-x>닫기</button><button class="btn p sp" id="sn2">지금 동기화</button></div>`, (m, close) => { $('#sn2', m).onclick = () => { close(); syncNow(); }; }); }; } }
+/* 삭제·합치기처럼 중요한 변경은 15초를 기다리지 않고 바로 서버로 */
+function pushNow() { try { const C = window.SJCLOUD; if (C && C.sync && C.A) setTimeout(() => C.sync(C.A).then(paintSync).catch(() => { }), 300); } catch (e) { } }
 async function syncNow() { const C = window.SJCLOUD; if (!C || !C.sync || !C.A) return toast('서버 동기화를 쓸 수 없는 상태입니다 — 앱 홈 › 설정에서 기기를 등록하세요', 4000); paintSync(); const n = await C.sync(C.A, false); paintSync(); toast(C.state.err ? '동기화 오류: ' + C.state.err : n ? `받은 변경 ${n}건` : '최신 상태입니다', 3500); }
 window.SJ_VST = {
   tool: 'vst',
@@ -700,7 +702,10 @@ window.SJ_VST = {
   /* 올릴 사진 미리 불러오기 */
   for (const id of PEND.get()) { try { await photo(id); } catch (e) { } }
   render();
-  try { if (window.SJCLOUD && SJCLOUD.start) { SJCLOUD.start(window.SJ_VST); setInterval(paintSync, 5000); } } catch (e) { console.warn('cloud', e); }
+  try { if (window.SJCLOUD && SJCLOUD.start) { SJCLOUD.start(window.SJ_VST); setInterval(paintSync, 5000);
+    /* 창을 닫거나 다른 화면으로 넘어갈 때 보낼 변경이 있으면 바로 보냄 · 다시 보이면 바로 받음 */
+    document.addEventListener('visibilitychange', () => { const C = window.SJCLOUD; if (!C || !C.A) return; if (document.visibilityState === 'hidden') { if (LS.get('sejul_cloud_vst_dirty')) C.sync(C.A).catch(() => { }); } else setTimeout(() => C.sync(C.A).then(paintSync).catch(() => { }), 800); });
+    addEventListener('pagehide', () => { const C = window.SJCLOUD; if (C && C.A && LS.get('sejul_cloud_vst_dirty')) C.sync(C.A).catch(() => { }); }); } } catch (e) { console.warn('cloud', e); }
 })();
 </script>
 </body></html>
