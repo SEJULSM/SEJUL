@@ -344,7 +344,7 @@ html body .sjx-hid,html body header.top #nav>button.sjx-hid,html body #nav butto
         { d: { sjgo: 'spares' }, bg: 'var(--sj-grn-bg,#E6F5EC)', fg: 'var(--sj-grn-fg,#1E7A45)', ic: 'M3 7h18M6 7v13h12V7M9 11h6', t: T('청구서 처리', 'Requisitions'), sub: T('접수 · 발주 · 취소', 'Ack · order · cancel') },
         { d: { act: 'monthlyReport' }, bg: 'var(--sj-blu-bg,#E8F0FB)', fg: 'var(--sj-tx,#1A2233)', ic: 'M7 3h7l5 5v13H7zM14 3v5h5', t: T('월간 보고서', 'Monthly report'), sub: T('출력', 'Print') }]
         : [
-        { d: { sjgo: 'ck' }, bg: 'var(--sj-amb-bg,#FFF6D6)', fg: 'var(--sj-amb-fg,#8A6400)', ic: 'M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11', t: T('점검표 입력', 'Checklists'), sub: T('회사 서식 9종', 'Company forms') },
+        { d: { sjgo: 'ck' }, bg: 'var(--sj-amb-bg,#FFF6D6)', fg: 'var(--sj-amb-fg,#8A6400)', ic: 'M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11', t: T('점검표 입력', 'Checklists'), sub: T('회사 서식 10종', 'Company forms') },
         { d: { act: 'reqNew' }, bg: 'var(--sj-grn-bg,#E6F5EC)', fg: 'var(--sj-grn-fg,#1E7A45)', ic: 'M3 7h18M6 7v13h12V7M9 11h6', t: T('청구서 작성', 'New requisition'), sub: T('예비품 · 선용품', 'Spares · stores') },
         { d: { act: 'monthlyReport' }, bg: 'var(--sj-sf2,#F7F9FC)', fg: 'var(--sj-tx2,#4A5568)', ic: 'M7 3h7l5 5v13H7zM14 3v5h5', t: T('월간 보고서', 'Monthly report'), sub: T('출력', 'Print') }]);
       const keep = { sfi: [...main.querySelectorAll('.sech,.sfitiles')], grp: [...main.querySelectorAll('.homeg')] };
