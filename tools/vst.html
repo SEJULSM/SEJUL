@@ -495,7 +495,7 @@ function findEdit(r, fid, item0) { const f = fid ? Object.assign({}, r.fnd[fid])
     <label class="f">지적 사진 Photo <span class="muted">(별지 2 · 지적 당시 — 관련 항목 증빙사진으로도 쓰임)</span></label><div class="row"><button class="btn s" id="fcam">📷 촬영</button><button class="btn s" id="falb">🖼 앨범</button></div><div class="th" id="fth"></div>
     <label class="f">사진 제목 Title</label><input class="i" id="ftt" value="${esc(f.title)}" placeholder="별지 2에 표시될 제목 (비우면 내용 앞부분)">
     <details style="margin-top:12px"${f.done || f.ver || (f.cph || []).length ? ' open' : ''}><summary style="font-weight:700">시정조치 결과 (조치 후 입력) <span class="en">Corrective action</span></summary>
-      <label class="f">시정조치 완료 사진 <span class="muted">(별지 2 · 조치 완료)</span></label><div class="row"><button class="btn s" id="ccam">📷 촬영</button><button class="btn s" id="calb">🖼 앨범</button></div><div class="th" id="cth"></div>
+      <label class="f">시정조치 완료 사진 <span class="muted">(별지 3 · 시정조치 결과)</span></label><div class="row"><button class="btn s" id="ccam">📷 촬영</button><button class="btn s" id="calb">🖼 앨범</button></div><div class="th" id="cth"></div>
       <label class="f">조치완료일 Done</label><input class="i" type="date" id="fdone" value="${esc(f.done)}">
       <label class="f">현장확인일 Verified</label><input class="i" type="date" id="fver" value="${esc(f.ver)}"></details>
     <div class="row" style="margin-top:14px">${fid ? '<button class="btn r" id="fdel">삭제</button>' : ''}<span class="sp"></span><button class="btn" data-x>취소</button><button class="btn p" id="fok">저장</button></div>`, (m, close) => {
@@ -600,12 +600,16 @@ async function docHTML(r) { const ph = {}; for (const id of photoIds(r)) ph[id] 
   const a1 = grid(slots, slots.length > 15 ? 36 : 44), A1 = chunk(a1, slots.length > 15 ? 12 : 10);
   A1.forEach((rows, i) => pages.push(pg(`<div class="sh">별지 1 – 점검항목 증빙사진 <span class="e">Annex 1 – Photo evidence for check items</span>${A1.length > 1 ? ` (${i + 1}/${A1.length})` : ''}</div><table>${rows.join('')}</table>`)));
   /* 별지 2 */
-  const s2 = []; F.forEach((f, i) => { const tt = `지적 No.${i + 1}  제목: ${f.title || (f.desc || '').slice(0, 24)}`;
+  const s2 = [], s3 = []; F.forEach((f, i) => { const tt = `지적 No.${i + 1}  제목: ${f.title || (f.desc || '').slice(0, 24)}`;
     (f.ph || []).filter(id => ph[id]).forEach(id => s2.push([ph[id], tt]));
-    (f.cph || []).filter(id => ph[id]).forEach(id => s2.push([ph[id], `${tt} (조치 완료)`])); });
+    (f.cph || []).filter(id => ph[id]).forEach(id => s3.push([ph[id], tt + (f.done ? `  (조치완료 ${dot(f.done)})` : '')])); });
   while (s2.length < 6) s2.push([null, '지적 No.        제목:']);
   const a2 = grid(s2, 50), A2 = chunk(a2, 8);
   A2.forEach((rows, i) => pages.push(pg(`<div class="sh">별지 2 – 지적사항 사진 <span class="e">Annex 2 – Photos of findings</span>${A2.length > 1 ? ` (${i + 1}/${A2.length})` : ''}</div><table>${rows.join('')}</table>`)));
+  /* 별지 3 — 시정조치 결과 (시정조치 완료 사진) */
+  while (s3.length < 6) s3.push([null, '지적 No.        제목:']);
+  const A3 = chunk(grid(s3, 50), 8);
+  A3.forEach((rows, i) => pages.push(pg(`<div class="sh">별지 3 – 시정조치 결과 <span class="e">Appendix 3 – Results of Corrective Actions</span>${A3.length > 1 ? ` (${i + 1}/${A3.length})` : ''}</div><table>${rows.join('')}</table>`)));
   return `<div class="doc">${pages.join('')}</div>`; }
 
 async function viewPrint(r) { $('#app').innerHTML = header('보고서 보기', `${esc(r.h.ship)} · ${dot(r.h.date)}`, '#/r/' + r.id + '/C') + '<main><div class="empty">보고서를 만드는 중…</div></main>'; paintSync();
