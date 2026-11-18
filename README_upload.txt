@@ -1,6 +1,5 @@
-SEJUL app update v2026.11.19.0830
+SEJUL app update v2026.11.19.0850
 
-Upload: github.com/sejulsm/sejul -> Add file -> Upload files -> drag all files (keep tools folder) -> Commit
-(Overwrites only these 9 files.)
+Upload: extract the zip first, then github.com/SEJULSM/SEJUL -> Add file -> Upload files -> drag the 8 root files -> Commit; then open the tools folder -> Add file -> Upload files -> vst.html -> Commit.
 
-v10: SUNNY QUEEN and KTS WHITE (foreign-going, separate hard-copy form) cannot be used in the visit report tool. Includes all earlier changes.
+v11: clearer captions on 'In progress' / 'Completed' sections. Includes all earlier changes (v10: foreign-going vessels blocked).
