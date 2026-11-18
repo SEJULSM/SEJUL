@@ -92,7 +92,7 @@
     kick(5000); setInterval(() => C.sync(A), 2 * 60e3); addEventListener('online', () => kick(3000)); addEventListener('focus', () => kick(2000));
     C.onSave = () => { try { if (!LS('sejul_cloud_' + A.tool + '_dirty')) LSS('sejul_cloud_' + A.tool + '_dirty', String(Date.now())); } catch (e) { } C.badge(); kick(15000); }; };
   /* 서버로 아직 안 보낸 변경이 있는지 (도구별 표시 시각) */
-  C.dirty = () => ['pms', 'rsk'].map(t => +LS('sejul_cloud_' + t + '_dirty') || 0).filter(Boolean).sort()[0] || 0;
+  C.dirty = () => ['pms', 'rsk', 'vst'].map(t => +LS('sejul_cloud_' + t + '_dirty') || 0).filter(Boolean).sort()[0] || 0;
 })();
 
 /* ===== 도구별 연결 (도구 페이지에서만) ===== */
@@ -116,7 +116,7 @@
     track() { const M = new Map(); [['ras', 'RA'], ['ptws', 'PTW'], ['mocs', 'MoC'], ['rirs', 'RIR']].forEach(([k, n]) => (DB[k] || []).forEach(x => M.set(k + ':' + x.id, [x.updatedAt || 0, n + ' ' + (x.no || x.title || x.desc || '')]))); return M; },
     apply(j) { return j && j.data ? fsMerge(migrate(j.data)) : 0; },
     async after(n) { _save0(); try { applyStd && applyStd(); } catch (e) { } if (fsTyping() || MODAL) { FS.pending = (FS.pending || 0) + n; fsBadge(); } else { render(); toast(t('🔄 최신 자료로 갱신됨', '🔄 Updated with the latest data')); } } };
-  const boot = () => { let A = null;
+  const boot = () => { if (window.SJ_VST) return; /* 방선 보고서(vst.html)는 자기 연결을 직접 시작 */ let A = null;
     if (typeof pmsApplyObj === 'function' && typeof SJ !== 'undefined') { A = PMS; if (typeof doSave === 'function' && !doSave.__cl) { const d0 = doSave; doSave = async function () { const r = await d0.apply(this, arguments); C.onSave && C.onSave(); return r; }; doSave.__cl = 1; } }
     else if (typeof fsMerge === 'function' && typeof DB !== 'undefined') { A = RSK; if (typeof save === 'function' && !save.__cl) { const s0 = save; save = function () { const r = s0.apply(this, arguments); C.onSave && C.onSave(); return r; }; save.__cl = 1; } }
     if (!A) return setTimeout(boot, 1000); C.start(A); setTimeout(C.badge, 1500); };

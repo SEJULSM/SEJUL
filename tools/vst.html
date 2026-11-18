@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="ko"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#14244A"><link rel="manifest" href="../manifest.webmanifest"><link rel="icon" href="../sj2-favicon.png">
+<title>감독 방선 보고서 SMM-3C-01F | Sejul Ship Management</title>
+<script src="../common.js"></script><script>if (window.SJAPP) SJAPP.shell = true; /* 자체 화면 틀 사용 (shell.js 미사용) */</script>
+<script src="../ui.js"></script><script src="../cloud.js"></script>
+<style>
+@font-face{font-family:'Pretendard';src:url(../fonts/Pretendard-Regular.subset.woff2) format('woff2');font-weight:400}
+@font-face{font-family:'Pretendard';src:url(../fonts/Pretendard-Bold.subset.woff2) format('woff2');font-weight:700}
+:root{--navy:#14244A;--navy2:#1F3864;--gold:#E0A100;--bg:#F4F6FA;--card:#fff;--ink:#1A2233;--mut:#5B6578;--line:#DDE3EC;--blu:#1F64B8;--bluBg:#E8F0FB;
+ --ok:#2FA36B;--okBg:#E6F5EC;--warn:#E0A100;--warnBg:#FFF6D6;--err:#D93636;--errBg:#FDECEC;--na:#8A94A6;--naBg:#EEF1F5}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 'Pretendard','Noto Sans KR','Malgun Gothic','Apple SD Gothic Neo',system-ui,sans-serif}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+.en{color:var(--mut);font-size:.82em;font-weight:400;margin-left:.3em}
+/* 머리글 */
+.hd{position:sticky;top:0;z-index:50;background:var(--navy);color:#fff;padding:10px 14px calc(10px);padding-top:calc(10px + env(safe-area-inset-top));display:flex;align-items:center;gap:10px}
+.hd a.home{color:#fff;display:flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:10px;background:rgba(255,255,255,.12);text-decoration:none;flex:none}
+.hd .tt{flex:1;min-width:0}
+.hd .tt b{display:block;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hd .tt small{display:block;font-size:12px;opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hd .ib{background:rgba(255,255,255,.12);border:0;color:#fff;border-radius:10px;height:38px;min-width:38px;padding:0 10px;display:flex;align-items:center;gap:6px;font-size:14px}
+.sd{width:9px;height:9px;border-radius:50%;background:#8A94A6;display:inline-block}
+.sd.ok{background:#3DDC84}.sd.warn{background:var(--gold)}.sd.err{background:#FF6B6B}
+/* 탭 */
+.tabs{position:sticky;top:calc(58px + env(safe-area-inset-top));z-index:40;background:#fff;border-bottom:1px solid var(--line);display:flex;overflow-x:auto}
+.tabs button{flex:1;min-width:64px;background:none;border:0;border-bottom:3px solid transparent;padding:10px 6px 8px;font-size:15px;font-weight:700;color:var(--mut);white-space:nowrap}
+.tabs button small{display:block;font-size:11px;font-weight:400}
+.tabs button.on{color:var(--navy);border-bottom-color:var(--gold)}
+.tabs .ck{color:var(--ok)}
+main{max-width:860px;margin:0 auto;padding:14px 12px 120px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+h2{font-size:19px;margin:6px 0 12px}
+h3{font-size:16px;margin:0 0 8px}
+.muted{color:var(--mut);font-size:14px}
+.btn{border:1px solid var(--line);background:#fff;border-radius:12px;padding:11px 14px;font-weight:700;font-size:15px;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:46px}
+.btn.p{background:var(--navy);border-color:var(--navy);color:#fff}
+.btn.g{background:var(--gold);border-color:var(--gold);color:#1A2233}
+.btn.r{color:var(--err);border-color:#F3C4C4}
+.btn.s{min-height:38px;padding:7px 11px;font-size:14px}
+.btn:disabled{opacity:.45;cursor:default}
+.btn.w{width:100%}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.sp{flex:1}
+label.f{display:block;font-size:14px;font-weight:700;margin:10px 0 4px}
+input.i,select.i,textarea.i{width:100%;border:1px solid #C9D1DD;border-radius:10px;padding:11px 12px;font-size:16px;background:#fff}
+textarea.i{min-height:84px;resize:vertical}
+/* 목록 */
+.rep{display:block;text-decoration:none;color:inherit}
+.rep .top{display:flex;gap:8px;align-items:baseline}
+.rep .top b{font-size:17px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.chip{font-size:13px;border-radius:999px;padding:3px 10px;background:var(--naBg);color:var(--mut);font-weight:700}
+.chip.ok{background:var(--okBg);color:#1E7A4E}.chip.warn{background:var(--warnBg);color:#8A6400}.chip.err{background:var(--errBg);color:var(--err)}.chip.q{background:var(--bluBg);color:var(--blu)}
+/* 점검 항목 */
+.prog{height:8px;background:#E3E8F0;border-radius:99px;overflow:hidden;margin:6px 0 2px}
+.prog i{display:block;height:100%;background:var(--ok)}
+.it{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:10px}
+.it.done{border-left:5px solid var(--ok)}.it.bad{border-left:5px solid var(--err)}.it.na{border-left:5px solid var(--na)}
+.it .nh{display:flex;gap:8px;align-items:flex-start}
+.it .no{flex:none;background:var(--navy);color:#fff;border-radius:8px;font-weight:700;font-size:14px;padding:2px 8px;margin-top:1px}
+.it .tx{flex:1;min-width:0}
+.it .tx b{font-size:16px}
+.it .tx .pt{font-size:14px;color:#33405A;margin-top:2px}
+.it .tx .pe{font-size:13px;color:var(--mut)}
+.tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.tag{font-size:12px;border:1px solid var(--line);border-radius:6px;padding:1px 7px;color:var(--mut)}
+.tag.ph{border-color:#F0C46A;color:#8A6400;background:var(--warnBg)}
+.tag.miss{border-color:#F3C4C4;color:var(--err);background:var(--errBg)}
+.yn{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.yn button{min-height:48px;border-radius:12px;border:2px solid var(--line);background:#fff;font-weight:800;font-size:17px;color:var(--mut)}
+.yn button.y.on{background:var(--ok);border-color:var(--ok);color:#fff}
+.yn button.n.on{background:var(--err);border-color:var(--err);color:#fff}
+.yn button.x.on{background:var(--na);border-color:var(--na);color:#fff}
+.yn button small{font-size:12px;font-weight:600;margin-left:3px}
+.act{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.th{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.th img{width:72px;height:72px;object-fit:cover;border-radius:10px;border:1px solid var(--line)}
+.memo{margin-top:8px;font-size:14px;background:#F7F9FC;border-radius:10px;padding:8px 10px;white-space:pre-wrap}
+.qh{background:var(--bluBg);color:var(--blu);border-radius:12px;padding:10px 12px;font-weight:700;margin:16px 0 10px}
+.qh small{display:block;font-weight:400;font-size:13px}
+.lock{background:var(--okBg);border:1px solid #BFE5CF;border-radius:12px;padding:10px 12px;margin-bottom:12px;font-size:14px}
+.sigbox{display:flex;gap:12px;align-items:center}
+.sigbox img{height:56px;max-width:180px;background:#fff;border:1px solid var(--line);border-radius:8px}
+.issues{background:var(--errBg);border:1px solid #F3C4C4;border-radius:12px;padding:10px 12px;font-size:14px;margin:10px 0}
+.issues li{margin:2px 0}
+/* 지적사항 */
+.fd{display:flex;gap:10px}
+.fd .n{flex:none;width:30px;height:30px;border-radius:50%;background:var(--err);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center}
+/* 하단 고정 바 */
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:45;background:#fff;border-top:1px solid var(--line);padding:10px 12px calc(10px + env(safe-area-inset-bottom));display:flex;gap:8px}
+.bar .btn{flex:1}
+/* 모달 */
+.mb{position:fixed;inset:0;z-index:200;background:rgba(10,18,36,.55);display:flex;align-items:flex-end;justify-content:center}
+.md{background:#fff;width:100%;max-width:620px;max-height:92vh;overflow:auto;border-radius:18px 18px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom))}
+@media(min-width:700px){.mb{align-items:center}.md{border-radius:18px}}
+.md h3{font-size:18px;display:flex;align-items:center;gap:8px}
+.md .x{margin-left:auto;background:none;border:0;font-size:22px;color:var(--mut)}
+canvas.pad{width:100%;height:220px;border:2px dashed #C9D1DD;border-radius:12px;background:#FCFDFE;touch-action:none;display:block}
+.toast{position:fixed;left:50%;top:calc(120px + env(safe-area-inset-top));transform:translateX(-50%);z-index:300;background:#1A2233;color:#fff;padding:10px 16px;border-radius:12px;font-size:14px;max-width:92vw;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+.empty{text-align:center;color:var(--mut);padding:34px 10px}
+.seg{display:flex;border:1px solid #C9D1DD;border-radius:12px;overflow:hidden}
+.seg button{flex:1;border:0;background:#fff;padding:11px 8px;font-weight:700}
+.seg button.on{background:var(--navy);color:#fff}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:14px}
+.kv b{color:var(--mut);font-weight:600}
+/* PC: 왼쪽 메뉴 */
+@media(min-width:900px){body.rail{padding-left:var(--sjr-w,248px)}body.rail .bar{left:var(--sjr-w,248px)}}
+/* ============ 출력 (서식 SMM-3C-01F R-4) ============ */
+.pv{background:#E6E9EF;padding:12px 0 40px;overflow-x:auto}
+.pvbar{position:sticky;top:0;z-index:60;background:#fff;border-bottom:1px solid var(--line);padding:10px 12px;display:flex;gap:8px;flex-wrap:wrap}
+.doc{font-family:'Pretendard','Malgun Gothic',sans-serif;color:#000;font-size:11pt;line-height:1.35}
+.pg{width:210mm;min-height:297mm;background:#fff;margin:0 auto 12px;padding:12mm 12mm 18mm;position:relative;box-shadow:0 2px 10px rgba(0,0,0,.15)}
+.pg .pf{position:absolute;left:12mm;right:12mm;bottom:7mm;display:flex;justify-content:space-between;font-size:9pt;font-style:italic;color:#333}
+.doc h1{font-size:16pt;text-align:center;margin:0}
+.doc .sub{text-align:center;font-size:12pt;font-weight:700;margin:0 0 6px}
+.doc .sh{font-size:12pt;font-weight:700;margin:8px 0 4px}
+.doc .sh .e{color:#1F3A8A}
+.doc table{width:100%;border-collapse:collapse;table-layout:fixed}
+.doc td,.doc th{border:1px solid #000;padding:2px 5px;vertical-align:middle;font-size:11pt;word-break:keep-all;overflow-wrap:anywhere}
+.doc th{background:#D9E1EE;font-weight:700;text-align:center}
+.doc .lb{background:#E7ECF4;font-weight:700}
+.doc .lb small,.doc th small{display:block;font-weight:400;color:#555;font-size:10pt}
+.doc .c{text-align:center}
+.doc .g{color:#555;font-size:10pt}
+.doc .mm{font-size:10pt;font-style:italic;color:#1F3A8A}
+.doc .qr td{background:#F1F4F9;font-weight:700}
+.doc .qr .e{color:#1F3A8A;font-weight:700}
+.doc .sg img{height:13mm;max-width:100%;display:block;margin:0 auto}
+.doc .ph{height:52mm;text-align:center;color:#777}
+.doc .ph img{max-width:100%;max-height:50mm;object-fit:contain;display:block;margin:0 auto}
+.doc .cap{background:#F1F4F9;font-weight:700;font-size:10.5pt}
+.doc tr{break-inside:avoid}
+@media print{
+ @page{size:A4;margin:0}
+ html,body{background:#fff!important;padding:0!important}
+ body>*:not(#print){display:none!important}
+ #print{display:block!important;background:#fff;padding:0}
+ .pvbar{display:none!important}
+ .pg{margin:0;box-shadow:none;break-after:page;width:210mm;min-height:297mm;height:auto}
+ .pg:last-child{break-after:auto}
+ .pv{zoom:1!important;padding:0;background:#fff}
+}
+</style></head>
+<body>
+<div id="app"></div>
+<div id="print" style="display:none"></div>
+<script>
+'use strict';
+/* =====================================================================
+   감독 방선 보고서 (내항선) — SMM-3C-01F R-4 / 2026.11.18
+   · 안품(S)·공무(T)·해무(M) 감독이 각자 파트를 점검·서명 → 하나의 보고서로 합쳐짐
+   · 자료: 이 기기 IndexedDB(sejul_vst) + SEJUL 서버 동기화(도구 이름 'vst') + 파일 내보내기/가져오기
+   · 합치기: 항목·지적사항·서명 단위로 '나중에 고친 쪽' 우선 (u = 고친 시각)
+   ===================================================================== */
+const APP = window.SJAPP || { get: () => null, set: () => { } };
+const UI = window.SJUI || null;
+const FORM = { code: 'SMM-3C-01F/R-4/2026.11.18', co: 'SEJUL SHIP MANAGEMENT CO., LTD.' };
+const VES0 = ['KTS GOLD', 'KTS SILVER', 'KTS RED', 'KTS WHITE', 'KTS GREEN', 'KTS BLUE', 'SKY ROYAL', 'SUNNY QUEEN'];
+const VES = () => (UI && UI.VES && UI.VES.length ? UI.VES : VES0);
+
+/* ---------- 점검 항목 (최종 서식 그대로) ---------- */
+const I = (no, t, te, p, pe, ph, b, q, sh) => ({ no, t, te, p, pe, ph, b, q: !!q, sh: sh || '' });
+const PARTS = [
+  { k: 'S', ko: '안품 파트', en: 'Safety & Quality', sup: ['안품 감독 (점검)', 'S&Q superintendent'], items: [
+    I('S1', '갑판 항해일지', 'Deck Log Book', '당직 기재·서명, 선위·투묘·훈련 기록', 'Watch entries signed; positions, anchoring, drills recorded.', 1, '선원법', 0, '갑판 항해일지'),
+    I('S2', '기름기록부 Part II', 'Oil Record Book Part II', '적·양하, 탱크세정, 슬롭 처리 기재 및 하역 서류와 일치', 'Cargo, tank cleaning, slops entered; matches cargo documents.', 1, '해양환경관리법', 0, '기름기록부 Part II'),
+    I('S3', '유해액체물질기록부', 'Cargo Record Book (NLS)', '적·양하, 예비세정, 세정수 처리 기재 (미운송선 NA)', 'NLS operations and tank washings entered (NA if no NLS).', 1, '해양환경관리법', 0, '유해액체물질기록부'),
+    I('S4', '폐기물기록부', 'Garbage Record Book', '배출·양륙 기재, 영수증 보관', 'Discharge / landing entries; receipts kept.', 1, '해양환경관리법', 0, '폐기물기록부'),
+    I('S5', '항해계획서', 'Passage Plan', '선석~선석 수립, 선장 승인, 위험구역·UKC 반영', 'Berth-to-berth, approved by Master; no-go areas, UKC.', 1, 'SMS', 0, '항해계획서'),
+    I('S6', '소화·구명설비 점검표', 'FFA / LSA checklists', '주간·월간 점검 실시·서명, 소화기·구명뗏목·이탈장치 유효기간', 'Weekly / monthly checks signed; extinguisher, liferaft, HRU validity.', 1, '선박안전법·SMS', 0, '소화·구명설비 점검표'),
+    I('S7', '비상훈련 기록부', 'Drill records', '주기별 실시, 참석자 서명, 사진 증빙', 'Drills at required intervals, attendance signed, photos.', 1, '선원법', 0, '비상훈련 기록부'),
+    I('S8', '해기정보 교육·회람', 'Marine Circulars', '해기정보(사고 사례) 월간 교육 이행 및 회람 서명', 'Monthly training on Marine Circulars; circulation signed.', 1, 'SMS', 0, '해기정보 교육·회람'),
+    I('S9', '[현장] 하역 당직 배치, 통신 유지, 탱크 액위 감시', '[Site] Cargo watch manned, communication kept, tank levels monitored.', '', '', 0, 'SMS'),
+    I('S10', '[현장] 보호구 착용, 흡연·화기 통제, 거주구역 출입문 폐쇄', '[Site] PPE worn; smoking / naked-light control; doors closed.', '', '', 0, '선원법'),
+    I('S11', '[현장] 오염방지 준비: 배수구 플러그, 드립트레이, SOPEP/SMPEP 장비', '[Site] Scuppers plugged, drip trays, SOPEP / SMPEP equipment.', '', '', 1, '해양환경관리법', 0, '오염방지 준비'),
+    I('S12', '안전관리 방침 및 안전관리책임자·비상연락망 게시', 'Safety policy, DP and emergency contacts posted.', '', '', 0, 'SMS 1.2, 3.5', 1),
+    I('S13', '정박 당직(앵커 감시 경보·위치 확인) 및 입출항 점검표 작성', 'Anchor watch kept; arrival / departure checklists.', '', '', 0, 'SMS 6.17, 6.18', 1),
+    I('S14', '해도·수로서지 최신판 및 개정', 'Charts and publications up to date.', '', '', 0, 'SMS 6.22~6.23', 1),
+    I('S15', '알코올 점검 (당직 인수인계 시, 월 1회)', 'Alcohol tests (watch handover, monthly).', '', '', 0, 'SMS 6.29', 1),
+    I('S16', '비상배치표 최신화·게시 및 비상임무 숙지 (면담 시 질문)', 'Muster list updated; crew know emergency duties.', '', '', 0, 'SMS 7.2~7.3', 1),
+    I('S17', '안전관리체제 매뉴얼 최신판 및 파일철 목록 관리', 'SMS manual latest; file index updated.', '', '', 0, 'SMS 10.1, 10.3', 1),
+    I('S18', '직전 방선 지적사항 조치 완료 및 부적합 보고서 유지', 'Previous findings closed; NC reports kept.', '', '', 1, 'SMS 11.6', 1, '(분기) 직전 지적사항 조치')] },
+  { k: 'T', ko: '공무 파트', en: 'Technical', sup: ['공무 감독 (점검)', 'Technical superintendent'], items: [
+    I('T1', '기관일지', 'Engine Log Book', '당직 기재·기관장 서명, 이상·정비 내역, 연료유 수급·잔량', 'Entries signed by C/E; defects, maintenance, bunkers / ROB.', 1, '선원법', 0, '기관일지'),
+    I('T2', '기름기록부 Part I', 'Oil Record Book Part I', '코드별 기재·서명, 빌지·슬러지 처리 영수증, 잔량 일치', 'Correct codes, signed; disposal receipts; ROB matches.', 1, '해양환경관리법', 0, '기름기록부 Part I'),
+    I('T3', 'PMS 이행', 'PMS', '기한 경과 정비 작업 및 사유 확인', 'Overdue maintenance jobs and reasons.', 0, '해상교통안전법(SMS)'),
+    I('T4', '보급·수리 요청', 'Supply / repair requests', '본선 요청 미결 사항 현황 확인', 'Status of outstanding ship requests.', 0, 'SMS'),
+    I('T5', '[현장] 기관실 순회 (누유·빌지·정리정돈, 육안)', '[Site] Engine room walk-round (leaks, bilges, housekeeping).', '', '', 1, 'SMS', 0, '기관실 순회'),
+    I('T6', '[현장] 갑판 설비 육안 확인 (하역 밸브·배관 누설, 앵커·계류 설비)', '[Site] Deck equipment visual (cargo valves / piping leaks, anchor / mooring gear).', '', '', 1, 'SMS', 0, '갑판 설비'),
+    I('T7', '선박 증서 유효 및 검사 일정 확인', 'Ship certificates valid; survey schedule.', '', '', 0, '선박안전법', 1),
+    I('T8', '유류 수급·이송 절차 준수', 'Bunkering / transfer procedure followed.', '', '', 0, 'SMS 6.20.7', 1)] },
+  { k: 'M', ko: '해무 파트', en: 'Marine', sup: ['해무 감독 (점검)', 'Marine superintendent'], items: [
+    I('M1', '근로·휴식시간 기록', 'Work / rest hour records', '기록 유지 및 기준 준수 확인', 'Work / rest hours recorded and limits complied with.', 1, '선원법', 0, '근로·휴식시간 기록'),
+    I('M2', '승무원 면담', 'Crew interview', '건의·불만·복지 사항 청취 (아래 면담란 기재)', 'Suggestions, complaints, welfare (record below).', 0, '선원법'),
+    I('M3', '[현장] 거주구역·주방·식료품 창고 위생 및 정리정돈', '[Site] Accommodation, galley and provision store hygiene.', '', '', 1, '선원법', 0, '거주구역·주방 위생'),
+    I('M4', '선원 면허·교육 증서 유효 및 승무정원 충족', 'Crew licences / training certificates valid; safe manning met.', '', '', 0, '선박직원법', 1),
+    I('M5', '신규 승선자 직무 숙지 교육 실시 및 기록', 'Familiarization for new joiners done and recorded.', '', '', 1, 'SMS 5.3', 1, '(분기) 직무 숙지 교육'),
+    I('M6', '선원 근로계약 유효', 'Employment contracts valid.', '', '', 0, '선원법', 1),
+    I('M7', '의약품 비치 및 유효기간', 'Medicines carried and within expiry.', '', '', 1, '선원법', 1, '(분기) 의약품 비치')] }
+];
+const PART = Object.fromEntries(PARTS.map(p => [p.k, p]));
+const ITEM = {}; PARTS.forEach(p => p.items.forEach(it => { it.part = p.k; ITEM[it.no] = it; }));
+const FINAL = [['master', '선장', 'Master'], ['ce', '기관장 (안전관리자)', 'C/E (Safety Officer)'], ['dpa', 'D.P.A (검토)', 'D.P.A review'], ['ceo', 'C.E.O', '']];
+const EXTR = [['op', '운항 일정', 'Operation schedule'], ['rp', '수리/보급 지연', 'Repair/supply delay'], ['ot', '기타', 'Other']];
+
+/* ---------- 공통 도구 ---------- */
+const $ = (s, r) => (r || document).querySelector(s), $$ = (s, r) => [...(r || document).querySelectorAll(s)];
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const now = () => Date.now();
+const uid = p => (p || '') + now().toString(36) + Math.random().toString(36).slice(2, 7);
+const d2 = n => String(n).padStart(2, '0');
+const ymd = t => { const d = t ? new Date(t) : new Date(); return d.getFullYear() + '-' + d2(d.getMonth() + 1) + '-' + d2(d.getDate()); };
+const dot = s => s ? String(s).replace(/-/g, '.') : '';
+const hm = t => { const d = new Date(t); return dot(ymd(t)) + ' ' + d2(d.getHours()) + ':' + d2(d.getMinutes()); };
+const LS = { get: k => { try { return localStorage.getItem(k); } catch (e) { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch (e) { } } };
+const L = (ko, en) => `${ko}${en ? `<span class="en">${en}</span>` : ''}`;
+function toast(m, ms) { let t = $('.toast'); if (!t) { t = document.createElement('div'); t.className = 'toast'; document.body.appendChild(t); } t.textContent = m; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, ms || 2600); }
+const DEV = (() => { let k = LS.get('sejul_vst_dev'); if (!k) { k = Math.random().toString(36).slice(2, 10); LS.set('sejul_vst_dev', k); } return k; })();
+const ME = { get: () => { try { return JSON.parse(LS.get('sejul_vst_me') || '{}') || {}; } catch (e) { return {}; } }, set: o => LS.set('sejul_vst_me', JSON.stringify(o)) };
+const role = () => { try { return UI && UI.role ? UI.role() : (APP.get('role') || ''); } catch (e) { return ''; } };
+const myShip = () => { try { const m = window.SJCLOUD && SJCLOUD.me && SJCLOUD.me(); if (m && m.role === 'ship' && m.ship) return m.ship; } catch (e) { } return role() === 'ship' ? (APP.get('vessel') || '') : ''; };
+
+/* ---------- 저장소 (IndexedDB) ---------- */
+const IDB = (() => { let dbp = null;
+  const open = () => dbp || (dbp = new Promise((res, rej) => { const r = indexedDB.open('sejul_vst', 1); r.onupgradeneeded = () => { const d = r.result; if (!d.objectStoreNames.contains('r')) d.createObjectStore('r', { keyPath: 'id' }); if (!d.objectStoreNames.contains('p')) d.createObjectStore('p', { keyPath: 'id' }); }; r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }));
+  const tx = async (st, mode, fn) => { const d = await open(); return new Promise((res, rej) => { const t = d.transaction(st, mode), s = t.objectStore(st); let out; const q = fn(s); if (q) q.onsuccess = () => out = q.result; t.oncomplete = () => res(out); t.onerror = () => rej(t.error); t.onabort = () => rej(t.error); }); };
+  return { all: st => tx(st, 'readonly', s => s.getAll()), get: (st, k) => tx(st, 'readonly', s => s.get(k)), put: (st, v) => tx(st, 'readwrite', s => s.put(v)), del: (st, k) => tx(st, 'readwrite', s => s.delete(k)), keys: st => tx(st, 'readonly', s => s.getAllKeys()) }; })();
+let R = {};                    /* 보고서 */
+const PH = new Map();          /* 사진 자료 (메모리, 필요할 때 불러옴) */
+let PHK = new Set();           /* 이 기기에 있는 사진 id */
+const PEND = { get: () => { try { return new Set(JSON.parse(LS.get('sejul_vst_pend') || '[]')); } catch (e) { return new Set(); } }, set: s => LS.set('sejul_vst_pend', JSON.stringify([...s])) };
+
+async function photo(id) { if (PH.has(id)) return PH.get(id); const o = await IDB.get('p', id); if (o) { PH.set(id, o.data); return o.data; } return null; }
+async function photoPut(id, data, rid, mine) { PH.set(id, data); PHK.add(id); await IDB.put('p', { id, data, rid, at: now() }); if (mine) { const s = PEND.get(); s.add(id); PEND.set(s); } }
+
+/* ---------- 보고서 구조 ---------- */
+function newRep(h) { const t = now(); return { id: uid('V'), cdev: DEV, ct: t, h: Object.assign({ ship: '', date: ymd(), port: '', q: false, u: t }, h), parts: { S: { items: {} }, T: { items: {} }, M: { items: {}, iv: null } }, fnd: {}, ext: {}, fin: {}, lu: t }; }
+function norm(r) { r.parts = r.parts || {}; PARTS.forEach(p => { r.parts[p.k] = r.parts[p.k] || { items: {} }; r.parts[p.k].items = r.parts[p.k].items || {}; }); r.fnd = r.fnd || {}; r.ext = r.ext || {}; r.fin = r.fin || {}; r.h = r.h || {}; return r; }
+/* 합치기: u(고친 시각)가 있는 단위는 더 나중 것, 없는 묶음은 안쪽을 다시 합침 */
+function mrg(a, b) { if (a == null) return b; if (b == null) return a;
+  if (typeof a !== 'object' || typeof b !== 'object' || Array.isArray(a) || Array.isArray(b)) return b;
+  if ('u' in a || 'u' in b) return (b.u || 0) > (a.u || 0) ? b : a;
+  const o = {}; new Set([...Object.keys(a), ...Object.keys(b)]).forEach(k => o[k] = mrg(a[k], b[k])); return o; }
+function mergeRep(a, b) { const o = mrg(a, b); o.id = a.id || b.id; o.ct = Math.min(a.ct || Infinity, b.ct || Infinity); o.cdev = a.cdev || b.cdev; o.lu = Math.max(a.lu || 0, b.lu || 0); return norm(o); }
+const sig = s => s && s.img && !s.cleared;
+const live = r => !(r.del && r.del.v);
+const itemsOf = (r, k) => PART[k].items.filter(it => !it.q || r.h.q);
+const findings = r => Object.entries(r.fnd || {}).filter(([, f]) => f && !f.del).map(([id, f]) => Object.assign({ id }, f)).sort((a, b) => (a.at || 0) - (b.at || 0));
+function photoIds(r) { const s = new Set(); PARTS.forEach(p => Object.values(r.parts[p.k].items).forEach(x => (x && x.ph || []).forEach(i => s.add(i)))); findings(r).forEach(f => (f.ph || []).forEach(i => s.add(i))); return s; }
+function partStat(r, k) { const its = itemsOf(r, k), P = r.parts[k], done = its.filter(it => P.items[it.no] && P.items[it.no].r).length; return { n: its.length, done, signed: sig(P.sign), name: P.sign && P.sign.name }; }
+function partIssues(r, k) { const P = r.parts[k], out = [], F = findings(r);
+  itemsOf(r, k).forEach(it => { const x = P.items[it.no] || {}; if (!x.r) out.push(`${it.no} — 판정(Y/N/NA)이 없습니다`); else if (it.ph && x.r !== 'NA' && !(x.ph || []).length) out.push(`${it.no} — 증빙사진이 필요합니다`);
+    if (x.r === 'N' && !F.some(f => f.item === it.no)) out.push(`${it.no} — N(부적합)인데 지적사항이 없습니다`); });
+  if (k === 'M') { const m2 = P.items.M2 || {}; if (m2.r === 'Y' && !(P.iv && (P.iv.txt || '').trim())) out.push('M2 — 승무원 면담 내용을 적어 주세요'); }
+  return out; }
+
+async function loadAll() { const a = await IDB.all('r'); R = {}; (a || []).forEach(r => R[r.id] = norm(r)); try { PHK = new Set(await IDB.keys('p')); } catch (e) { } }
+async function save(r, silent) { r.lu = now(); R[r.id] = r; await IDB.put('r', r); if (window.SJCLOUD && SJCLOUD.onSave) try { SJCLOUD.onSave(); } catch (e) { } if (!silent) paintSync(); }
+const rep = id => R[id] && live(R[id]) ? R[id] : null;
+
+/* ---------- 사진 줄이기 (긴 변 1280px, JPEG) ---------- */
+async function shrink(file) { let src, w, h;
+  try { src = await createImageBitmap(file, { imageOrientation: 'from-image' }); w = src.width; h = src.height; }
+  catch (e) { src = await new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = rej; im.src = URL.createObjectURL(file); }); w = src.naturalWidth; h = src.naturalHeight; }
+  const k = Math.min(1, 1280 / Math.max(w, h)), c = document.createElement('canvas'); c.width = Math.round(w * k); c.height = Math.round(h * k);
+  c.getContext('2d').drawImage(src, 0, 0, c.width, c.height); return c.toDataURL('image/jpeg', 0.62); }
+function pickPhotos(camera) { return new Promise(res => { const i = document.createElement('input'); i.type = 'file'; i.accept = 'image/*'; if (camera) i.setAttribute('capture', 'environment'); else i.multiple = true;
+  i.onchange = async () => { const out = []; for (const f of i.files || []) { try { out.push(await shrink(f)); } catch (e) { toast('사진을 읽지 못했습니다'); } } res(out); }; i.click(); }); }
+
+/* ---------- 파일 저장 (저장 위치 직접 선택) ---------- */
+async function saveFile(blob, name, desc, accept) {
+  if (window.showSaveFilePicker) { try { const h = await showSaveFilePicker({ suggestedName: name, types: [{ description: desc, accept }] }); const w = await h.createWritable(); await w.write(blob); await w.close(); toast('저장했습니다 · Saved'); return true; } catch (e) { if (e && e.name === 'AbortError') return false; } }
+  try { const f = new File([blob], name, { type: blob.type }); if (navigator.canShare && navigator.canShare({ files: [f] })) { await navigator.share({ files: [f], title: name }); return true; } } catch (e) { if (e && e.name === 'AbortError') return false; }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000); toast('다운로드 폴더에 저장했습니다'); return true; }
+
+/* ---------- 모달 ---------- */
+function modal(html, onMount) { const b = document.createElement('div'); b.className = 'mb'; b.innerHTML = `<div class="md" role="dialog">${html}</div>`; document.body.appendChild(b);
+  const close = () => { b.remove(); document.removeEventListener('keydown', ek); }; const ek = e => { if (e.key === 'Escape') close(); }; document.addEventListener('keydown', ek);
+  b.addEventListener('click', e => { if (e.target === b || e.target.closest('[data-x]')) close(); }); if (onMount) onMount(b.firstElementChild, close); return close; }
+function ask(msg, ok, okTxt, danger) { modal(`<h3>확인 <button class="x" data-x>✕</button></h3><p style="white-space:pre-wrap">${esc(msg)}</p><div class="row"><button class="btn sp" data-x>취소</button><button class="btn ${danger ? 'r' : 'p'} sp" id="okb">${esc(okTxt || '확인')}</button></div>`, (m, close) => { $('#okb', m).onclick = () => { close(); ok(); }; }); }
+
+/* 서명 패드 */
+function signPad(title, name0, cb) {
+  modal(`<h3>✍ ${title} <button class="x" data-x>✕</button></h3>
+    <label class="f">성명 Name</label><input class="i" id="sn" value="${esc(name0 || '')}" placeholder="이름을 입력" autocomplete="name">
+    <label class="f">서명 Signature <span class="muted">— 아래 칸에 손가락으로 서명</span></label><canvas class="pad" id="pad"></canvas>
+    <div class="row" style="margin-top:12px"><button class="btn" id="clr">지우기</button><span class="sp"></span><button class="btn" data-x>취소</button><button class="btn p" id="sok">서명 저장</button></div>`, (m, close) => {
+    const c = $('#pad', m), ctx = c.getContext('2d'), dpr = Math.max(1, window.devicePixelRatio || 1); let drawn = false, last = null;
+    const fit = () => { const r = c.getBoundingClientRect(); c.width = r.width * dpr; c.height = r.height * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.lineWidth = 2.6; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#0B1B3F'; };
+    requestAnimationFrame(fit);
+    const pos = e => { const r = c.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+    c.addEventListener('pointerdown', e => { c.setPointerCapture(e.pointerId); last = pos(e); ctx.beginPath(); ctx.arc(last[0], last[1], 1.2, 0, 7); ctx.fillStyle = '#0B1B3F'; ctx.fill(); drawn = true; });
+    c.addEventListener('pointermove', e => { if (!last) return; const p = pos(e); ctx.beginPath(); ctx.moveTo(last[0], last[1]); ctx.lineTo(p[0], p[1]); ctx.stroke(); last = p; });
+    const up = () => last = null; c.addEventListener('pointerup', up); c.addEventListener('pointercancel', up);
+    $('#clr', m).onclick = () => { ctx.clearRect(0, 0, c.width, c.height); drawn = false; };
+    $('#sok', m).onclick = () => { const nm = $('#sn', m).value.trim(); if (!nm) return toast('성명을 입력해 주세요'); if (!drawn) return toast('서명 칸에 서명해 주세요');
+      /* 여백 잘라내기 */
+      const W = c.width, H = c.height, d = ctx.getImageData(0, 0, W, H).data; let x0 = W, y0 = H, x1 = 0, y1 = 0;
+      for (let y = 0; y < H; y += 2) for (let x = 0; x < W; x += 2) if (d[(y * W + x) * 4 + 3] > 10) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+      const pad = 8 * dpr; x0 = Math.max(0, x0 - pad); y0 = Math.max(0, y0 - pad); x1 = Math.min(W, x1 + pad); y1 = Math.min(H, y1 + pad);
+      const o = document.createElement('canvas'), k = Math.min(1, 600 / (x1 - x0)); o.width = Math.max(1, (x1 - x0) * k); o.height = Math.max(1, (y1 - y0) * k);
+      o.getContext('2d').drawImage(c, x0, y0, x1 - x0, y1 - y0, 0, 0, o.width, o.height);
+      const t = now(); close(); cb({ name: nm, img: o.toDataURL('image/png'), at: t, u: t, dev: DEV }); };
+  }); }
+
+/* 사진 크게 보기 */
+async function viewPhoto(id, onDel) { const src = await photo(id); modal(`<h3>사진 Photo <button class="x" data-x>✕</button></h3>${src ? `<img src="${src}" style="width:100%;border-radius:12px">` : '<p class="muted">이 기기에 아직 사진이 없습니다 (동기화 대기)</p>'}
+  <div class="row" style="margin-top:12px">${onDel ? '<button class="btn r" id="pdel">사진 삭제</button>' : ''}<span class="sp"></span><button class="btn p" data-x>닫기</button></div>`, (m, close) => { const b = $('#pdel', m); if (b) b.onclick = () => { close(); onDel(); }; }); }
+
+/* =============================== 화면 =============================== */
+const S = { tab: null };
+function route() { const h = location.hash.replace(/^#\/?/, '').split('/'); return { v: h[0] || '', id: h[1] || '', tab: h[2] || '' }; }
+function go(h) { location.hash = h; }
+addEventListener('hashchange', render);
+
+function header(title, sub, back) {
+  return `<header class="hd"><a class="home" href="${back || '../index.html'}" aria-label="뒤로">${back ? '‹' : `<img src="../logo.svg" width="22" height="21" alt="">`}</a>
+    <div class="tt"><b>${title}</b><small>${sub || ''}</small></div><button class="ib" id="syncB" title="서버 동기화"><span class="sd" id="sdot"></span><span id="stxt" style="max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span></button></header>`; }
+
+function render() { const r = route(); $('#print').style.display = 'none'; $('#app').style.display = '';
+  if (r.v === 'r' && rep(r.id)) return viewRep(rep(r.id), r.tab);
+  if (r.v === 'p' && rep(r.id)) return viewPrint(rep(r.id));
+  if (r.v === 'set') return viewSet();
+  return viewList(); }
+
+/* ---------- 목록 ---------- */
+function viewList() { const ms = myShip(); let list = Object.values(R).filter(live);
+  if (ms) list = list.filter(x => x.h.ship === ms);
+  const fs = S.fship || ''; if (fs) list = list.filter(x => x.h.ship === fs);
+  list.sort((a, b) => (b.h.date || '').localeCompare(a.h.date || '') || b.ct - a.ct);
+  const ships = [...new Set(Object.values(R).filter(live).map(x => x.h.ship))].filter(Boolean).sort();
+  $('#app').innerHTML = header('감독 방선 보고서', 'Supervisor\'s Visit Report · SMM-3C-01F R-4') + `<main>
+    <div class="row" style="margin-bottom:12px"><button class="btn p sp" id="newB">＋ 새 방선 시작 <span class="en" style="color:#C9D6EE">New visit</span></button><button class="btn" id="impB" title="파일 가져오기">📥</button><button class="btn" id="setB" title="설정">⚙</button></div>
+    ${!ms && ships.length > 1 ? `<select class="i" id="fship" style="margin-bottom:12px"><option value="">전체 선박 All vessels</option>${ships.map(s => `<option ${s === fs ? 'selected' : ''}>${esc(s)}</option>`).join('')}</select>` : ''}
+    ${list.length ? list.map(x => { const F = findings(x), c = PARTS.map(p => { const s = partStat(x, p.k); return `<span class="chip ${s.signed ? 'ok' : s.done ? 'warn' : ''}">${p.k} ${p.ko.replace(' 파트', '')} ${s.signed ? '✓' : s.done + '/' + s.n}</span>`; }).join('');
+      const fin = FINAL.filter(([k]) => sig(x.fin[k])).length;
+      return `<a class="card rep" href="#/r/${x.id}"><div class="top"><b>${esc(x.h.ship || '선박 미지정')}</b><span class="muted">${dot(x.h.date)}${x.h.port ? ' · ' + esc(x.h.port) : ''}</span><span class="sp"></span><span class="chip ${x.h.q ? 'q' : ''}">${x.h.q ? '분기' : '월간'}</span></div>
+        <div class="chips">${c}<span class="chip ${F.length ? 'err' : ''}">지적 ${F.length}</span><span class="chip ${fin === 4 ? 'ok' : ''}">확인 ${fin}/4</span></div></a>`; }).join('')
+      : `<div class="empty"><div style="font-size:40px">📋</div><p>아직 방선 보고서가 없습니다.<br><span class="muted">'새 방선 시작'을 눌러 시작하세요. 같은 선박·같은 날짜 보고서는 감독 3명이 함께 씁니다.</span></p></div>`}
+  </main>`;
+  $('#newB').onclick = newVisit; $('#setB').onclick = () => go('#/set'); $('#impB').onclick = importFile;
+  const f = $('#fship'); if (f) f.onchange = () => { S.fship = f.value; render(); };
+  paintSync(); }
+
+function newVisit() { const ms = myShip(), V = VES(), t = ymd();
+  modal(`<h3>새 방선 New visit <button class="x" data-x>✕</button></h3>
+    <label class="f">선명 Ship's name</label><select class="i" id="nv">${(ms ? [ms] : V).map(v => `<option>${esc(v)}</option>`).join('')}</select>
+    <label class="f">방선 일자 Date</label><input class="i" type="date" id="nd" value="${t}">
+    <label class="f">항구 Port</label><input class="i" id="np" placeholder="예: 울산, 여수 GSC">
+    <label class="f">방선 구분 Type of visit</label><div class="seg" id="nq"><button data-q="0" class="on">월간 Monthly</button><button data-q="1">분기 Quarterly</button></div>
+    <p class="muted" style="margin:8px 0 0">분기 방선은 각 파트의 '분기 추가 항목'까지 점검합니다.</p>
+    <div id="dup"></div>
+    <div class="row" style="margin-top:14px"><button class="btn sp" data-x>취소</button><button class="btn p sp" id="nok">시작</button></div>`, (m, close) => {
+    let q = false; $$('#nq button', m).forEach(b => b.onclick = () => { q = b.dataset.q === '1'; $$('#nq button', m).forEach(x => x.classList.toggle('on', x === b)); });
+    const dupChk = () => { const v = $('#nv', m).value, d = $('#nd', m).value, ex = Object.values(R).filter(live).find(x => x.h.ship === v && x.h.date === d);
+      $('#dup', m).innerHTML = ex ? `<div class="issues" style="background:var(--warnBg);border-color:#F0C46A">같은 선박·같은 날짜 보고서가 이미 있습니다 — 다른 감독이 시작한 보고서라면 그 보고서에 이어서 작성하세요.<div style="margin-top:8px"><a class="btn s p" href="#/r/${ex.id}" data-x>그 보고서 열기</a></div></div>` : ''; };
+    $('#nv', m).onchange = dupChk; $('#nd', m).onchange = dupChk; dupChk();
+    $('#nok', m).onclick = async () => { const r = newRep({ ship: $('#nv', m).value, date: $('#nd', m).value || t, port: $('#np', m).value.trim(), q }); await save(r); close(); go('#/r/' + r.id + '/' + (ME.get().team || 'S')); };
+  }); }
+
+/* ---------- 보고서 ---------- */
+function viewRep(r, tab) { tab = tab || S.tab || ME.get().team || 'S'; if (!['S', 'T', 'M', 'F', 'C'].includes(tab)) tab = 'S'; S.tab = tab;
+  const tb = (k, ko, sub, ck) => `<button data-t="${k}" class="${tab === k ? 'on' : ''}">${ck ? '<span class="ck">✓</span> ' : ''}${ko}<small>${sub}</small></button>`;
+  const st = k => partStat(r, k), F = findings(r);
+  $('#app').innerHTML = header(`${esc(r.h.ship || '')} · ${dot(r.h.date)}`, `${r.h.q ? '분기 Quarterly' : '월간 Monthly'}${r.h.port ? ' · ' + esc(r.h.port) : ''}`, '#/') +
+    `<nav class="tabs">${PARTS.map(p => { const s = st(p.k); return tb(p.k, p.ko.replace(' 파트', ''), s.signed ? '서명 완료' : `${s.done}/${s.n}`, s.signed); }).join('')}${tb('F', '지적', `${F.length}건`)}${tb('C', '확인·출력', `${FINAL.filter(([k]) => sig(r.fin[k])).length}/4`)}</nav><main id="pm"></main>`;
+  $$('.tabs button').forEach(b => b.onclick = () => { S.tab = b.dataset.t; history.replaceState(null, '', '#/r/' + r.id + '/' + b.dataset.t); viewRep(r, b.dataset.t); window.scrollTo(0, 0); });
+  if ('STM'.includes(tab)) partView(r, tab); else if (tab === 'F') findView(r); else confView(r);
+  paintSync(); }
+
+function itemCard(r, it, locked) { const P = r.parts[it.part], x = P.items[it.no] || {}, n = (x.ph || []).length, need = it.ph && x.r && x.r !== 'NA' && !n;
+  const yb = (v, c, ko) => `<button class="${c} ${x.r === v ? 'on' : ''}" data-r="${v}" ${locked ? 'disabled' : ''}>${v}<small>${ko}</small></button>`;
+  return `<div class="it ${x.r === 'Y' ? 'done' : x.r === 'N' ? 'bad' : x.r === 'NA' ? 'na' : ''}" data-no="${it.no}">
+    <div class="nh"><span class="no">${it.no}</span><div class="tx">${it.p ? `<b>${esc(it.t)}</b> <span class="en">${esc(it.te)}</span><div class="pt">· ${esc(it.p)}</div><div class="pe">${esc(it.pe)}</div>` : `<b style="font-weight:600">${esc(it.t)}</b><div class="pe">${esc(it.te)}</div>`}
+      <div class="tags"><span class="tag">근거 ${esc(it.b)}</span>${it.ph ? `<span class="tag ${need ? 'miss' : 'ph'}">● 사진 필수${need ? ' — 미첨부' : ''}</span>` : ''}</div></div></div>
+    <div class="yn">${yb('Y', 'y', '적합')}${yb('N', 'n', '부적합')}${yb('NA', 'x', '해당없음')}</div>
+    ${x.m ? `<div class="memo">📝 ${esc(x.m)}</div>` : ''}
+    ${n ? `<div class="th">${x.ph.map(id => `<img data-ph="${id}" alt="사진" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=">`).join('')}</div>` : ''}
+    ${locked ? '' : `<div class="act"><button class="btn s" data-a="cam">📷 촬영</button><button class="btn s" data-a="alb">🖼 앨범</button><button class="btn s" data-a="memo">📝 메모</button>${x.r === 'N' ? '<button class="btn s r" data-a="fnd">＋ 지적사항</button>' : ''}</div>`}</div>`; }
+
+async function fillThumbs(root) { for (const im of $$('img[data-ph]', root)) { const s = await photo(im.dataset.ph); if (s) im.src = s; else im.style.background = '#EEF1F5'; } }
+
+function partView(r, k) { const p = PART[k], P = r.parts[k], locked = sig(P.sign), st = partStat(r, k), mon = p.items.filter(i => !i.q), qi = p.items.filter(i => i.q);
+  const m = $('#pm');
+  m.innerHTML = `<h2>${PARTS.indexOf(p) + 1}. ${L(p.ko, p.en)}</h2>
+    <div class="muted">${st.done}/${st.n} 항목 판정 ${r.h.q ? '' : '· 월간 (분기 추가 항목 제외)'}</div><div class="prog"><i style="width:${st.n ? st.done / st.n * 100 : 0}%"></i></div>
+    ${locked ? `<div class="lock" style="margin-top:12px">✅ <b>${esc(P.sign.name)}</b> 감독 서명 완료 (${hm(P.sign.at)}) — 수정하려면 아래에서 서명을 취소하세요.</div>` : '<div style="height:10px"></div>'}
+    ${mon.map(it => itemCard(r, it, locked)).join('')}
+    ${qi.length ? (r.h.q ? `<div class="qh">분기 추가 항목<small>Quarterly add-on</small></div>${qi.map(it => itemCard(r, it, locked)).join('')}` : `<div class="qh" style="background:#F1F4F9;color:var(--mut)">분기 추가 항목 ${qi.length}개는 분기 방선 때만 점검합니다<small>Quarterly add-on is hidden for monthly visits</small></div>`) : ''}
+    ${k === 'M' ? `<div class="card"><h3>승무원 면담 기록 <span class="en">Crew interview</span></h3>
+      <label class="f">면담 인원 / 직책</label><input class="i" id="ivw" value="${esc(P.iv && P.iv.who || '')}" ${locked ? 'disabled' : ''} placeholder="예: 갑판장, AB 2명, 조리장">
+      <label class="f">건의·불만·복지 사항</label><textarea class="i" id="ivt" ${locked ? 'disabled' : ''}>${esc(P.iv && P.iv.txt || '')}</textarea></div>` : ''}
+    <div class="card" id="signC"><h3>${L(p.sup[0], p.sup[1])}</h3>
+      ${locked ? `<div class="sigbox"><img src="${P.sign.img}" alt="서명"><div><b>${esc(P.sign.name)}</b><div class="muted">${hm(P.sign.at)}</div></div></div><div class="row" style="margin-top:12px"><button class="btn r s" id="unsig">서명 취소 (수정하기)</button></div>`
+        : `<div id="iss"></div><button class="btn g w" id="dosig">✍ ${p.ko} 점검 완료 · 서명</button>`}</div>`;
+  fillThumbs(m);
+  /* 판정 */
+  $$('.it', m).forEach(el => { const no = el.dataset.no, it = ITEM[no];
+    $$('.yn button', el).forEach(b => b.onclick = async () => { const x = Object.assign({}, P.items[no] || {}); x.r = x.r === b.dataset.r ? '' : b.dataset.r; x.u = now(); P.items[no] = x; await save(r);
+      if (x.r === 'N' && !findings(r).some(f => f.item === no)) { partView(r, k); findEdit(r, null, no); return; } refreshItem(r, it, el); });
+    $$('[data-a]', el).forEach(b => b.onclick = async () => { const a = b.dataset.a;
+      if (a === 'cam' || a === 'alb') { const shots = await pickPhotos(a === 'cam'); if (!shots.length) return; const x = Object.assign({}, P.items[no] || {}); x.ph = [...(x.ph || [])];
+        for (const s of shots) { const id = uid('P'); await photoPut(id, s, r.id, true); x.ph.push(id); } x.u = now(); P.items[no] = x; await save(r); refreshItem(r, it, el); toast(`사진 ${shots.length}장 첨부`); }
+      if (a === 'memo') memoEdit(P.items[no] && P.items[no].m || '', async v => { const x = Object.assign({}, P.items[no] || {}); x.m = v; x.u = now(); P.items[no] = x; await save(r); refreshItem(r, it, el); });
+      if (a === 'fnd') findEdit(r, null, no); });
+    el.addEventListener('click', e => { const im = e.target.closest('img[data-ph]'); if (!im) return; viewPhoto(im.dataset.ph, locked ? null : async () => { const x = Object.assign({}, P.items[no]); x.ph = (x.ph || []).filter(i => i !== im.dataset.ph); x.u = now(); P.items[no] = x; await save(r); refreshItem(r, it, el); }); }); });
+  if (k === 'M' && !locked) { const sv = async () => { P.iv = { who: $('#ivw').value, txt: $('#ivt').value, u: now() }; await save(r, true); }; $('#ivw').onchange = sv; $('#ivt').onchange = sv; $('#ivt').oninput = () => { clearTimeout(sv.t); sv.t = setTimeout(sv, 800); }; }
+  const ds = $('#dosig'); if (ds) ds.onclick = async () => { if (k === 'M' && $('#ivt')) { P.iv = { who: $('#ivw').value, txt: $('#ivt').value, u: now() }; await save(r, true); }
+    const is = partIssues(r, k); if (is.length) { $('#iss').innerHTML = `<div class="issues"><b>서명 전에 확인해 주세요 (${is.length})</b><ul style="margin:6px 0 0;padding-left:18px">${is.map(s => `<li>${esc(s)}</li>`).join('')}</ul></div>`; $('#iss').scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
+    const me = ME.get(); signPad(`${p.sup[0]}`, me.team === k ? me.name : (me.name || ''), async s => { P.sign = s; await save(r); if (!me.name) ME.set(Object.assign(me, { name: s.name, team: me.team || k })); toast(`${p.ko} 서명 완료`); viewRep(r, k); }); };
+  const us = $('#unsig'); if (us) us.onclick = () => ask(`${p.ko} 서명을 취소하고 수정할까요?\n수정 후 다시 서명해야 합니다.`, async () => { P.sign = { cleared: true, u: now() }; await save(r); viewRep(r, k); }, '서명 취소', true); }
+
+function refreshItem(r, it, el) { /* 파트 화면을 다시 그리되 스크롤 위치 유지 */
+  const y = window.scrollY; partView(r, it.part); window.scrollTo(0, y); updTabs(r); }
+function updTabs(r) { $$('.tabs button').forEach(b => { const k = b.dataset.t; if ('STM'.includes(k)) { const s = partStat(r, k); b.querySelector('small').textContent = s.signed ? '서명 완료' : `${s.done}/${s.n}`; } if (k === 'F') b.querySelector('small').textContent = findings(r).length + '건'; }); }
+
+function memoEdit(v0, cb) { modal(`<h3>📝 메모 Memo <button class="x" data-x>✕</button></h3><textarea class="i" id="mt" style="min-height:140px" placeholder="확인 내용·특이사항">${esc(v0)}</textarea>
+  <div class="row" style="margin-top:12px"><button class="btn sp" data-x>취소</button><button class="btn p sp" id="mok">저장</button></div>`, (m, close) => { const t = $('#mt', m); setTimeout(() => t.focus(), 50); $('#mok', m).onclick = () => { close(); cb(t.value.trim()); }; }); }
+
+/* ---------- 지적사항 (공통) ---------- */
+function findView(r) { const F = findings(r), m = $('#pm');
+  m.innerHTML = `<h2>4. ${L('지적사항 (공통)', 'Findings (all parts)')}</h2><p class="muted" style="margin-top:-6px">안품·공무·해무 감독이 같은 목록에 적습니다. 번호는 적은 순서대로 자동으로 매겨집니다. 지적사항은 부적합 보고서 작성 대상입니다.</p>
+    ${F.length ? F.map((f, i) => `<div class="card fd" data-f="${f.id}" style="cursor:pointer"><span class="n">${i + 1}</span><div style="flex:1;min-width:0"><div class="row" style="gap:6px">${f.item ? `<span class="chip">${esc(f.item)} ${esc(ITEM[f.item] ? ITEM[f.item].sh || ITEM[f.item].t.replace('[현장] ', '').slice(0, 14) : '')}</span>` : '<span class="chip">기타</span>'}${(f.ph || []).length ? `<span class="chip warn">📷 ${f.ph.length}</span>` : ''}${f.done ? '<span class="chip ok">조치 완료</span>' : ''}${f.ver ? '<span class="chip ok">현장 확인</span>' : ''}</div>
+      <div style="margin-top:6px;white-space:pre-wrap">${esc(f.desc || '(내용 없음)')}</div><div class="muted" style="margin-top:4px">조치기한 ${f.due ? dot(f.due) : '—'}${f.by ? ' · ' + esc(f.by) : ''}</div></div></div>`).join('') : '<div class="empty">지적사항이 없습니다.</div>'}
+    <button class="btn p w" id="fadd">＋ 지적사항 추가 <span class="en" style="color:#C9D6EE">Add finding</span></button>`;
+  $$('[data-f]', m).forEach(el => el.onclick = () => findEdit(r, el.dataset.f)); $('#fadd').onclick = () => findEdit(r, null, ''); }
+
+function findEdit(r, fid, item0) { const f = fid ? Object.assign({}, r.fnd[fid]) : { item: item0 || '', desc: '', due: '', done: '', ver: '', title: '', ph: [] }, no = fid ? findings(r).findIndex(x => x.id === fid) + 1 : findings(r).length + 1;
+  const opts = PARTS.map(p => `<optgroup label="${p.ko}">${p.items.filter(it => !it.q || r.h.q).map(it => `<option value="${it.no}" ${f.item === it.no ? 'selected' : ''}>${it.no} ${esc(it.sh || it.t.replace('[현장] ', ''))}</option>`).join('')}</optgroup>`).join('');
+  let ph = [...(f.ph || [])];
+  modal(`<h3>지적사항 No.${no} <button class="x" data-x>✕</button></h3>
+    <label class="f">관련 항목 Item No.</label><select class="i" id="fi"><option value="">기타 (항목 없음)</option>${opts}</select>
+    <label class="f">지적 내용 Description</label><textarea class="i" id="fdsc" placeholder="무엇이, 어디서, 어떻게 — 부적합 내용">${esc(f.desc)}</textarea>
+    <label class="f">조치기한 Due date</label><input class="i" type="date" id="fdue" value="${esc(f.due)}">
+    <label class="f">사진 Photo <span class="muted">(별지 2)</span></label><div class="row"><button class="btn s" id="fcam">📷 촬영</button><button class="btn s" id="falb">🖼 앨범</button></div><div class="th" id="fth"></div>
+    <label class="f">사진 제목 Title</label><input class="i" id="ftt" value="${esc(f.title)}" placeholder="별지 2에 표시될 제목 (비우면 내용 앞부분)">
+    <details style="margin-top:12px"${f.done || f.ver ? ' open' : ''}><summary style="font-weight:700">조치 결과 (나중에 입력)</summary>
+      <label class="f">조치완료일 Done</label><input class="i" type="date" id="fdone" value="${esc(f.done)}">
+      <label class="f">현장확인일 Verified</label><input class="i" type="date" id="fver" value="${esc(f.ver)}"></details>
+    <div class="row" style="margin-top:14px">${fid ? '<button class="btn r" id="fdel">삭제</button>' : ''}<span class="sp"></span><button class="btn" data-x>취소</button><button class="btn p" id="fok">저장</button></div>`, (m, close) => {
+    const th = async () => { $('#fth', m).innerHTML = ph.map(id => `<img data-ph="${id}" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=">`).join(''); fillThumbs($('#fth', m)); }; th();
+    $('#fth', m).onclick = e => { const im = e.target.closest('img[data-ph]'); if (im) ask('이 사진을 지울까요?', () => { ph = ph.filter(i => i !== im.dataset.ph); th(); }, '삭제', true); };
+    const add = async cam => { const s = await pickPhotos(cam); for (const d of s) { const id = uid('P'); await photoPut(id, d, r.id, true); ph.push(id); } th(); };
+    $('#fcam', m).onclick = () => add(true); $('#falb', m).onclick = () => add(false);
+    $('#fok', m).onclick = async () => { const desc = $('#fdsc', m).value.trim(); if (!desc) return toast('지적 내용을 적어 주세요'); const t = now(), me = ME.get();
+      const o = Object.assign(f, { item: $('#fi', m).value, desc, due: $('#fdue', m).value, title: $('#ftt', m).value.trim(), done: $('#fdone', m).value, ver: $('#fver', m).value, ph, u: t });
+      if (!fid) { o.at = t; o.by = me.name || ''; o.dev = DEV; } r.fnd[fid || uid('F')] = o; await save(r); close(); toast('지적사항 저장'); viewRep(r, S.tab); };
+    const d = $('#fdel', m); if (d) d.onclick = () => ask('이 지적사항을 삭제할까요?', async () => { r.fnd[fid] = { del: true, u: now() }; await save(r); close(); viewRep(r, S.tab); }, '삭제', true);
+  }); }
+
+/* ---------- 확인·출력 ---------- */
+function confView(r) { const m = $('#pm'), E = r.ext || {}, er = E.r || {};
+  const sgRow = (title, en, s, key) => `<div class="card"><div class="row"><b>${title}</b><span class="en">${en}</span><span class="sp"></span>${sig(s) ? `<button class="btn s r" data-un="${key}">취소</button>` : ''}</div>
+    ${sig(s) ? `<div class="sigbox" style="margin-top:8px"><img src="${s.img}" alt=""><div><b>${esc(s.name)}</b><div class="muted">${hm(s.at)}</div></div></div>` : `<button class="btn w" style="margin-top:8px" data-sg="${key}">✍ 서명하기</button>`}</div>`;
+  m.innerHTML = `<h2>5. ${L('본선 및 회사 확인', 'Confirmation by ship & office')}</h2>
+    <div class="card"><h3>파트별 점검 현황</h3>${PARTS.map(p => { const s = partStat(r, p.k); return `<div class="row" style="padding:6px 0;border-bottom:1px solid var(--line)"><b style="width:68px">${p.k} ${p.ko.replace(' 파트', '')}</b><span class="muted">${s.done}/${s.n}</span><span class="sp"></span>${s.signed ? `<span class="chip ok">✓ ${esc(s.name)}</span>` : '<span class="chip warn">미서명</span>'}</div>`; }).join('')}
+      <div class="row" style="padding:6px 0"><b style="width:68px">지적</b><span class="muted">${findings(r).length}건</span></div></div>
+    <h3 style="margin-top:16px">본선 확인 서명 <span class="en">Ship</span></h3>
+    ${FINAL.slice(0, 2).map(([k, a, b]) => sgRow(a, b, r.fin[k], 'fin.' + k)).join('')}
+    <h3 style="margin-top:16px">회사 확인 서명 <span class="en">Office</span></h3>
+    ${FINAL.slice(2).map(([k, a, b]) => sgRow(a, b, r.fin[k], 'fin.' + k)).join('')}
+    <div class="card"><h3>조치기한 연장 <span class="en">Extension (필요 시)</span></h3>
+      <label class="f">연장 사유 Reason</label><div class="row">${EXTR.map(([k, a, b]) => `<label style="display:flex;gap:6px;align-items:center;margin-right:10px"><input type="checkbox" data-er="${k}" ${er[k] ? 'checked' : ''} style="width:20px;height:20px">${a}</label>`).join('')}</div>
+      <input class="i" id="eot" placeholder="기타 사유" value="${esc(er.other || '')}" style="margin-top:6px">
+      <label class="f">연장기한 Extended to</label><input class="i" type="date" id="eto" value="${esc(er.to || '')}">
+      <div class="row" style="margin-top:12px;gap:12px">${[['a', 'D.P 승인 Approved'], ['c', 'D.P 종결확인 Closed']].map(([k, t]) => { const s = E[k]; return `<div style="flex:1;min-width:150px"><div class="muted" style="font-weight:700">${t}</div>${sig(s) ? `<div class="sigbox"><img src="${s.img}" style="height:44px"><button class="btn s r" data-un="ext.${k}">취소</button></div>` : `<button class="btn s w" data-sg="ext.${k}">✍ 서명</button>`}</div>`; }).join('')}</div></div>
+    <div class="card"><h3>출력·보관 <span class="en">Output</span></h3>
+      <button class="btn p w" id="pvB">📄 보고서 보기 · PDF 저장</button>
+      <div class="row" style="margin-top:8px"><button class="btn sp" id="expB">📤 파일로 내보내기</button><button class="btn sp" id="impB2">📥 가져와 합치기</button></div>
+      <p class="muted" style="margin:8px 0 0">서버 동기화가 안 될 때: 파일로 내보내 카카오톡·메일로 다른 감독에게 보내면, 받은 사람이 '가져와 합치기'로 한 보고서로 합칩니다.</p>
+      <button class="btn r w" id="delB" style="margin-top:14px">보고서 삭제</button></div>`;
+  $$('[data-sg]', m).forEach(b => b.onclick = () => { const [g, k] = b.dataset.sg.split('.'), lab = g === 'fin' ? FINAL.find(x => x[0] === k)[1] : (k === 'a' ? 'D.P 승인' : 'D.P 종결확인');
+    signPad(lab, '', async s => { if (g === 'fin') r.fin[k] = s; else r.ext[k] = s; await save(r); toast('서명 저장'); viewRep(r, 'C'); }); });
+  $$('[data-un]', m).forEach(b => b.onclick = () => ask('이 서명을 취소할까요?', async () => { const [g, k] = b.dataset.un.split('.'); (g === 'fin' ? r.fin : r.ext)[k] = { cleared: true, u: now() }; await save(r); viewRep(r, 'C'); }, '서명 취소', true));
+  const svE = async () => { const o = { other: $('#eot').value.trim(), to: $('#eto').value, u: now() }; $$('[data-er]', m).forEach(c => o[c.dataset.er] = c.checked); r.ext.r = o; await save(r, true); };
+  $$('[data-er]', m).forEach(c => c.onchange = svE); $('#eot').onchange = svE; $('#eto').onchange = svE;
+  $('#pvB').onclick = () => go('#/p/' + r.id); $('#expB').onclick = () => exportRep(r); $('#impB2').onclick = importFile;
+  $('#delB').onclick = () => ask(`${r.h.ship} ${dot(r.h.date)} 보고서를 삭제할까요?\n동기화된 다른 기기에서도 사라집니다.`, async () => { r.del = { v: true, u: now() }; await save(r); go('#/'); }, '삭제', true); }
+
+/* ---------- 내보내기 / 가져오기 ---------- */
+async function exportRep(r) { const ph = {}; for (const id of photoIds(r)) { const d = await photo(id); if (d) ph[id] = d; }
+  const name = `방선보고서_${(r.h.ship || '').replace(/\s+/g, '_')}_${r.h.date}.sjvst.json`;
+  await saveFile(new Blob([JSON.stringify({ kind: 'SEJUL-VST-FILE', v: 1, rep: r, ph })], { type: 'application/json' }), name, '방선 보고서 파일', { 'application/json': ['.json'] }); }
+function importFile() { const i = document.createElement('input'); i.type = 'file'; i.accept = '.json,application/json';
+  i.onchange = async () => { let n = 0; for (const f of i.files) { try { const o = JSON.parse(await f.text()); if (o.kind !== 'SEJUL-VST-FILE' || !o.rep) throw 0; n += await applyRep(o.rep, o.ph); } catch (e) { toast('방선 보고서 파일이 아닙니다: ' + f.name); } }
+    if (n) { toast('합쳤습니다 · Merged'); render(); } else toast('새로 합칠 내용이 없습니다'); }; i.click(); }
+async function applyRep(o, ph) { let ch = 0; if (ph) for (const [id, d] of Object.entries(ph)) if (!PHK.has(id)) { await photoPut(id, d, o.id, false); ch = 1; }
+  const a = R[o.id]; if (!a) { R[o.id] = norm(o); await IDB.put('r', R[o.id]); return 1; }
+  const m = mergeRep(a, norm(o)), A = JSON.stringify(a), B = JSON.stringify(m); if (A !== B) { R[o.id] = m; await IDB.put('r', m); ch = 1; } return ch; }
+
+/* ---------- 출력 (서식 그대로) ---------- */
+const box = on => on ? '☑' : '□';
+async function docHTML(r) { const ph = {}; for (const id of photoIds(r)) ph[id] = await photo(id);
+  const F = findings(r), pg = inner => `<section class="pg">${inner}<div class="pf"><span>${FORM.code}</span><span>${FORM.co}</span></div></section>`;
+  const sgImg = s => sig(s) ? `<img src="${s.img}" alt="">` : '';
+  const head = `<h1>감독 방선 보고서</h1><div class="sub">Supervisor's Visit Report – 내항선 Domestic</div>
+    <table><colgroup><col style="width:20%"><col style="width:28%"><col style="width:19%"><col style="width:33%"></colgroup>
+    <tr><td class="lb">선 명<small>Ship's name</small></td><td>${esc(r.h.ship)}</td><td class="lb">방선 일자/항구<small>Date/Port</small></td><td>${dot(r.h.date)}${r.h.port ? ' / ' + esc(r.h.port) : ''}</td></tr>
+    <tr><td class="lb">방선 구분<small>Type of visit</small></td><td>${box(!r.h.q)} 월간 Monthly</td><td colspan="2">${box(r.h.q)} 분기 Quarterly <span class="g">(분기 추가 항목 포함/incl. quarterly add-on)</span></td></tr></table>`;
+  const partTbl = (p, part, first) => { const P = r.parts[p.k], row = it => { const x = P.items[it.no] || {}, show = !it.q || r.h.q;
+      const tx = it.p ? `<b>${esc(it.t)} ${esc(it.te)}</b><br>· ${esc(it.p)}<br><span class="g">${esc(it.pe)}</span>` : `${esc(it.t)}<br><span class="g">${esc(it.te)}</span>`;
+      return `<tr><td class="c">${it.no}</td><td>${tx}${show && x.m ? `<div class="mm">메모: ${esc(x.m)}</div>` : ''}</td><td class="c">${box(show && x.r === 'Y')}</td><td class="c">${box(show && x.r === 'N')}</td><td class="c">${box(show && x.r === 'NA')}</td><td class="c">${it.ph ? '●' : ''}</td><td class="c" style="font-size:10pt">${esc(it.b)}</td></tr>`; };
+    const s = P.sign, mon = p.items.filter(i => !i.q), qi = p.items.filter(i => i.q), cut = part === 1 ? 10 : part === 2 ? 0 : 99;
+    const body = part === 1 ? mon.slice(0, cut).map(row).join('') : (part === 2 ? mon.slice(10) : mon).map(row).join('') + `<tr class="qr"><td colspan="7">분기 추가 항목 (분기 방선 시에만 작성) <span class="e">Quarterly add-on (quarterly visits only)</span></td></tr>` + qi.map(row).join('');
+    return `${first !== false ? `<div class="sh">${PARTS.indexOf(p) + 1}. ${p.ko} <span class="e">${p.en}</span></div>` : ''}
+      <table><colgroup><col style="width:7%"><col style="width:53%"><col style="width:5%"><col style="width:5%"><col style="width:6%"><col style="width:6%"><col style="width:18%"></colgroup>
+      <tr><th>No.</th><th>점검항목 Check item</th><th>Y</th><th>N</th><th>NA</th><th>사진</th><th>근거</th></tr>
+      ${body}
+      ${part === 1 ? '</table>' : `${p.k === 'M' ? `<tr><td colspan="7"><b>승무원 면담 기록</b> <span class="g">Crew interview</span><br>면담 인원/직책: ${esc(P.iv && P.iv.who || '')}<br><span style="white-space:pre-wrap">${esc(P.iv && P.iv.txt || '')}</span></td></tr>` : ''}
+      </table><table style="margin-top:-1px"><colgroup><col style="width:30%"><col style="width:22%"><col style="width:28%"><col style="width:20%"></colgroup>
+      <tr style="height:16mm"><td class="lb">${p.sup[0]}<small>${p.sup[1]}</small></td><td>성명 <small class="g">Name:</small><br>${sig(s) ? esc(s.name) : ''}</td><td class="sg">${sig(s) ? sgImg(s) : '서명 <small class="g">Sign:</small>'}</td><td>일자 <small class="g">Date:</small><br>${sig(s) ? dot(ymd(s.at)) : ''}</td></tr></table>`}`; };
+  /* 파트: 안품은 길어서 두 쪽, 공무·해무 각 한 쪽 */
+  const pages = [];
+  pages.push(pg(head + partTbl(PART.S, 1)));
+  pages.push(pg(partTbl(PART.S, 2, false)));
+  pages.push(pg(partTbl(PART.T)));
+  pages.push(pg(partTbl(PART.M)));
+  /* 지적사항 + 확인 */
+  const fr = []; for (let i = 0; i < Math.max(8, F.length); i++) { const f = F[i]; fr.push(`<tr style="height:9mm"><td class="c">${i + 1}</td><td>${f ? `${f.item ? `<b>[${esc(f.item)}]</b> ` : ''}${esc(f.desc)}` : ''}</td><td class="c">${f && f.due ? dot(f.due) : ''}</td><td class="c">${f && f.done ? dot(f.done) : ''}</td><td class="c">${f && f.ver ? dot(f.ver) : ''}</td><td class="c">${box(f && (f.ph || []).length)}</td></tr>`); }
+  const er = (r.ext && r.ext.r) || {};
+  pages.push(pg(`<div class="sh">4. 지적사항 (공통) <span class="e">Findings (all parts)</span></div>
+    <table><colgroup><col style="width:7%"><col style="width:45%"><col style="width:12%"><col style="width:12%"><col style="width:12%"><col style="width:12%"></colgroup>
+    <tr><th>No.</th><th>지적 내용<small>Description</small></th><th>조치기한<small>Due date</small></th><th>조치완료일<small>Done</small></th><th>현장확인일<small>Verified</small></th><th>사진<small>Photo</small></th></tr>${fr.join('')}
+    <tr><td colspan="6">조치기한 연장 사유 Reason for extension:<br>${EXTR.map(([k, a, b]) => `${box(er[k])} ${a} ${b}`).join('  ')}${er.other ? ` (${esc(er.other)})` : ''}</td></tr>
+    <tr><td colspan="6"><table style="border:0"><tr><td style="border:0;width:34%">연장기한 Extended to: ${er.to ? dot(er.to) : ''}</td><td style="border:0;width:33%" class="sg">D.P 승인 Approved: ${sgImg(r.ext.a) || '(sign)'}</td><td style="border:0;width:33%" class="sg">D.P 종결확인 Closed: ${sgImg(r.ext.c) || '(sign)'}</td></tr></table></td></tr></table>
+    <div class="sh" style="margin-top:10px">5. 본선 및 회사 확인 <span class="e">Confirmation by ship & office</span></div>
+    <table><tr>${FINAL.map(([k, a, b]) => `<th>${a}${b ? `<small>${b}</small>` : ''}</th>`).join('')}</tr>
+    <tr style="height:22mm">${FINAL.map(([k]) => `<td class="sg c">${sgImg(r.fin[k])}</td>`).join('')}</tr>
+    <tr>${FINAL.map(([k]) => { const s = r.fin[k]; return `<td style="font-size:10pt">성명: ${sig(s) ? esc(s.name) : ''}<br>일자: ${sig(s) ? dot(ymd(s.at)) : ''}</td>`; }).join('')}</tr></table>`));
+  /* 별지 1 */
+  const slots = []; PARTS.forEach(p => p.items.forEach(it => { const x = r.parts[p.k].items[it.no] || {}, ids = (x.ph || []).filter(i => ph[i]);
+    if (!it.ph && !ids.length) return; if (it.q && !r.h.q && !ids.length) return; const lab = `${it.no} ${it.sh || it.t.replace('[현장] ', '')}`;
+    if (!ids.length) slots.push([null, lab]); else ids.forEach((id, j) => slots.push([ph[id], lab + (ids.length > 1 ? ` (${j + 1})` : '')])); }));
+  const grid = (S2, h) => { const rows = []; while (S2.length % 3) S2.push([null, '']); for (let i = 0; i < S2.length; i += 3) { const g = S2.slice(i, i + 3);
+      rows.push(`<tr>${g.map(([s]) => `<td class="ph" style="height:${h}mm">${s ? `<img src="${s}" style="max-height:${h - 2}mm">` : '(사진 Photo)'}</td>`).join('')}</tr><tr>${g.map(([, l]) => `<td class="cap">${esc(l)}</td>`).join('')}</tr>`); } return rows; };
+  const chunk = (rows, n) => { const o = []; for (let i = 0; i < rows.length; i += n) o.push(rows.slice(i, i + n)); return o; };
+  const a1 = grid(slots, slots.length > 15 ? 36 : 44), A1 = chunk(a1, slots.length > 15 ? 12 : 10);
+  A1.forEach((rows, i) => pages.push(pg(`<div class="sh">별지 1 – 점검항목 증빙사진 <span class="e">Annex 1 – Photo evidence for check items</span>${A1.length > 1 ? ` (${i + 1}/${A1.length})` : ''}</div><table>${rows.join('')}</table>`)));
+  /* 별지 2 */
+  const s2 = []; F.forEach((f, i) => (f.ph || []).filter(id => ph[id]).forEach(id => s2.push([ph[id], `지적 No.${i + 1}  제목: ${f.title || (f.desc || '').slice(0, 24)}`])));
+  while (s2.length < 6) s2.push([null, '지적 No.        제목:']);
+  const a2 = grid(s2, 50), A2 = chunk(a2, 8);
+  A2.forEach((rows, i) => pages.push(pg(`<div class="sh">별지 2 – 지적사항 사진 <span class="e">Annex 2 – Photos of findings</span>${A2.length > 1 ? ` (${i + 1}/${A2.length})` : ''}</div><table>${rows.join('')}</table>`)));
+  return `<div class="doc">${pages.join('')}</div>`; }
+
+async function viewPrint(r) { $('#app').innerHTML = header('보고서 보기', `${esc(r.h.ship)} · ${dot(r.h.date)}`, '#/r/' + r.id + '/C') + '<main><div class="empty">보고서를 만드는 중…</div></main>'; paintSync();
+  const html = await docHTML(r), P = $('#print'); P.innerHTML = `<div class="pvbar"><a class="btn s" href="#/r/${r.id}/C">‹ 돌아가기</a><span class="sp"></span><button class="btn s p" id="prB">🖨 인쇄 · PDF 저장</button><button class="btn s" id="htB">💾 HTML 파일 저장</button></div><div class="pv" id="pvw">${html}</div>`;
+  $('#app').style.display = 'none'; P.style.display = 'block'; window.scrollTo(0, 0);
+  const fit = () => { const w = P.clientWidth, k = Math.min(1, (w - 16) / 794); $('#pvw').style.zoom = k; }; fit(); addEventListener('resize', fit);
+  const miss = PARTS.filter(p => !partStat(r, p.k).signed).map(p => p.ko);
+  $('#prB').onclick = () => { if (miss.length) toast('서명 안 된 파트: ' + miss.join(', '), 3500); setTimeout(() => window.print(), miss.length ? 600 : 0); };
+  $('#htB').onclick = async () => { const css = [...document.querySelectorAll('style')].map(s => s.textContent).join('\n').match(/\/\* =+ 출력[\s\S]*$/);
+    const doc = `<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>감독 방선 보고서 ${esc(r.h.ship)} ${r.h.date}</title><style>body{margin:0;background:#E6E9EF;font-family:'Malgun Gothic',sans-serif}${css ? css[0] : ''}</style></head><body><div id="print"><div class="pv">${html}</div></div></body></html>`;
+    await saveFile(new Blob([doc], { type: 'text/html' }), `방선보고서_${(r.h.ship || '').replace(/\s+/g, '_')}_${r.h.date}.html`, '방선 보고서 (HTML)', { 'text/html': ['.html'] }); }; }
+
+/* ---------- 설정 ---------- */
+function viewSet() { const me = ME.get(), m = window.SJCLOUD && SJCLOUD.me ? SJCLOUD.me() : null;
+  $('#app').innerHTML = header('방선 보고서 설정', 'Settings', '#/') + `<main>
+    <div class="card"><h3>내 정보 <span class="en">Me</span></h3><p class="muted" style="margin-top:0">보고서를 열면 내 팀 파트가 먼저 열리고, 서명할 때 이름이 미리 채워집니다.</p>
+      <label class="f">이름 Name</label><input class="i" id="mn" value="${esc(me.name || '')}">
+      <label class="f">소속 팀 Team</label><div class="seg" id="mt">${PARTS.map(p => `<button data-k="${p.k}" class="${me.team === p.k ? 'on' : ''}">${p.ko.replace(' 파트', '')}</button>`).join('')}</div>
+      <button class="btn p w" id="msv" style="margin-top:12px">저장</button></div>
+    <div class="card"><h3>서버 동기화 <span class="en">Sync</span></h3><div class="kv"><b>기기 상태</b><span>${!m || m.status === 'none' ? '서버 미등록 — 앱 홈 › 설정에서 등록' : m.status === 'approved' ? `승인됨 (${m.role === 'office' ? '사무실' : '선박 ' + esc(m.ship || '')})` : m.status === 'pending' ? '사무실 승인 대기' : esc(m.status)}</span>
+      <b>마지막 동기화</b><span id="slast">—</span><b>보고서</b><span>${Object.values(R).filter(live).length}건</span></div>
+      <button class="btn w" id="snow" style="margin-top:12px">지금 동기화</button></div>
+    <div class="card"><h3>도움말</h3><ol style="margin:0;padding-left:20px;font-size:14px;line-height:1.7">
+      <li>방선한 감독 한 명이 '새 방선 시작'으로 보고서를 만듭니다 (선박·일자·항구·월간/분기).</li>
+      <li>각 팀 감독은 같은 보고서를 열어 <b>자기 파트</b>를 점검합니다 — Y/N/NA, ● 항목 사진, 필요하면 메모.</li>
+      <li>N(부적합)을 누르면 공통 지적사항을 바로 적습니다. 번호는 자동으로 이어집니다.</li>
+      <li>파트 점검이 끝나면 맨 아래 <b>점검 완료 · 서명</b> — 빠진 판정·사진이 있으면 알려 줍니다.</li>
+      <li>'확인·출력'에서 선장·기관장(본선), D.P.A·C.E.O(회사) 서명 후 <b>보고서 보기 · PDF 저장</b>.</li></ol></div></main>`;
+  let team = me.team || ''; $$('#mt button').forEach(b => b.onclick = () => { team = b.dataset.k; $$('#mt button').forEach(x => x.classList.toggle('on', x === b)); });
+  $('#msv').onclick = () => { ME.set({ name: $('#mn').value.trim(), team }); toast('저장했습니다'); go('#/'); };
+  $('#snow').onclick = syncNow; const s = window.SJCLOUD && SJCLOUD.state; if (s && s.last) $('#slast').textContent = hm(s.last); paintSync(); }
+
+/* ---------- 서버 동기화 (SEJUL cloud.js, 도구 이름 'vst') ---------- */
+function syncInfo() { const C = window.SJCLOUD; if (!C || !C.me) return ['', '이 기기만']; const m = C.me(), s = C.state || {};
+  if (!navigator.onLine) return ['warn', '오프라인']; if (!m || m.status === 'none') return ['', '서버 미등록']; if (m.status === 'pending') return ['warn', '승인 대기'];
+  if (m.status !== 'approved') return ['err', '동기화 해제']; if (s.err) return ['err', '동기화 오류']; if (s.busy) return ['ok', '동기화 중…']; if (LS.get('sejul_cloud_vst_dirty')) return ['warn', '보낼 변경']; return ['ok', s.last ? '동기화됨' : '대기']; }
+function paintSync() { const [c, t] = syncInfo(), d = $('#sdot'), x = $('#stxt'); if (d) d.className = 'sd ' + c; if (x) x.textContent = t; const b = $('#syncB'); if (b && !b.__s) { b.__s = 1; b.onclick = () => { const C = window.SJCLOUD, s = C && C.state; modal(`<h3>서버 동기화 <button class="x" data-x>✕</button></h3><p>${esc(syncInfo()[1])}${s && s.err ? '<br><span class="muted">' + esc(s.err) + '</span>' : ''}</p><p class="muted">감독들이 각자 쓴 파트는 서버를 거쳐 하나의 보고서로 합쳐집니다. 서버를 쓸 수 없으면 '확인·출력 › 파일로 내보내기'로 합칠 수 있습니다.</p><div class="row"><button class="btn sp" data-x>닫기</button><button class="btn p sp" id="sn2">지금 동기화</button></div>`, (m, close) => { $('#sn2', m).onclick = () => { close(); syncNow(); }; }); }; } }
+async function syncNow() { const C = window.SJCLOUD; if (!C || !C.sync || !C.A) return toast('서버 동기화를 쓸 수 없는 상태입니다 — 앱 홈 › 설정에서 기기를 등록하세요', 4000); paintSync(); const n = await C.sync(C.A, false); paintSync(); toast(C.state.err ? '동기화 오류: ' + C.state.err : n ? `받은 변경 ${n}건` : '최신 상태입니다', 3500); }
+window.SJ_VST = {
+  tool: 'vst',
+  pc: () => APP.get('pcname') || ME.get().name || 'phone',
+  files(m) { const out = [], cut = now() - 200 * 864e5, pushed = (() => { try { return JSON.parse(LS.get('sejul_cloud_vst_pushed') || '{}'); } catch (e) { return {}; } })(), pend = PEND.get();
+    for (const r of Object.values(R)) { if ((r.lu || 0) < cut || !r.h.ship) continue; if (m && m.role === 'ship' && r.h.ship !== m.ship) continue;
+      out.push({ name: `VST_${r.id}_${DEV}.json`, ship: r.h.ship, core: r, obj: { kind: 'SEJUL-VST', v: 1, rep: r } }); }
+    /* 이 기기에서 찍은 사진: 한 장씩 따로 (한 번만 올라감) */
+    for (const id of [...pend]) { const nm = `VSTP_${id}.json`; if (pushed[nm]) { pend.delete(id); continue; } const d = PH.get(id); if (!d) continue; const rid = (Object.values(R).find(r => photoIds(r).has(id)) || {}).id; const r = R[rid];
+      if (!r) continue; if (m && m.role === 'ship' && r.h.ship !== m.ship) continue; out.push({ name: nm, ship: r.h.ship, core: id, obj: { kind: 'SEJUL-VSTP', id, rid, data: d } }); }
+    PEND.set(pend); return out; },
+  async apply(o) { if (!o) return 0; if (o.kind === 'SEJUL-VST' && o.rep) return applyRep(o.rep); if (o.kind === 'SEJUL-VSTP' && o.id && o.data) { if (PHK.has(o.id)) return 0; await photoPut(o.id, o.data, o.rid, false); return 1; } return 0; },
+  async after(n) { const typing = document.activeElement && /INPUT|TEXTAREA/.test(document.activeElement.tagName); if (!$('.mb') && !typing && route().v !== 'p') render(); toast('🔄 다른 감독의 내용을 받았습니다', 2500); paintSync(); }
+};
+
+/* ---------- 시작 ---------- */
+(async function boot() {
+  /* PC 넓은 화면: 앱 공통 왼쪽 메뉴 */
+  try { if (UI && UI.rail && UI.css && !(UI.phone && UI.phone()) && innerWidth >= 900) { const st = document.createElement('style'); st.textContent = UI.css; document.head.appendChild(st); const w = document.createElement('div'); w.innerHTML = UI.rail('vst', '../'); [...w.children].forEach(x => document.body.appendChild(x)); document.body.classList.add('rail'); UI.syncPaint && UI.syncPaint(); } } catch (e) { console.warn('rail', e); }
+  try { await loadAll(); } catch (e) { $('#app').innerHTML = '<main><div class="issues">이 기기의 저장소를 열 수 없습니다 (사생활 보호 모드?): ' + esc(e.message || e) + '</div></main>'; return; }
+  /* 올릴 사진 미리 불러오기 */
+  for (const id of PEND.get()) { try { await photo(id); } catch (e) { } }
+  render();
+  try { if (window.SJCLOUD && SJCLOUD.start) { SJCLOUD.start(window.SJ_VST); setInterval(paintSync, 5000); } } catch (e) { console.warn('cloud', e); }
+})();
+</script>
+</body></html>
