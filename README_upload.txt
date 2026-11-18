@@ -1,7 +1,7 @@
-SEJUL app update v2026.11.18.1900
+SEJUL app update v2026.11.18.2000
 
 Upload: github.com/sejulsm/sejul -> Add file -> Upload files -> drag all files (keep tools folder) -> Commit
 (Overwrites only these 9 files.)
 
-v4: office device first setup now asks for the team (SQOT / TST / MAT / All).
-Includes all v2/v3 changes.
+v5 (tools/vst.html): crew interview record removed (screen + print); one photo shared by item and its finding; part signature auto-fills team and name; items without photo requirement show no photo/album/memo buttons.
+Includes all v2-v4 changes.

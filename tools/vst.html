@@ -198,7 +198,7 @@ const PARTS = [
     I('T8', '유류 수급·이송 절차 준수', 'Bunkering / transfer procedure followed.', '', '', 0, 'SMS 6.20.7', 1)] },
   { k: 'M', ko: '해무 파트', en: 'Marine', sup: ['해무 감독 (점검)', 'Marine superintendent'], items: [
     I('M1', '근로·휴식시간 기록', 'Work / rest hour records', '기록 유지 및 기준 준수 확인', 'Work / rest hours recorded and limits complied with.', 1, '선원법', 0, '근로·휴식시간 기록'),
-    I('M2', '승무원 면담', 'Crew interview', '건의·불만·복지 사항 청취 (아래 면담란 기재)', 'Suggestions, complaints, welfare (record below).', 0, '선원법'),
+    I('M2', '승무원 면담', 'Crew interview', '건의·불만·복지 사항 청취', 'Suggestions, complaints, welfare.', 0, '선원법'),
     I('M3', '[현장] 거주구역·주방·식료품 창고 위생 및 정리정돈', '[Site] Accommodation, galley and provision store hygiene.', '', '', 1, '선원법', 0, '거주구역·주방 위생'),
     I('M4', '선원 면허·교육 증서 유효 및 승무정원 충족', 'Crew licences / training certificates valid; safe manning met.', '', '', 0, '선박직원법', 1),
     I('M5', '신규 승선자 직무 숙지 교육 실시 및 기록', 'Familiarization for new joiners done and recorded.', '', '', 1, 'SMS 5.3', 1, '(분기) 직무 숙지 교육'),
@@ -230,6 +230,9 @@ const TEAMS = [['SQOT', 'S', '안품', 'Safety & Quality'], ['TST', 'T', '공무
 const teamCode = () => APP.get('team') || '';
 const myPart = () => { const t = TEAMS.find(x => x[0] === teamCode()); return t ? t[1] : ''; };
 const isOffice = () => role() === 'office';
+/* 서명자 이름: 방선 보고서 설정의 이름 → 없으면 기기 이름(앱 등록)에서 '스마트폰·PC' 같은 말을 뺀 것 */
+const myName = () => { const n = (ME.get().name || '').trim(); if (n) return n; return String(APP.get('pcname') || '').replace(/^(test|테스트)\s*/i, '').replace(/사무실\s*-?\s*/g, '').replace(/\s*(스마트폰|휴대폰|핸드폰|폰|노트북|태블릿|PC|피씨|데스크탑)\s*$/i, '').trim(); };
+const teamLabel = () => { const t = TEAMS.find(x => x[0] === teamCode()); return t ? (t[0] === 'ALL' ? t[2] : `${t[0]} ${t[2]}`) : ''; };
 const visParts = () => { const k = myPart(); return isOffice() && k ? [k] : ['S', 'T', 'M']; };
 const myShip = () => { try { const m = window.SJCLOUD && SJCLOUD.me && SJCLOUD.me(); if (m && m.role === 'ship' && m.ship) return m.ship; } catch (e) { } return role() === 'ship' ? (APP.get('vessel') || '') : ''; };
 
@@ -261,10 +264,11 @@ const itemsOf = (r, k) => PART[k].items.filter(it => !it.q || r.h.q);
 const findings = r => Object.entries(r.fnd || {}).filter(([, f]) => f && !f.del).map(([id, f]) => Object.assign({ id }, f)).sort((a, b) => (a.at || 0) - (b.at || 0));
 function photoIds(r) { const s = new Set(); PARTS.forEach(p => Object.values(r.parts[p.k].items).forEach(x => (x && x.ph || []).forEach(i => s.add(i)))); findings(r).forEach(f => [...(f.ph || []), ...(f.cph || [])].forEach(i => s.add(i))); return s; }
 function partStat(r, k) { const its = itemsOf(r, k), P = r.parts[k], done = its.filter(it => P.items[it.no] && P.items[it.no].r).length; return { n: its.length, done, signed: sig(P.sign), name: P.sign && P.sign.name }; }
+/* 같은 항목의 지적사항 사진 = 항목 증빙사진 (한 번만 촬영) */
+const itemPhotos = (r, no) => { const x = (r.parts[ITEM[no].part].items[no] || {}); const s = new Set(x.ph || []); findings(r).filter(f => f.item === no).forEach(f => (f.ph || []).forEach(i => s.add(i))); return [...s]; };
 function partIssues(r, k) { const P = r.parts[k], out = [], F = findings(r);
-  itemsOf(r, k).forEach(it => { const x = P.items[it.no] || {}; if (!x.r) out.push(`${it.no} — 판정(Y/N/NA)이 없습니다`); else if (it.ph && x.r !== 'NA' && !(x.ph || []).length) out.push(`${it.no} — 증빙사진이 필요합니다`);
+  itemsOf(r, k).forEach(it => { const x = P.items[it.no] || {}; if (!x.r) out.push(`${it.no} — 판정(Y/N/NA)이 없습니다`); else if (it.ph && x.r !== 'NA' && !itemPhotos(r, it.no).length) out.push(`${it.no} — 증빙사진이 필요합니다`);
     if (x.r === 'N' && !F.some(f => f.item === it.no)) out.push(`${it.no} — N(부적합)인데 지적사항이 없습니다`); });
-  if (k === 'M') { const m2 = P.items.M2 || {}; if (m2.r === 'Y' && !(P.iv && (P.iv.txt || '').trim())) out.push('M2 — 승무원 면담 내용을 적어 주세요'); }
   return out; }
 
 async function loadAll() { const a = await IDB.all('r'); R = {}; (a || []).forEach(r => R[r.id] = norm(r)); try { PHK = new Set(await IDB.keys('p')); } catch (e) { } }
@@ -293,14 +297,15 @@ function modal(html, onMount) { const b = document.createElement('div'); b.class
 function ask(msg, ok, okTxt, danger) { modal(`<h3>확인 <button class="x" data-x>✕</button></h3><p style="white-space:pre-wrap">${esc(msg)}</p><div class="row"><button class="btn sp" data-x>취소</button><button class="btn ${danger ? 'r' : 'p'} sp" id="okb">${esc(okTxt || '확인')}</button></div>`, (m, close) => { $('#okb', m).onclick = () => { close(); ok(); }; }); }
 
 /* 서명 패드 */
-function signPad(title, name0, cb) {
+function signPad(title, name0, cb, who) {
   modal(`<h3>✍ ${title} <button class="x" data-x>✕</button></h3>
-    <label class="f">성명 Name</label><input class="i" id="sn" value="${esc(name0 || '')}" placeholder="이름을 입력" autocomplete="name">
+    ${who && name0 ? `<div class="row" style="background:#F4F6FA;border-radius:12px;padding:10px 12px"><div><div class="muted" style="font-size:13px">${esc(who)}</div><b style="font-size:18px" id="snv">${esc(name0)}</b></div><span class="sp"></span><button class="btn s" id="snch">이름 바꾸기</button></div><input class="i" id="sn" value="${esc(name0)}" hidden autocomplete="name">`
+      : `<label class="f">성명 Name</label><input class="i" id="sn" value="${esc(name0 || '')}" placeholder="이름을 입력" autocomplete="name">`}
     <label class="f">서명 Signature <span class="muted">— 아래 칸에 손가락으로 서명</span></label><canvas class="pad" id="pad"></canvas>
     <div class="row" style="margin-top:12px"><button class="btn" id="clr">지우기</button><span class="sp"></span><button class="btn" data-x>취소</button><button class="btn p" id="sok">서명 저장</button></div>`, (m, close) => {
     const c = $('#pad', m), ctx = c.getContext('2d'), dpr = Math.max(1, window.devicePixelRatio || 1); let drawn = false, last = null;
     const fit = () => { const r = c.getBoundingClientRect(); c.width = r.width * dpr; c.height = r.height * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.lineWidth = 2.6; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#0B1B3F'; };
-    requestAnimationFrame(fit);
+    requestAnimationFrame(fit); const ch = $('#snch', m); if (ch) ch.onclick = () => { const i = $('#sn', m); i.hidden = false; ch.parentElement.hidden = true; i.focus(); i.select(); };
     const pos = e => { const r = c.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
     c.addEventListener('pointerdown', e => { c.setPointerCapture(e.pointerId); last = pos(e); ctx.beginPath(); ctx.arc(last[0], last[1], 1.2, 0, 7); ctx.fillStyle = '#0B1B3F'; ctx.fill(); drawn = true; });
     c.addEventListener('pointermove', e => { if (!last) return; const p = pos(e); ctx.beginPath(); ctx.moveTo(last[0], last[1]); ctx.lineTo(p[0], p[1]); ctx.stroke(); last = p; });
@@ -409,15 +414,15 @@ function viewRep(r, tab) { const VP = visParts(); tab = tab || S.tab || myPart()
   if ('STM'.includes(tab)) partView(r, tab); else if (tab === 'F') findView(r); else confView(r);
   paintSync(); }
 
-function itemCard(r, it, locked) { const P = r.parts[it.part], x = P.items[it.no] || {}, n = (x.ph || []).length, need = it.ph && x.r && x.r !== 'NA' && !n;
+function itemCard(r, it, locked) { const P = r.parts[it.part], x = P.items[it.no] || {}, all = itemPhotos(r, it.no), n = all.length, need = it.ph && x.r && x.r !== 'NA' && !n;
   const yb = (v, c, ko) => `<button class="${c} ${x.r === v ? 'on' : ''}" data-r="${v}" ${locked ? 'disabled' : ''}>${v}<small>${ko}</small></button>`;
   return `<div class="it ${x.r === 'Y' ? 'done' : x.r === 'N' ? 'bad' : x.r === 'NA' ? 'na' : ''}" data-no="${it.no}">
     <div class="nh"><span class="no">${it.no}</span><div class="tx">${it.p ? `<b>${esc(it.t)}</b> <span class="en">${esc(it.te)}</span><div class="pt">· ${esc(it.p)}</div><div class="pe">${esc(it.pe)}</div>` : `<b style="font-weight:600">${esc(it.t)}</b><div class="pe">${esc(it.te)}</div>`}
       <div class="tags"><span class="tag">근거 ${esc(it.b)}</span>${it.ph ? `<span class="tag ${need ? 'miss' : 'ph'}">● 사진 필수${need ? ' — 미첨부' : ''}</span>` : ''}</div></div></div>
     <div class="yn">${yb('Y', 'y', '적합')}${yb('N', 'n', '부적합')}${yb('NA', 'x', '해당없음')}</div>
     ${x.m ? `<div class="memo">📝 ${esc(x.m)}</div>` : ''}
-    ${n ? `<div class="th">${x.ph.map(id => `<img data-ph="${id}" alt="사진" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=">`).join('')}</div>` : ''}
-    ${locked ? '' : `<div class="act"><button class="btn s" data-a="cam">📷 촬영</button><button class="btn s" data-a="alb">🖼 앨범</button><button class="btn s" data-a="memo">📝 메모</button>${x.r === 'N' ? '<button class="btn s r" data-a="fnd">＋ 지적사항</button>' : ''}</div>`}</div>`; }
+    ${n ? `<div class="th">${all.map(id => `<img data-ph="${id}" alt="사진" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=">`).join('')}</div>${x.r === 'N' && findings(r).some(f => f.item === it.no) ? '<div class="muted" style="font-size:12.5px;margin-top:4px">📎 이 항목 사진은 지적사항 사진으로도 함께 쓰입니다</div>' : ''}` : ''}
+    ${locked || (!it.ph && x.r !== 'N') ? '' : `<div class="act">${it.ph ? '<button class="btn s" data-a="cam">📷 촬영</button><button class="btn s" data-a="alb">🖼 앨범</button><button class="btn s" data-a="memo">📝 메모</button>' : ''}${x.r === 'N' ? '<button class="btn s r" data-a="fnd">＋ 지적사항</button>' : ''}</div>`}</div>`; }
 
 async function fillThumbs(root) { for (const im of $$('img[data-ph]', root)) { const s = await photo(im.dataset.ph); if (s) im.src = s; else im.style.background = '#EEF1F5'; } }
 
@@ -428,9 +433,6 @@ function partView(r, k) { const p = PART[k], P = r.parts[k], locked = sig(P.sign
     ${locked ? `<div class="lock" style="margin-top:12px">✅ <b>${esc(P.sign.name)}</b> 감독 서명 완료 (${hm(P.sign.at)}) — 수정하려면 아래에서 서명을 취소하세요.</div>` : '<div style="height:10px"></div>'}
     ${mon.map(it => itemCard(r, it, locked)).join('')}
     ${qi.length ? (r.h.q ? `<div class="qh">분기 추가 항목<small>Quarterly add-on</small></div>${qi.map(it => itemCard(r, it, locked)).join('')}` : `<div class="qh" style="background:#F1F4F9;color:var(--mut)">분기 추가 항목 ${qi.length}개는 분기 방선 때만 점검합니다<small>Quarterly add-on is hidden for monthly visits</small></div>`) : ''}
-    ${k === 'M' ? `<div class="card"><h3>승무원 면담 기록 <span class="en">Crew interview</span></h3>
-      <label class="f">면담 인원 / 직책</label><input class="i" id="ivw" value="${esc(P.iv && P.iv.who || '')}" ${locked ? 'disabled' : ''} placeholder="예: 갑판장, AB 2명, 조리장">
-      <label class="f">건의·불만·복지 사항</label><textarea class="i" id="ivt" ${locked ? 'disabled' : ''}>${esc(P.iv && P.iv.txt || '')}</textarea></div>` : ''}
     <div class="card" id="signC"><h3>${L(p.sup[0], p.sup[1])}</h3>
       ${locked ? `<div class="sigbox"><img src="${P.sign.img}" alt="서명"><div><b>${esc(P.sign.name)}</b><div class="muted">${hm(P.sign.at)}</div></div></div><div class="row" style="margin-top:12px"><button class="btn r s" id="unsig">서명 취소 (수정하기)</button></div>`
         : `<div id="iss"></div><button class="btn g w" id="dosig">✍ ${p.ko} 점검 완료 · 서명</button>`}</div>`;
@@ -441,14 +443,16 @@ function partView(r, k) { const p = PART[k], P = r.parts[k], locked = sig(P.sign
       if (x.r === 'N' && !findings(r).some(f => f.item === no)) { partView(r, k); findEdit(r, null, no); return; } refreshItem(r, it, el); });
     $$('[data-a]', el).forEach(b => b.onclick = async () => { const a = b.dataset.a;
       if (a === 'cam' || a === 'alb') { const shots = await pickPhotos(a === 'cam'); if (!shots.length) return; const x = Object.assign({}, P.items[no] || {}); x.ph = [...(x.ph || [])];
-        for (const s of shots) { const id = uid('P'); await photoPut(id, s, r.id, true); x.ph.push(id); } x.u = now(); P.items[no] = x; await save(r); refreshItem(r, it, el); toast(`사진 ${shots.length}장 첨부`); }
+        const ids = []; for (const s of shots) { const id = uid('P'); await photoPut(id, s, r.id, true); x.ph.push(id); ids.push(id); } x.u = now(); P.items[no] = x;
+        if (x.r === 'N') { const f = findings(r).find(f => f.item === no); if (f) { const o = Object.assign({}, r.fnd[f.id]); o.ph = [...new Set([...(o.ph || []), ...ids])]; o.u = now(); r.fnd[f.id] = o; } }
+        await save(r); refreshItem(r, it, el); toast(`사진 ${shots.length}장 첨부`); }
       if (a === 'memo') memoEdit(P.items[no] && P.items[no].m || '', async v => { const x = Object.assign({}, P.items[no] || {}); x.m = v; x.u = now(); P.items[no] = x; await save(r); refreshItem(r, it, el); });
       if (a === 'fnd') findEdit(r, null, no); });
-    el.addEventListener('click', e => { const im = e.target.closest('img[data-ph]'); if (!im) return; viewPhoto(im.dataset.ph, locked ? null : async () => { const x = Object.assign({}, P.items[no]); x.ph = (x.ph || []).filter(i => i !== im.dataset.ph); x.u = now(); P.items[no] = x; await save(r); refreshItem(r, it, el); }); }); });
-  if (k === 'M' && !locked) { const sv = async () => { P.iv = { who: $('#ivw').value, txt: $('#ivt').value, u: now() }; await save(r, true); }; $('#ivw').onchange = sv; $('#ivt').onchange = sv; $('#ivt').oninput = () => { clearTimeout(sv.t); sv.t = setTimeout(sv, 800); }; }
-  const ds = $('#dosig'); if (ds) ds.onclick = async () => { if (k === 'M' && $('#ivt')) { P.iv = { who: $('#ivw').value, txt: $('#ivt').value, u: now() }; await save(r, true); }
+    el.addEventListener('click', e => { const im = e.target.closest('img[data-ph]'); if (!im) return; viewPhoto(im.dataset.ph, locked ? null : async () => { const id = im.dataset.ph, x = Object.assign({}, P.items[no] || {}); x.ph = (x.ph || []).filter(i => i !== id); x.u = now(); P.items[no] = x;
+      findings(r).filter(f => f.item === no && (f.ph || []).includes(id)).forEach(f => { const o = Object.assign({}, r.fnd[f.id]); o.ph = o.ph.filter(i => i !== id); o.u = now(); r.fnd[f.id] = o; }); await save(r); refreshItem(r, it, el); }); }); });
+  const ds = $('#dosig'); if (ds) ds.onclick = async () => {
     const is = partIssues(r, k); if (is.length) { $('#iss').innerHTML = `<div class="issues"><b>서명 전에 확인해 주세요 (${is.length})</b><ul style="margin:6px 0 0;padding-left:18px">${is.map(s => `<li>${esc(s)}</li>`).join('')}</ul></div>`; $('#iss').scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
-    const me = ME.get(); signPad(`${p.sup[0]}`, me.team === k ? me.name : (me.name || ''), async s => { P.sign = s; await save(r); if (!me.name) ME.set(Object.assign(me, { name: s.name, team: me.team || k })); toast(`${p.ko} 서명 완료`); viewRep(r, k); }); };
+    const me = ME.get(); signPad(`${p.sup[0]}`, myName(), async s => { s.team = teamCode(); P.sign = s; await save(r); if (me.name !== s.name) ME.set(Object.assign(me, { name: s.name })); toast(`${p.ko} 서명 완료`); viewRep(r, k); }, `${teamLabel() || p.ko.replace(' 파트', '')} · ${APP.get('pcname') || ''}`); };
   const us = $('#unsig'); if (us) us.onclick = () => ask(`${p.ko} 서명을 취소하고 수정할까요?\n수정 후 다시 서명해야 합니다.`, async () => { P.sign = { cleared: true, u: now() }; await save(r); viewRep(r, k); }, '서명 취소', true); }
 
 function refreshItem(r, it, el) { /* 파트 화면을 다시 그리되 스크롤 위치 유지 */
@@ -466,14 +470,14 @@ function findView(r) { const F = findings(r), m = $('#pm');
     <button class="btn p w" id="fadd">＋ 지적사항 추가 <span class="en" style="color:#C9D6EE">Add finding</span></button>`;
   $$('[data-f]', m).forEach(el => el.onclick = () => findEdit(r, el.dataset.f)); $('#fadd').onclick = () => findEdit(r, null, ''); }
 
-function findEdit(r, fid, item0) { const f = fid ? Object.assign({}, r.fnd[fid]) : { item: item0 || '', desc: '', due: '', done: '', ver: '', title: '', ph: [] }, no = fid ? findings(r).findIndex(x => x.id === fid) + 1 : findings(r).length + 1;
+function findEdit(r, fid, item0) { const f = fid ? Object.assign({}, r.fnd[fid]) : { item: item0 || '', desc: '', due: '', done: '', ver: '', title: '', ph: item0 && ITEM[item0] ? [...((r.parts[ITEM[item0].part].items[item0] || {}).ph || [])] : [] }, no = fid ? findings(r).findIndex(x => x.id === fid) + 1 : findings(r).length + 1;
   const opts = PARTS.map(p => `<optgroup label="${p.ko}">${p.items.filter(it => !it.q || r.h.q).map(it => `<option value="${it.no}" ${f.item === it.no ? 'selected' : ''}>${it.no} ${esc(it.sh || it.t.replace('[현장] ', ''))}</option>`).join('')}</optgroup>`).join('');
   let ph = [...(f.ph || [])], cph = [...(f.cph || [])];
   modal(`<h3>지적사항 No.${no} <button class="x" data-x>✕</button></h3>
     <label class="f">관련 항목 Item No.</label><select class="i" id="fi"><option value="">기타 (항목 없음)</option>${opts}</select>
     <label class="f">지적 내용 Description</label><textarea class="i" id="fdsc" placeholder="무엇이, 어디서, 어떻게 — 부적합 내용">${esc(f.desc)}</textarea>
     <label class="f">조치기한 Due date</label><input class="i" type="date" id="fdue" value="${esc(f.due)}">
-    <label class="f">지적 사진 Photo <span class="muted">(별지 2 · 지적 당시)</span></label><div class="row"><button class="btn s" id="fcam">📷 촬영</button><button class="btn s" id="falb">🖼 앨범</button></div><div class="th" id="fth"></div>
+    <label class="f">지적 사진 Photo <span class="muted">(별지 2 · 지적 당시 — 관련 항목 증빙사진으로도 쓰임)</span></label><div class="row"><button class="btn s" id="fcam">📷 촬영</button><button class="btn s" id="falb">🖼 앨범</button></div><div class="th" id="fth"></div>
     <label class="f">사진 제목 Title</label><input class="i" id="ftt" value="${esc(f.title)}" placeholder="별지 2에 표시될 제목 (비우면 내용 앞부분)">
     <details style="margin-top:12px"${f.done || f.ver || (f.cph || []).length ? ' open' : ''}><summary style="font-weight:700">시정조치 결과 (조치 후 입력) <span class="en">Corrective action</span></summary>
       <label class="f">시정조치 완료 사진 <span class="muted">(별지 2 · 조치 완료)</span></label><div class="row"><button class="btn s" id="ccam">📷 촬영</button><button class="btn s" id="calb">🖼 앨범</button></div><div class="th" id="cth"></div>
@@ -550,7 +554,7 @@ async function docHTML(r) { const ph = {}; for (const id of photoIds(r)) ph[id] 
       <table><colgroup><col style="width:7%"><col style="width:53%"><col style="width:5%"><col style="width:5%"><col style="width:6%"><col style="width:6%"><col style="width:18%"></colgroup>
       <tr><th>No.</th><th>점검항목 Check item</th><th>Y</th><th>N</th><th>NA</th><th>사진</th><th>근거</th></tr>
       ${body}
-      ${part === 1 ? '</table>' : `${p.k === 'M' ? `<tr><td colspan="7"><b>승무원 면담 기록</b> <span class="g">Crew interview</span><br>면담 인원/직책: ${esc(P.iv && P.iv.who || '')}<br><span style="white-space:pre-wrap">${esc(P.iv && P.iv.txt || '')}</span></td></tr>` : ''}
+      ${part === 1 ? '</table>' : `
       </table><table style="margin-top:-1px"><colgroup><col style="width:30%"><col style="width:22%"><col style="width:28%"><col style="width:20%"></colgroup>
       <tr style="height:16mm"><td class="lb">${p.sup[0]}<small>${p.sup[1]}</small></td><td>성명 <small class="g">Name:</small><br>${sig(s) ? esc(s.name) : ''}</td><td class="sg">${sig(s) ? sgImg(s) : '서명 <small class="g">Sign:</small>'}</td><td>일자 <small class="g">Date:</small><br>${sig(s) ? dot(ymd(s.at)) : ''}</td></tr></table>`}`; };
   /* 파트: 안품은 길어서 두 쪽, 공무·해무 각 한 쪽 */
@@ -572,7 +576,7 @@ async function docHTML(r) { const ph = {}; for (const id of photoIds(r)) ph[id] 
     <tr style="height:22mm">${FINAL.map(([k]) => `<td class="sg c">${sgImg(r.fin[k])}</td>`).join('')}</tr>
     <tr>${FINAL.map(([k]) => { const s = r.fin[k]; return `<td style="font-size:10pt">성명: ${sig(s) ? esc(s.name) : ''}<br>일자: ${sig(s) ? dot(ymd(s.at)) : ''}</td>`; }).join('')}</tr></table>`));
   /* 별지 1 */
-  const slots = []; PARTS.forEach(p => p.items.forEach(it => { const x = r.parts[p.k].items[it.no] || {}, ids = (x.ph || []).filter(i => ph[i]);
+  const slots = []; PARTS.forEach(p => p.items.forEach(it => { const x = r.parts[p.k].items[it.no] || {}, own = (x.ph || []).filter(i => ph[i]), ids = own.length ? own : itemPhotos(r, it.no).filter(i => ph[i]).slice(0, 1);
     if (!it.ph && !ids.length) return; if (it.q && !r.h.q && !ids.length) return; const lab = `${it.no} ${it.sh || it.t.replace('[현장] ', '')}`;
     if (!ids.length) slots.push([null, lab]); else ids.forEach((id, j) => slots.push([ph[id], lab + (ids.length > 1 ? ` (${j + 1})` : '')])); }));
   const grid = (S2, h) => { const rows = []; while (S2.length % 3) S2.push([null, '']); for (let i = 0; i < S2.length; i += 3) { const g = S2.slice(i, i + 3);
