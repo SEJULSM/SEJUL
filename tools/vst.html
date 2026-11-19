@@ -89,6 +89,26 @@ textarea.i{min-height:84px;resize:vertical}
 .sigbox img{height:56px;max-width:180px;background:#fff;border:1px solid var(--line);border-radius:8px}
 .issues{background:var(--errBg);border:1px solid #F3C4C4;border-radius:12px;padding:10px 12px;font-size:14px;margin:10px 0}
 .issues li{margin:2px 0}
+/* 항목 도구줄 (미판정만 · 다음 · 영문 접기) */
+.itb{position:sticky;top:calc(58px + 54px + env(safe-area-inset-top));z-index:39;display:flex;gap:6px;align-items:center;flex-wrap:wrap;background:var(--bg);padding:8px 0;margin:6px 0 4px}
+@media(min-width:900px){.itb{top:calc(58px + 52px)}}
+body.sjm-on .itb{top:162px}
+.itb .btn{min-height:34px;padding:4px 10px;font-size:14px}
+.itb .btn.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+body.noen .it .pe,body.noen .it .tx .en,body.noen .spc .sph small{display:none}
+.it.flash{box-shadow:0 0 0 3px var(--gold)}
+/* 도움말 ? */
+.hp{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;border:1px solid var(--line);background:#fff;color:var(--mut);font-size:13px;font-weight:800;padding:0;vertical-align:middle;margin-left:4px;cursor:pointer}
+/* 내 할 일 */
+.todo{border:1.5px solid var(--gold);background:#FFFCF0}
+.todo .tl{display:flex;align-items:center;gap:8px;padding:9px 2px;border-bottom:1px solid #F1E7C6;cursor:pointer}
+.todo .tl:last-child{border-bottom:0}
+.todo .tl b{flex:1;min-width:0;font-size:15px}
+.todo .tl small{color:var(--mut)}
+/* PC 두 칸 */
+@media(min-width:1100px){body.wide main.two{max-width:1500px;display:grid;grid-template-columns:minmax(0,1fr) 460px;gap:18px;align-items:start}
+ body.wide .sumP{position:sticky;top:80px;max-height:calc(100vh - 100px);overflow:auto}}
+.card.rep.sel{outline:2.5px solid var(--navy)}
 /* 공무팀 특별 점검 */
 .spc .hn{display:flex;align-items:center;gap:8px}
 .spc .hn .no{background:var(--navy);color:#fff;border-radius:8px;font-weight:700;font-size:14px;padding:3px 10px}
@@ -307,6 +327,10 @@ async function photo(id) { if (PH.has(id)) return PH.get(id); const o = await ID
 async function photoPut(id, data, rid, mine) { PH.set(id, data); PHK.add(id); await IDB.put('p', { id, data, rid, at: now() }); if (mine) { const s = PEND.get(); s.add(id); PEND.set(s); } }
 
 /* ---------- 보고서 구조 ---------- */
+/* 도움말: 설명 글을 ? 버튼 뒤로 */
+const hp = t => `<button type="button" class="hp" data-help="${esc(t)}" aria-label="도움말">?</button>`;
+document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-help]'); if (!b) return; e.preventDefault(); e.stopPropagation(); modal(`<h3>도움말 <button class="x" data-x>✕</button></h3><p style="white-space:pre-wrap;line-height:1.7">${b.dataset.help}</p><button class="btn p w" data-x>확인</button>`); }, true);
+try { if (localStorage.getItem('sejul_vst_noen') === '1') document.documentElement.classList.add('noen-pending'); } catch (e) { }
 const MYUID = () => { try { const u = window.SJCLOUD && SJCLOUD.user && SJCLOUD.user(); return (u && u.uid) || ''; } catch (e) { return ''; } };
 /* 서명이 하나도 없는 보고서·특별점검인지 (작성 취소 가능 조건) */
 const noSignR = r => !PARTS.some(p => sig(r.parts[p.k] && r.parts[p.k].sign)) && !Object.values(r.fin || {}).some(sig) && !sig((r.ext || {}).a) && !sig((r.ext || {}).c);
@@ -440,7 +464,7 @@ function repState(x) { const sp = PARTS.map(p => partStat(x, p.k)), all = sp.eve
   return { sp, all, fin, done: all && fin === 4, mine: myPart() ? sp[PARTS.findIndex(p => p.k === myPart())] : null }; }
 function repCard(x) { const st = repState(x), F = findings(x), VP = visParts(), open = F.filter(f => !f.done).length;
   const c = SHIP() ? '' : PARTS.map((p, i) => { const s = st.sp[i], me = VP.length === 1 && VP[0] === p.k; return `<span class="chip ${s.signed ? 'ok' : s.done ? 'warn' : ''}" ${me ? 'style="outline:2px solid var(--navy)"' : ''}>${p.k} ${p.ko.replace(' 파트', '')} ${s.signed ? '✓' : s.done + '/' + s.n}</span>`; }).join('');
-  return `<div class="card rep" data-open="${x.id}" style="cursor:pointer"><div class="top"><b>${esc(x.h.ship || '선박 미지정')}</b><span class="muted">${dot(x.h.date)}${x.h.port ? ' · ' + esc(x.h.port) : ''}</span><span class="sp"></span><span class="chip ${x.h.q ? 'q' : ''}">${x.h.q ? '분기' : '월간'}</span><button class="btn s" data-menu="${x.id}" aria-label="메뉴" style="min-height:34px;padding:4px 10px">⋯</button></div>
+  return `<div class="card rep" data-open="${x.id}" style="cursor:pointer"><div class="top"><b>${esc(x.h.ship || '선박 미지정')}</b><span class="muted">${dot(x.h.date)}${x.h.port ? ' · ' + esc(x.h.port) : ''}</span><span class="sp"></span><button class="btn s" data-pv="${x.id}" title="보고서 보기 · 출력" style="min-height:34px;padding:4px 10px">📄</button><span class="chip ${x.h.q ? 'q' : ''}">${x.h.q ? '분기' : '월간'}</span><button class="btn s" data-menu="${x.id}" aria-label="메뉴" style="min-height:34px;padding:4px 10px">⋯</button></div>
     <div class="chips">${c}<span class="chip ${open ? 'err' : F.length ? 'ok' : ''}">지적 ${F.length}${open && open !== F.length ? ` (미조치 ${open})` : open ? ' 미조치' : ''}</span><span class="chip ${st.fin === 4 ? 'ok' : ''}">확인 ${st.fin}/4</span></div></div>`; }
 /* ---------- 홈: [방선 보고서] [공무 특별점검] ---------- */
 const homeSeg = () => canSp() ? `<div class="seg" style="margin-bottom:12px"><button data-home="rep" class="${S.home !== 'sp' ? 'on' : ''}">📄 방선 보고서</button><button data-home="sp" class="${S.home === 'sp' ? 'on' : ''}">🔧 공무 특별점검 <span style="font-weight:400;font-size:12px">사내용</span></button></div>` : '';
@@ -460,11 +484,12 @@ function viewListSp() { const ms = myShip(); let list = Object.values(XS).filter
   $('#app').innerHTML = header('공무팀 특별 점검', 'Technical Team Special Inspection · 사내용') + `<main>
     <style>.vg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}@media(min-width:640px){.vg{grid-template-columns:repeat(4,minmax(0,1fr))}}.vs{text-align:left;border:1px solid var(--line);background:#fff;border-radius:10px;padding:6px 9px;min-width:0}.vs b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vs small{display:block;font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vs.no{background:#F7F9FC}.vs.no b{color:var(--mut);font-weight:600}.vs.ok{border-color:#BFE5CF;background:var(--okBg)}.vs.warn{border-color:#F0C46A;background:var(--warnBg)}.sec{display:flex;align-items:center;gap:8px;margin:18px 0 8px}.sec h3{margin:0;white-space:nowrap}</style>
     ${homeSeg()}
+    ${CEO() ? '' : todoHTML()}
     <div class="row" style="margin-bottom:12px">${CEO() ? '<span class="sp muted" style="font-size:13px">🔒 대표이사: 보기 · 🖨 출력</span>' : SHIP() ? '<span class="sp muted" style="font-size:13px">🔒 선박 기기: 보기 · 기관장 확인 서명 · 시정조치 결과 입력</span>' : '<button class="btn p sp" id="snB">＋ 새 특별점검 <span class="en" style="color:#C9D6EE">New</span></button>'}<button class="btn" id="setB" title="설정">⚙</button></div>
     <div class="card" style="padding:12px"><div class="row" style="margin-bottom:8px;gap:6px"><button class="btn s" id="mPrev" aria-label="이전 달" style="min-height:32px;padding:2px 10px">‹</button><h3 style="margin:0">${ym(mon)} 특별점검 현황</h3><button class="btn s" id="mNext" aria-label="다음 달" style="min-height:32px;padding:2px 10px" ${mon >= cur ? 'disabled' : ''}>›</button>${mon !== cur ? '<button class="btn s" id="mNow" style="min-height:32px;padding:2px 10px">이번 달</button>' : ''}<span class="sp"></span><span class="muted" style="font-size:12px">${ships.filter(v => list.some(o => o.h.ship === v && (o.h.date || '').startsWith(mon))).length}/${ships.length}척</span></div><div class="vg">${ships.map(cell).join('')}</div></div>
-    <div class="sec"><h3>진행 중</h3><span class="chip warn">${prog.length}</span><span class="muted" style="font-size:12.5px">(서명 또는 시정조치가 남은 것 · 지난달 포함)</span></div>
+    <div class="sec"><h3>진행 중</h3><span class="chip warn">${prog.length}</span>${hp('서명 또는 시정조치가 남은 특별점검입니다. 지난달 것도 끝날 때까지 여기에 남습니다.')}</div>
     ${prog.length ? prog.map(spCard).join('') : '<div class="muted" style="padding:6px 2px 4px">진행 중인 특별점검이 없습니다.</div>'}
-    <div class="sec"><h3>완료 · ${ym(mon)}</h3><span class="chip ok">${done.length}</span><span class="muted" style="font-size:12.5px">(공무 감독·기관장·D.P.A 서명 + 모든 지적 조치 완료)</span></div>
+    <div class="sec"><h3>완료 · ${ym(mon)}</h3><span class="chip ok">${done.length}</span>${hp('완료 기준: 공무 감독·기관장·D.P.A 서명 + 모든 지적 조치 완료')}</div>
     ${done.length ? done.map(spCard).join('') : '<div class="muted" style="padding:6px 2px">완료된 특별점검이 없습니다.</div>'}</main>`;
   const sb = $('#snB'); if (sb) sb.onclick = () => newSp(); $('#setB').onclick = () => go('#/set');
   $('#mPrev').onclick = () => { S.mon = mAdd(mon, -1); render(); }; $('#mNext').onclick = () => { S.mon = mAdd(mon, 1); render(); }; const mn = $('#mNow'); if (mn) mn.onclick = () => { S.mon = ''; render(); };
@@ -518,6 +543,45 @@ function viewListCeo() { const cur = ymd().slice(0, 7), mon = S.mon && S.mon <= 
     const sgb = e.target.closest('[data-cs]'); if (sgb) { const r = R[sgb.dataset.cs]; if (!r) return; const doSign = () => signPad('C.E.O', myName(), async s => { r.fin.ceo = s; await save(r); pushNow(); toast('C.E.O 확인 서명을 저장했습니다'); render(); });
       if (ready(r)) return doSign(); toast('감독·선장·기관장·D.P.A 서명이 모두 끝나야 서명할 수 있습니다', 3500); } };
   paintSync(); }
+/* ---------- 내 할 일 (홈 맨 위) ---------- */
+function myTodo() { const out = [], t0 = ymd(), mp = myPart(), ms = myShip(), md = s => dot(s).slice(5);
+  const reps = Object.values(R).filter(live).filter(x => !ms || x.h.ship === ms).filter(x => !repState(x).done);
+  for (const x of reps) { const st = repState(x), F = findings(x), lbl = `${x.h.ship} ${md(x.h.date)}`;
+    if (SHIP()) { const open = F.filter(f => !f.done).length; if (open) out.push(['🛠', `${lbl} · 지적 조치 ${open}건`, '조치 사진·조치완료일 입력', '#/r/' + x.id + '/F']);
+      if (st.all && (!sig(x.fin.master) || !sig(x.fin.ce))) out.push(['✍', `${lbl} · 선장·기관장 확인 서명`, '감독 점검이 끝났습니다', '#/r/' + x.id + '/C']); continue; }
+    if (mp && !CAN('dpa')) { const s = st.sp[PARTS.findIndex(p => p.k === mp)]; if (!s.signed) out.push(['📋', `${lbl} · 우리 팀(${TCODE[mp]}) 점검`, `${s.done}/${s.n} 판정 · 서명 전`, '#/r/' + x.id + '/' + mp]); }
+    if (CAN('dpa') && st.all && sig(x.fin.master) && sig(x.fin.ce) && !sig(x.fin.dpa)) out.push(['✍', `${lbl} · D.P.A 확인 서명`, '감독·선장·기관장 서명 완료', '#/r/' + x.id + '/C']);
+    const er = (x.ext && x.ext.r) || {}; if (CAN('dpa') && er.to && !sig((x.ext || {}).a)) out.push(['⏳', `${lbl} · 조치기한 연장 D.P 승인`, `연장기한 ${dot(er.to)}`, '#/r/' + x.id + '/C']);
+    const over = F.filter(f => !f.done && f.due && f.due < t0).length; if (over) out.push(['⚠', `${lbl} · 조치기한 지난 지적 ${over}건`, '조치 확인 필요', '#/r/' + x.id + '/F', 'err']); }
+  if (canSp()) { const xs = Object.values(XS).filter(live).filter(x => !ms || x.h.ship === ms).filter(x => !spState(x).ok);
+    for (const x of xs) { const st = spState(x), lbl = `🔧 ${x.h.ship} ${md(x.h.date)}`;
+      if (SHIP()) { if (st.done < st.n) out.push(['🛠', `${lbl} · 특별점검 조치 ${st.n - st.done}건`, '조치 사진·완료일 입력', '#/s/' + x.id]); if (st.sg1 && !st.sg2) out.push(['✍', `${lbl} · 기관장 확인 서명`, '', '#/s/' + x.id]); continue; }
+      if (!st.sg1 && !CEO()) out.push(['📋', `${lbl} · 공무 감독 서명 전`, `지적 ${st.n}건 작성 중`, '#/s/' + x.id]);
+      if (CAN('dpa') && st.sg1 && st.sg2 && !st.sg3) out.push(['✍', `${lbl} · D.P.A 검토 서명`, '', '#/s/' + x.id]);
+      if (st.over) out.push(['⚠', `${lbl} · 조치기한 지남 ${st.over}건`, '', '#/s/' + x.id, 'err']); }
+    if (!SHIP() && ['TST', 'ALL'].includes(teamCode())) { const cm = ymd().slice(0, 7), miss = VES().filter(v => !isForeign(v) && !Object.values(XS).some(x => live(x) && x.h.ship === v && (x.h.date || '').startsWith(cm)));
+      if (miss.length && +ymd().slice(8) >= 20) out.push(['🗓', `이달 공무 특별점검 미작성 ${miss.length}척`, miss.join(' · '), 'sp']); } }
+  return out; }
+function todoHTML() { const L = myTodo(); if (!L.length) return '';
+  return `<div class="card todo"><div class="row" style="gap:8px;margin-bottom:2px"><h3 style="margin:0">📌 내 할 일</h3><span class="chip warn">${L.length}</span></div>
+    ${L.slice(0, S.todoAll ? 99 : 6).map(([ic, t, sub, go2, cls]) => `<div class="tl" data-todo="${esc(go2)}"><span style="font-size:18px">${ic}</span><b style="${cls === 'err' ? 'color:var(--err)' : ''}">${esc(t)}${sub ? `<br><small>${esc(sub)}</small>` : ''}</b><span style="color:var(--mut);font-size:20px">›</span></div>`).join('')}
+    ${L.length > 6 && !S.todoAll ? `<button class="btn s w" data-todoall="1" style="margin-top:6px">${L.length - 6}건 더 보기</button>` : ''}</div>`; }
+document.addEventListener('click', e => { const t = e.target.closest && e.target.closest('[data-todo],[data-todoall]'); if (!t) return; e.stopPropagation();
+  if (t.dataset.todoall) { S.todoAll = 1; return render(); } const g = t.dataset.todo; if (g === 'sp') return setHome('sp'); go(g); }, true);
+
+/* ---------- PC 넓은 화면: 오른쪽 요약 ---------- */
+const WIDE = () => innerWidth >= 1100 && !(UI && UI.phone && UI.phone());
+function sumHTML(r) { if (!r) return '<div class="card empty">왼쪽에서 보고서를 고르세요.</div>';
+  const st = repState(r), F = findings(r), t0 = ymd(), er = (r.ext && r.ext.r) || {}, sgc = (l, s) => `<span class="chip ${sig(s) ? 'ok' : ''}">${l} ${sig(s) ? '✓ ' + esc(s.name || '') : '—'}</span>`;
+  return `<div class="card"><div class="row" style="gap:8px"><b style="font-size:18px">${esc(r.h.ship)}</b><span class="muted">${dot(r.h.date)}${r.h.port ? ' · ' + esc(r.h.port) : ''}</span><span class="chip ${r.h.q ? 'q' : ''}">${r.h.q ? '분기' : '월간'}</span></div>
+    <div class="row" style="gap:8px;margin-top:10px"><button class="btn p sp" data-go="#/r/${r.id}">📂 열기</button><button class="btn sp" data-go="#/p/${r.id}">📄 보기 · 출력</button></div></div>
+    <div class="card"><h3 style="margin-top:0">팀별 점검</h3>${PARTS.map((p, i) => { const s = st.sp[i], v = pv(r, p.k); return `<div style="padding:6px 0;border-bottom:1px solid var(--line)"><div class="row" style="gap:8px"><b style="width:76px">${p.k} ${p.ko.replace(' 파트', '')}</b><div class="prog" style="flex:1;margin:0"><i style="width:${s.n ? s.done / s.n * 100 : 0}%"></i></div><span class="muted" style="width:44px;text-align:right">${s.done}/${s.n}</span></div>
+      <div class="muted" style="font-size:12.5px;margin-top:2px">${s.signed ? `✓ ${esc(s.name || '')} 서명` : '서명 전'}${v ? ` · ${dot(v.date)} ${esc(v.port || '')}` : ''}</div></div>`; }).join('')}</div>
+    <div class="card"><h3 style="margin-top:0">확인 서명</h3><div class="chips">${sgc('선장', r.fin.master)}${sgc('기관장', r.fin.ce)}${sgc('D.P.A', r.fin.dpa)}${sgc('C.E.O', r.fin.ceo)}</div>
+      ${er.to ? `<div class="muted" style="margin-top:8px;font-size:13px">조치기한 연장: ${dot(er.to)}까지 · D.P 승인 ${sig((r.ext || {}).a) ? '✓' : '—'} · 종결 ${sig((r.ext || {}).c) ? '✓' : '—'}</div>` : ''}</div>
+    <div class="card"><h3 style="margin-top:0">지적사항 <span class="chip ${F.filter(f => !f.done).length ? 'err' : F.length ? 'ok' : ''}">${F.length}</span></h3>
+      ${F.length ? F.map((f, i) => `<div style="padding:6px 0;border-bottom:1px solid var(--line);font-size:14px"><b style="color:${f.done ? 'var(--ok)' : 'var(--err)'}">No.${i + 1}</b> ${f.item ? `<span class="chip" style="font-size:11px;padding:0 6px">${esc(f.item)}</span> ` : ''}${esc(f.desc || '')}<div class="muted" style="font-size:12.5px">${f.done ? `✓ 조치 완료 ${dot(f.done)}` : `조치기한 ${f.due ? dot(f.due) : '—'}${f.due && f.due < t0 ? ' · <b style="color:var(--err)">기한 지남</b>' : ''}`}</div></div>`).join('') : '<div class="muted">지적사항이 없습니다.</div>'}</div>`; }
+document.addEventListener('click', e => { const g = e.target.closest && e.target.closest('.sumP [data-go]'); if (!g) return; e.stopPropagation(); go(g.dataset.go); }, true);
 function viewList() { if (CEO()) return S.home === 'sp' ? viewListSp() : viewListCeo(); if (canSp() && S.home === 'sp') return viewListSp(); const ms = myShip(); let list = Object.values(R).filter(live);
   if (ms) list = list.filter(x => x.h.ship === ms);
   const fs = S.fship || ''; if (fs) list = list.filter(x => x.h.ship === fs);
@@ -534,14 +598,15 @@ function viewList() { if (CEO()) return S.home === 'sp' ? viewListSp() : viewLis
   $('#app').innerHTML = header('감독 방선 보고서', `Supervisor's Visit Report · SMM-3C-01F R-4${tm ? ' · ' + tm[0] + ' ' + tm[2] : ''}`) + `<main>
     <style>.vg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}@media(min-width:640px){.vg{grid-template-columns:repeat(4,minmax(0,1fr))}}.vs{text-align:left;border:1px solid var(--line);background:#fff;border-radius:10px;padding:6px 9px;min-width:0}.vs b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vs small{display:block;font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vs.no{background:#F7F9FC}.vs.no b{color:var(--mut);font-weight:600}.vs.ok{border-color:#BFE5CF;background:var(--okBg)}.vs.warn{border-color:#F0C46A;background:var(--warnBg)}.sec{display:flex;align-items:center;gap:8px;margin:18px 0 8px}.sec h3{margin:0;white-space:nowrap}</style>
     ${homeSeg()}
+    ${todoHTML()}
     <div class="row" style="margin-bottom:12px">${CEO() ? '<span class="sp muted" style="font-size:13px">🔒 대표이사 계정: 보기 · C.E.O 확인 서명</span>' : SHIP() ? '<span class="sp muted" style="font-size:13px">🔒 선박 기기: 보기 · 선장·기관장 서명 · 시정조치 결과 입력</span>' : '<button class="btn p sp" id="newB">＋ 새 방선 시작 <span class="en" style="color:#C9D6EE">New visit</span></button><button class="btn" id="impB" title="파일 가져오기">📥</button>'}<button class="btn" id="setB" title="설정">⚙</button></div>
     ${(SHIP() || !CAN('admin') ? [] : dupGroups()).map((g, i) => `<div class="issues" style="background:var(--warnBg);border-color:#F0C46A">⚠ <b>${esc(g[0].h.ship)} ${+g[0].h.date.slice(5, 7)}월 보고서 ${g.length}건</b> — 선박당 한 달에 1건이어야 합니다. <button class="btn s g" data-mg="${i}" style="margin-left:6px">하나로 합치기</button></div>`).join('')}
     ${isOffice() && !teamCode() ? `<div class="issues" style="background:var(--warnBg);border-color:#F0C46A">이 기기의 소속 팀이 정해지지 않아 모든 파트가 보입니다. <button class="btn s" id="teamB" style="margin-left:6px">팀 고르기</button></div>` : ''}
     <div class="card" style="padding:12px"><div class="row" style="margin-bottom:8px;gap:6px"><button class="btn s" id="mPrev" aria-label="이전 달" style="min-height:32px;padding:2px 10px">‹</button><h3 style="margin:0">${mon.slice(0, 4) !== cur.slice(0, 4) ? mon.slice(0, 4) + '년 ' : ''}${+mon.slice(5)}월 방선 현황</h3><button class="btn s" id="mNext" aria-label="다음 달" style="min-height:32px;padding:2px 10px" ${mon >= cur ? 'disabled' : ''}>›</button>${mon !== cur ? '<button class="btn s" id="mNow" style="min-height:32px;padding:2px 10px">이번 달</button>' : ''}<span class="sp"></span><span class="muted" style="font-size:12px">${ships.filter(v => !isForeign(v) && Object.values(R).some(x => live(x) && x.h.ship === v && (x.h.date || '').startsWith(mon))).length}/${ships.filter(v => !isForeign(v)).length}척</span></div><div class="vg">${ships.map(cell).join('')}</div></div>
     ${!ms && list.length ? `<select class="i" id="fship"><option value="">전체 선박 All vessels</option>${VES().map(s => `<option ${s === fs ? 'selected' : ''}>${esc(s)}</option>`).join('')}</select>` : ''}
-    <div class="sec"><h3>진행 중</h3><span class="chip warn">${prog.length}</span><span class="muted" style="font-size:12.5px">(서명이 남은 보고서 · 지난달 포함)</span></div>
+    <div class="sec"><h3>진행 중</h3><span class="chip warn">${prog.length}</span>${hp('서명이 남은 보고서입니다. 지난달 것도 끝날 때까지 여기에 남습니다.')}</div>
     ${prog.length ? prog.map(repCard).join('') : '<div class="muted" style="padding:6px 2px 4px">진행 중인 방선이 없습니다.</div>'}
-    <div class="sec"><h3>완료 · ${mon.slice(0, 4) !== cur.slice(0, 4) ? mon.slice(0, 4) + '년 ' : ''}${+mon.slice(5)}월</h3><span class="chip ok">${done.length}</span><span class="muted" style="font-size:12.5px">(완료 기준: 3개 파트 서명 + 선장·기관장·D.P.A·C.E.O 서명)</span></div>
+    <div class="sec"><h3>완료 · ${mon.slice(0, 4) !== cur.slice(0, 4) ? mon.slice(0, 4) + '년 ' : ''}${+mon.slice(5)}월</h3><span class="chip ok">${done.length}</span>${hp('완료 기준: 감독 3개 파트 서명 + 선장·기관장·D.P.A·C.E.O 서명')}</div>
     ${done.length ? showDone.map(repCard).join('') + (done.length > 5 && !S.showDone ? `<button class="btn w" id="moreB">완료 ${done.length - 5}건 더 보기</button>` : '') : '<div class="muted" style="padding:6px 2px">완료된 방선이 없습니다.</div>'}
   </main>`;
   const nb = $('#newB'); if (nb) nb.onclick = () => newVisit(); $('#setB').onclick = () => go('#/set'); const ib = $('#impB'); if (ib) ib.onclick = importFile;
@@ -550,12 +615,16 @@ function viewList() { if (CEO()) return S.home === 'sp' ? viewListSp() : viewLis
   $('#mPrev').onclick = () => { S.mon = mAdd(mon, -1); S.showDone = 0; render(); }; $('#mNext').onclick = () => { S.mon = mAdd(mon, 1); S.showDone = 0; render(); };
   const mn = $('#mNow'); if (mn) mn.onclick = () => { S.mon = ''; render(); };
   const f = $('#fship'); if (f) f.onchange = () => { S.fship = f.value; render(); };
-  $('#app').onclick = e => { const hm2 = e.target.closest('[data-home]'); if (hm2) return setHome(hm2.dataset.home); const mn = e.target.closest('[data-menu]'); if (mn) { e.stopPropagation(); return repMenu(R[mn.dataset.menu]); }
+  $('#app').onclick = e => { const hm2 = e.target.closest('[data-home]'); if (hm2) return setHome(hm2.dataset.home); const pv0 = e.target.closest('[data-pv]'); if (pv0) { e.stopPropagation(); return go('#/p/' + pv0.dataset.pv); } const mn = e.target.closest('[data-menu]'); if (mn) { e.stopPropagation(); return repMenu(R[mn.dataset.menu]); }
     const mg = e.target.closest('[data-mg]'); if (mg) return mergeAsk(dupGroups()[+mg.dataset.mg]);
     const fg = e.target.closest('[data-foreign]'); if (fg) return toast(`${fg.dataset.foreign} — ${FMSG}`, 3500);
     const nv = e.target.closest('[data-newv]'); if (nv) return newVisit(nv.dataset.newv);
     const pk = e.target.closest('[data-pick]'); if (pk) return pickRep(pk.dataset.pick, mon);
-    const o = e.target.closest('[data-open]'); if (o && !e.target.closest('select')) go('#/r/' + o.dataset.open); };
+    const o = e.target.closest('[data-open]'); if (o && !e.target.closest('select')) { if (WIDE() && o.classList.contains('rep')) { S.sel = o.dataset.open; return render(); } go('#/r/' + o.dataset.open); } };
+  /* PC 넓은 화면: 목록(왼쪽) + 고른 보고서 요약(오른쪽) */
+  document.body.classList.toggle('wide', WIDE());
+  if (WIDE()) { const mainEl = $('#app main'), sel = rep(S.sel) || prog[0] || list[0]; if (sel) S.sel = sel.id; const L = document.createElement('div'); L.style.minWidth = '0'; [...mainEl.children].forEach(c => L.appendChild(c)); mainEl.appendChild(L); mainEl.classList.add('two');
+    const A = document.createElement('aside'); A.className = 'sumP'; A.innerHTML = sumHTML(sel); mainEl.appendChild(A); $$('.card.rep', mainEl).forEach(c => c.classList.toggle('sel', c.dataset.open === S.sel)); }
   paintSync(); }
 const sameMonth = (v, d) => Object.values(R).filter(x => live(x) && x.h.ship === v && (x.h.date || '').slice(0, 7) === String(d || '').slice(0, 7)).sort((a, b) => (a.ct || 0) - (b.ct || 0));
 /* 중복 합치기: 같은 선박·같은 달 보고서를 가장 먼저 만든 보고서 하나로 (항목·서명은 나중에 고친 쪽, 지적사항은 모두) */
@@ -569,7 +638,7 @@ function mergeAsk(g) { const a = g[0]; ask(`${a.h.ship} ${+a.h.date.slice(5, 7)}
 function pickRep(v, mon) { const L = Object.values(R).filter(x => live(x) && x.h.ship === v && (x.h.date || '').startsWith(mon)).sort((a, b) => (b.h.date || '').localeCompare(a.h.date || '') || b.ct - a.ct);
   modal(`<h3>${esc(v)} · ${+mon.slice(5)}월 방선 ${L.length}건 <button class="x" data-x>✕</button></h3><div class="issues" style="background:var(--warnBg);border-color:#F0C46A;margin-top:0">선박당 한 달에 1건이어야 합니다. 같은 달 보고서가 나뉘어 있으니 하나로 합쳐 주세요.<div style="margin-top:8px" ${SHIP() || !CAN('admin') ? 'hidden' : ''}><button class="btn s g" id="pmg">🔗 ${L.length}건 하나로 합치기</button></div></div>${L.map(repCard).join('')}`, (m, close) => {
     $('#pmg', m).onclick = () => { close(); mergeAsk(sameMonth(v, mon + '-01')); };
-    m.onclick = e => { const mn = e.target.closest('[data-menu]'); if (mn) { e.stopPropagation(); close(); return repMenu(R[mn.dataset.menu]); } const o = e.target.closest('[data-open]'); if (o) { close(); go('#/r/' + o.dataset.open); } };
+    m.onclick = e => { const pv0 = e.target.closest('[data-pv]'); if (pv0) { close(); return go('#/p/' + pv0.dataset.pv); } const mn = e.target.closest('[data-menu]'); if (mn) { e.stopPropagation(); close(); return repMenu(R[mn.dataset.menu]); } const o = e.target.closest('[data-open]'); if (o) { close(); go('#/r/' + o.dataset.open); } };
   }); }
 function repMenu(r) { if (!r) return; modal(`<h3>${esc(r.h.ship)} · ${dot(r.h.date)} <button class="x" data-x>✕</button></h3>
     <div style="display:grid;gap:8px"><button class="btn w" id="m1">📂 열기</button><button class="btn w" id="m2">📄 보고서 보기 · PDF</button><button class="btn w" id="m3">📤 파일로 내보내기</button>${SHIP() || !CAN('admin') ? '' : '<button class="btn r w" id="m4">🗑 보고서 삭제</button>'}${!CAN('admin') && canCancel(r) ? '<button class="btn r w" id="m5">✖ 작성 취소 (내가 만든 보고서 · 서명 전)</button>' : ''}</div>`, (m, close) => {
@@ -612,8 +681,8 @@ function viewRep(r, tab) { const VP = visParts(); if (CEO() && !tab) tab = 'C'; 
   const tb = (k, ko, sub, ck) => `<button data-t="${k}" class="${tab === k ? 'on' : ''}">${ck ? '<span class="ck">✓</span> ' : ''}${ko}<small>${sub}</small></button>`;
   const st = k => partStat(r, k), F = findings(r);
   $('#app').innerHTML = header(`${esc(r.h.ship || '')} · ${dot(r.h.date)}`, `${r.h.q ? '분기 Quarterly' : '월간 Monthly'}${r.h.port ? ' · ' + esc(r.h.port) : ''}`, '#/') +
-    `<nav class="tabs">${PARTS.filter(p => VP.includes(p.k)).map(p => { const s = st(p.k); return tb(p.k, p.ko.replace(' 파트', ''), s.signed ? '서명 완료' : `${s.done}/${s.n}`, s.signed); }).join('')}${tb('F', '지적', `${F.length}건`)}${tb('C', '확인·출력', `${FINAL.filter(([k]) => sig(r.fin[k])).length}/4`)}</nav>${VP.length < 3 ? `<div style="display:flex;gap:6px;flex-wrap:wrap;padding:8px 12px;background:#F7F9FC;border-bottom:1px solid var(--line);font-size:13px"><span class="muted" style="align-self:center">팀별 진행</span>${PARTS.map(p => { const z = st(p.k); return `<span class="chip ${z.signed ? 'ok' : z.done ? 'warn' : ''}" title="${esc(z.name || '')}">${p.k} ${p.ko.replace(' 파트', '')} ${z.signed ? '✓ ' + esc(z.name || '') : z.done + '/' + z.n}</span>`; }).join('')}</div>` : ''}<main id="pm"></main>`;
-  $$('.tabs button').forEach(b => b.onclick = () => { S.tab = b.dataset.t; history.replaceState(null, '', '#/r/' + r.id + '/' + b.dataset.t); viewRep(r, b.dataset.t); window.scrollTo(0, 0); });
+    `<nav class="tabs">${PARTS.filter(p => VP.includes(p.k)).map(p => { const s = st(p.k); return tb(p.k, p.ko.replace(' 파트', ''), s.signed ? '서명 완료' : `${s.done}/${s.n}`, s.signed); }).join('')}${tb('F', '지적', `${F.length}건`)}${tb('C', '확인·출력', `${FINAL.filter(([k]) => sig(r.fin[k])).length}/4`)}<button data-t="P" style="flex:0 0 auto;min-width:56px">📄<small>출력</small></button></nav>${VP.length < 3 ? `<div style="display:flex;gap:6px;flex-wrap:wrap;padding:8px 12px;background:#F7F9FC;border-bottom:1px solid var(--line);font-size:13px"><span class="muted" style="align-self:center">팀별 진행</span>${PARTS.map(p => { const z = st(p.k); return `<span class="chip ${z.signed ? 'ok' : z.done ? 'warn' : ''}" title="${esc(z.name || '')}">${p.k} ${p.ko.replace(' 파트', '')} ${z.signed ? '✓ ' + esc(z.name || '') : z.done + '/' + z.n}</span>`; }).join('')}</div>` : ''}<main id="pm"></main>`;
+  $$('.tabs button').forEach(b => b.onclick = () => { if (b.dataset.t === 'P') return go('#/p/' + r.id); S.tab = b.dataset.t; history.replaceState(null, '', '#/r/' + r.id + '/' + b.dataset.t); viewRep(r, b.dataset.t); window.scrollTo(0, 0); });
   if ('STM'.includes(tab)) partView(r, tab); else if (tab === 'F') findView(r); else confView(r);
   paintSync(); }
 
@@ -636,13 +705,19 @@ function partView(r, k) { const p = PART[k], P = r.parts[k], locked = sig(P.sign
   m.innerHTML = `<h2>${PARTS.indexOf(p) + 1}. ${L(p.ko, p.en)}</h2>
     <div class="muted">${st.done}/${st.n} 항목 판정 ${r.h.q ? '' : '· 월간 (분기 추가 항목 제외)'}</div><div class="prog"><i style="width:${st.n ? st.done / st.n * 100 : 0}%"></i></div>
     ${sig(P.sign) ? `<div class="lock" style="margin-top:12px">✅ <b>${esc(P.sign.name)}</b> 감독 서명 완료 (${hm(P.sign.at)})${RO() ? '' : ' — 수정하려면 아래에서 서명을 취소하세요.'}</div>` : RO() ? `<div class="lock" style="margin-top:12px;background:#F1F4F9;border-color:var(--line)">🔒 ${CEO() ? '대표이사 계정' : '선박 기기'}는 <b>보기만</b> 할 수 있습니다 — 점검·서명은 감독이 합니다.</div>` : '<div style="height:10px"></div>'}
-    <div class="card" style="padding:10px 12px"><div class="row" style="gap:8px;align-items:flex-end"><div style="flex:1;min-width:130px"><label class="f" style="margin-top:0">방선 일자 <span class="en">Date · ${TCODE[k]}</span></label><input class="i" type="date" id="pvD" value="${esc((P.v || {}).date || '')}" ${locked ? 'disabled' : ''}></div><div style="flex:1;min-width:130px"><label class="f" style="margin-top:0">항구 <span class="en">Port</span></label><input class="i" id="pvP" value="${esc((P.v || {}).port || '')}" placeholder="예: 여수, 울산" ${locked ? 'disabled' : ''}></div></div>${!pv(r, k) && !locked ? '<div class="muted" style="font-size:12.5px;margin-top:4px">팀마다 방선 날짜·항구가 다를 수 있습니다 — 우리 팀이 간 날짜·항구를 적어 주세요.</div>' : ''}</div>
-    ${mon.map(it => itemCard(r, it, locked)).join('')}
-    ${qi.length ? (r.h.q ? `<div class="qh">분기 추가 항목<small>Quarterly add-on</small></div>${qi.map(it => itemCard(r, it, locked)).join('')}` : `<div class="qh" style="background:#F1F4F9;color:var(--mut)">분기 추가 항목 ${qi.length}개는 분기 방선 때만 점검합니다<small>Quarterly add-on is hidden for monthly visits</small></div>`) : ''}
+    <div class="card" style="padding:10px 12px"><div class="row" style="gap:8px;align-items:flex-end"><div style="flex:1;min-width:130px"><label class="f" style="margin-top:0">방선 일자 <span class="en">Date · ${TCODE[k]}</span>${hp('팀마다 방선 날짜·항구가 다를 수 있습니다. 우리 팀이 간 날짜·항구를 적어 주세요. 출력물 맨 위에 팀별로 나옵니다.')}</label><input class="i" type="date" id="pvD" value="${esc((P.v || {}).date || '')}" ${locked ? 'disabled' : ''}></div><div style="flex:1;min-width:130px"><label class="f" style="margin-top:0">항구 <span class="en">Port</span></label><input class="i" id="pvP" value="${esc((P.v || {}).port || '')}" placeholder="예: 여수, 울산" ${locked ? 'disabled' : ''}></div></div></div>
+    <div class="itb"><button class="btn ${S.only ? '' : 'on'}" data-itf="all">전체 ${st.n}</button><button class="btn ${S.only ? 'on' : ''}" data-itf="only">미판정만 ${st.n - st.done}</button>${st.n - st.done && !locked ? '<button class="btn" data-itf="next">↓ 다음 미판정</button>' : ''}<span class="sp"></span><button class="btn ${document.body.classList.contains('noen') ? 'on' : ''}" data-itf="en" title="영문 설명 접기">EN ${document.body.classList.contains('noen') ? '펼치기' : '접기'}</button></div>
+    ${S.only && st.done === st.n ? '<div class="empty" style="padding:18px">✓ 모든 항목을 판정했습니다.</div>' : ''}
+    ${mon.filter(it => !S.only || !(P.items[it.no] || {}).r).map(it => itemCard(r, it, locked)).join('')}
+    ${qi.length ? (r.h.q ? `<div class="qh">분기 추가 항목<small>Quarterly add-on</small></div>${qi.filter(it => !S.only || !(P.items[it.no] || {}).r).map(it => itemCard(r, it, locked)).join('')}` : `<div class="qh" style="background:#F1F4F9;color:var(--mut)">분기 추가 항목 ${qi.length}개는 분기 방선 때만 점검합니다<small>Quarterly add-on is hidden for monthly visits</small></div>`) : ''}
     <div class="card" id="signC"><h3>${L(p.sup[0], p.sup[1])}</h3>
       ${sig(P.sign) ? `<div class="sigbox"><img src="${P.sign.img}" alt="서명"><div><b>${esc(P.sign.name)}</b><div class="muted">${hm(P.sign.at)}</div></div></div>${RO() ? '' : '<div class="row" style="margin-top:12px"><button class="btn r s" id="unsig">서명 취소 (수정하기)</button></div>'}`
         : RO() ? '<div class="muted">감독 서명 전입니다.</div>' : `<div id="iss"></div><button class="btn g w" id="dosig">✍ ${p.ko} 점검 완료 · 서명</button>`}</div>`;
   fillThumbs(m);
+  $$('[data-itf]', m).forEach(b => b.onclick = () => { const f = b.dataset.itf;
+    if (f === 'all' || f === 'only') { S.only = f === 'only'; partView(r, k); window.scrollTo(0, 0); return; }
+    if (f === 'en') { const on = !document.body.classList.contains('noen'); document.body.classList.toggle('noen', on); try { localStorage.setItem('sejul_vst_noen', on ? '1' : ''); } catch (e) { } b.classList.toggle('on', on); b.textContent = 'EN ' + (on ? '펼치기' : '접기'); return; }
+    if (f === 'next') { const its = $$('.it', m).filter(el => !(P.items[el.dataset.no] || {}).r), y = window.scrollY + 170; const el = its.find(x => x.getBoundingClientRect().top + window.scrollY > y) || its[0]; if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.classList.add('flash'); setTimeout(() => el.classList.remove('flash'), 1200); } } });
   const svV = async () => { P.v = { date: $('#pvD', m).value, port: $('#pvP', m).value.trim(), u: now() }; await save(r); };
   $('#pvD', m).onchange = svV; $('#pvP', m).onchange = svV;
   /* 판정 */
@@ -691,8 +766,8 @@ function spView(r) { const m = $('#pm'), SP = r.sp, L0 = spItems(r), locked = sp
   const can = key => CEO() ? false : SHIP() ? key === 'ce' : key === 'dpa' ? CAN('dpa') : true;   /* 선박: 기관장 확인만 · D.P.A 검토: DPA·관리자 · 대표이사: 보기만 */
   const sgC = (title, en, s, key) => `<div class="card"><div class="row"><b>${title}</b><span class="en">${en}</span><span class="sp"></span>${sig(s) && can(key) ? `<button class="btn s r" data-un="${key}">서명 취소</button>` : ''}</div>
     ${sig(s) ? `<div class="sigbox" style="margin-top:8px"><img src="${s.img}" alt=""><div><b>${esc(s.name)}</b><div class="muted">${hm(s.at)}</div></div></div>` : !can(key) ? '<div class="muted" style="margin-top:6px">감독 서명 전</div>' : `<div id="${key}Iss"></div><button class="btn ${key === 'sign' ? 'g' : ''} w" style="margin-top:8px" data-sg="${key}" ${key === 'dpa' && !(sig(SP.sign) && sig(SP.ce)) ? 'disabled' : ''}>✍ ${key === 'sign' ? '점검 완료 · 서명' : '서명하기'}</button>${key === 'dpa' && !(sig(SP.sign) && sig(SP.ce)) ? '<div class="muted" style="font-size:12.5px;margin-top:4px">공무 감독·기관장 서명 후에 서명합니다</div>' : ''}`}</div>`;
-  m.innerHTML = `<h2>${L('공무팀 특별 점검 사항', 'Technical Team Special Inspection Items')}</h2>
-    <p class="muted" style="margin-top:-6px">공무 감독이 <b>매월</b> 작성하는 <b>사내용</b> 점검입니다. 감독 방선 보고서와 따로 저장·출력됩니다. 지적 사진(왼쪽)과 조치 완료 사진(오른쪽)이 출력물에서 나란히 나옵니다.</p>
+  m.innerHTML = `<h2>${L('공무팀 특별 점검 사항', 'Technical Team Special Inspection Items')}${hp('공무 감독이 매월 작성하는 사내용 점검입니다. 감독 방선 보고서와 따로 저장·출력됩니다. 출력물에서 지적 사진(왼쪽)과 조치 완료 사진(오른쪽)이 나란히 나옵니다.')}</h2>
+
     <div class="card" style="padding:10px 12px"><div class="row" style="gap:8px;align-items:flex-end"><div style="flex:1;min-width:130px"><label class="f" style="margin-top:0">방선 일자 <span class="en">Date · TST</span></label><input class="i" type="date" id="xD" value="${esc(r.h.date || '')}" ${locked ? 'disabled' : ''}></div><div style="flex:1;min-width:130px"><label class="f" style="margin-top:0">항구 <span class="en">Port</span></label><input class="i" id="xP" value="${esc(r.h.port || '')}" placeholder="예: 여수, 울산" ${locked ? 'disabled' : ''}></div></div></div>
     ${SHIP() ? '<div class="lock" style="background:#F1F4F9;border-color:var(--line)">🔒 선박 기기: <b>시정조치 결과</b>(조치 사진·완료일) 입력과 <b>기관장 확인 서명</b>만 할 수 있습니다.</div>' : ''}
     ${spDone(r) && !SHIP() ? `<div class="lock">✅ <b>${esc(SP.sign.name)}</b> 공무 감독 서명 완료 (${hm(SP.sign.at)}) — 지적 칸 추가·삭제·수정은 서명을 취소해야 합니다. <b>시정조치 결과</b>(조치 사진·완료일)는 서명 후에도 입력할 수 있습니다.</div>` : ''}
@@ -766,7 +841,7 @@ function findView(r) { const F = findings(r), m = $('#pm'), t0 = ymd(), no = id 
         ${CEO() ? '' : '<div class="act"><button class="btn s" data-a="cam">📷 촬영</button><button class="btn s" data-a="alb">🖼 앨범</button></div>'}
         <label class="f" style="font-size:13px">조치완료일 Done</label><input class="i" type="date" data-k="done" value="${esc(f.done || '')}" ${CEO() ? 'disabled' : ''}></div></div></div>`;
   const sec = (t, n, cls) => `<div class="row" style="margin:16px 0 8px;gap:8px"><h3 style="margin:0">${t}</h3><span class="chip ${cls}">${n}</span></div>`;
-  m.innerHTML = `<h2>4. ${L('지적사항 (공통)', 'Findings (all parts)')}</h2><p class="muted" style="margin-top:-6px">${SHIP() ? '조치한 뒤 <b>조치 완료 사진</b>을 찍고 <b>조치완료일</b>을 넣으면 [조치 완료]로 옮겨집니다.' : '안품·공무·해무 감독이 같은 목록에 적습니다. 번호는 적은 순서대로 자동으로 매겨집니다. 지적사항은 부적합 보고서 작성 대상입니다.'}</p>
+  m.innerHTML = `<h2>4. ${L('지적사항 (공통)', 'Findings (all parts)')}${hp(SHIP() ? '조치한 뒤 조치 완료 사진을 찍고 조치완료일을 넣으면 [조치 완료]로 옮겨집니다.' : '안품·공무·해무 감독이 같은 목록에 적습니다. 번호는 적은 순서대로 자동으로 매겨집니다. 지적사항은 부적합 보고서 작성 대상입니다. 조치 사진·조치완료일을 넣으면 [조치 완료]로 옮겨집니다.')}</h2>
     ${F.length ? sec('조치 대기', open.length, open.length ? 'err' : '') + (open.length ? open.map(card).join('') : '<div class="muted" style="padding:4px 2px">조치 대기 중인 지적이 없습니다.</div>') + sec('조치 완료', done.length, done.length ? 'ok' : '') + (done.length ? done.map(card).join('') : '<div class="muted" style="padding:4px 2px">아직 조치 완료된 지적이 없습니다.</div>') : '<div class="empty">지적사항이 없습니다.</div>'}
     ${RO() ? '' : '<button class="btn p w" id="fadd" style="margin-top:12px">＋ 지적사항 추가 <span class="en" style="color:#C9D6EE">Add finding</span></button>'}`;
   fillThumbs(m);
@@ -833,10 +908,10 @@ function confView(r) { const m = $('#pm'), E = r.ext || {}, er = E.r || {};
       <input class="i" id="eot" placeholder="기타 사유" value="${esc(er.other || '')}" ${CEO() ? 'disabled' : ''} style="margin-top:6px">
       <label class="f">연장기한 Extended to</label><input class="i" type="date" id="eto" value="${esc(er.to || '')}" ${CEO() ? 'disabled' : ''}>
       <div class="row" style="margin-top:12px;gap:12px">${[['a', 'D.P 승인 Approved'], ['c', 'D.P 종결확인 Closed']].map(([k, t]) => { const s = E[k]; return `<div style="flex:1;min-width:150px"><div class="muted" style="font-weight:700">${t}</div>${sig(s) ? `<div class="sigbox"><img src="${s.img}" style="height:44px">${can('ext.' + k) ? `<button class="btn s r" data-un="ext.${k}">취소</button>` : ''}</div>` : !can('ext.' + k) ? '<span class="muted">— (D.P.A)</span>' : sgBtn('ext.' + k, 's w', '✍ 서명')}</div>`; }).join('')}</div></details>
-    <div class="card"><h3>출력·보관 <span class="en">Output</span></h3>
+    <div class="card"><h3>출력·보관 <span class="en">Output</span>${hp('서버 동기화가 안 될 때: [파일로 내보내기]로 저장해 카카오톡·메일로 다른 감독에게 보내면, 받은 사람이 [가져와 합치기]로 한 보고서로 합칩니다.')}</h3>
       <button class="btn p w" id="pvB">📄 보고서 보기 · PDF 저장</button>
       <div class="row" style="margin-top:8px"><button class="btn sp" id="expB">📤 파일로 내보내기</button>${RO() ? '' : '<button class="btn sp" id="impB2">📥 가져와 합치기</button>'}</div>
-      <p class="muted" style="margin:8px 0 0">서버 동기화가 안 될 때: 파일로 내보내 카카오톡·메일로 다른 감독에게 보내면, 받은 사람이 '가져와 합치기'로 한 보고서로 합칩니다.</p>
+
       ${SHIP() || !CAN('admin') ? '' : '<button class="btn r w" id="delB" style="margin-top:14px">보고서 삭제</button>'}${!CAN('admin') && canCancel(r) ? '<button class="btn r w" id="cnB" style="margin-top:14px">✖ 작성 취소 <span class="muted" style="color:inherit;font-weight:400">(내가 만든 보고서 · 서명 전)</span></button>' : ''}</div>`;
   $$('[data-sg]', m).forEach(b => b.onclick = () => { if (!can(b.dataset.sg)) return toast('🔒 권한이 없습니다', 3000); if (gate(b.dataset.sg)) return toast(gate(b.dataset.sg), 3000); const [g, k] = b.dataset.sg.split('.'), lab = g === 'fin' ? FINAL.find(x => x[0] === k)[1] : (k === 'a' ? 'D.P 승인' : 'D.P 종결확인');
     signPad(lab, k === 'ceo' ? myName() : '', async s => { if (g === 'fin') r.fin[k] = s; else r.ext[k] = s; await save(r); toast('서명 저장'); viewRep(r, 'C'); }); });
@@ -996,6 +1071,7 @@ window.SJ_VST = {
       if (UI.rail) { w.innerHTML = UI.rail('vst', '../'); document.body.classList.add('rail', 'sjm-on'); }
       else if (UI.mobPhone) { w.innerHTML = UI.mobPhone('vst', '../', { off: isOffice() }); document.body.classList.add('bnav'); }
       [...w.children].forEach(x => document.body.appendChild(x)); UI.syncPaint && UI.syncPaint(); try { UI.updPaint && UI.updPaint(); } catch (e) { } try { UI.inb && UI.inb.paint && UI.inb.paint(); } catch (e) { } } } catch (e) { console.warn('frame', e); }
+  try { if (localStorage.getItem('sejul_vst_noen') === '1') document.body.classList.add('noen'); } catch (e) { }
   try { await loadAll(); } catch (e) { $('#app').innerHTML = '<main><div class="issues">이 기기의 저장소를 열 수 없습니다 (사생활 보호 모드?): ' + esc(e.message || e) + '</div></main>'; return; }
   /* 올릴 사진 미리 불러오기 */
   for (const id of PEND.get()) { try { await photo(id); } catch (e) { } }
