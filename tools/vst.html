@@ -287,6 +287,8 @@ const teamLabel = () => { const t = TEAMS.find(x => x[0] === teamCode()); return
 /* 사무실 권한: 일반 = 우리 팀 파트만 · DPA·관리자 = 전체 파트 / 삭제·합치기·C.E.O = 관리자 / D.P.A·D.P 서명 = DPA·관리자 */
 const PERM = () => { try { return (UI && UI.perm && UI.perm()) || ''; } catch (e) { return ''; } };
 const CAN = w => { const p = PERM(); return w === 'admin' ? p === 'admin' : w === 'dpa' ? (p === 'dpa' || p === 'admin') : true; };
+const CEO = () => PERM() === 'ceo';   /* 대표이사: 전체 보기 + C.E.O 서명만 */
+const RO = () => SHIP() || CEO();
 const visParts = () => { if (SHIP()) return [];   /* 선박 기기: 파트 점검 화면 없음 — 지적·확인·출력만 */ const k = myPart(); return isOffice() && k && !CAN('dpa') ? [k] : ['S', 'T', 'M']; };
 const myShip = () => { try { const m = window.SJCLOUD && SJCLOUD.me && SJCLOUD.me(); if (m && m.role === 'ship' && m.ship) return m.ship; } catch (e) { } return role() === 'ship' ? (APP.get('vessel') || '') : ''; };
 
@@ -447,12 +449,12 @@ function viewListSp() { const ms = myShip(); let list = Object.values(XS).filter
   const prog = list.filter(x => !spState(x).ok), done = list.filter(x => spState(x).ok && (x.h.date || '').startsWith(mon));
   const cell = v => { const x = list.find(o => o.h.ship === v && (o.h.date || '').startsWith(mon)); let cls = 'no', t = mon === cur ? '미작성' : '없음';
     if (x) { const st = spState(x); if (st.ok) { cls = 'ok'; t = '완료'; } else if (st.sg1) { cls = 'warn'; t = st.done < st.n ? `조치 대기 ${st.n - st.done}` : '기관장 확인 대기'; } else { cls = 'warn'; t = `작성 중 · ${st.n}건`; } }
-    return `<button class="vs ${cls}" ${x ? `data-sopen="${x.id}"` : mon === cur && !SHIP() ? `data-snew="${esc(v)}"` : 'disabled'}><b>${esc(v)}</b><small>${x ? dot(x.h.date).slice(5) + ' ' : ''}${x ? (cls === 'ok' ? '✓ ' : '◐ ') : mon === cur ? '＋ ' : ''}${t}</small></button>`; };
+    return `<button class="vs ${cls}" ${x ? `data-sopen="${x.id}"` : mon === cur && !RO() ? `data-snew="${esc(v)}"` : 'disabled'}><b>${esc(v)}</b><small>${x ? dot(x.h.date).slice(5) + ' ' : ''}${x ? (cls === 'ok' ? '✓ ' : '◐ ') : mon === cur ? '＋ ' : ''}${t}</small></button>`; };
   const ym = m => `${m.slice(0, 4) !== cur.slice(0, 4) ? m.slice(0, 4) + '년 ' : ''}${+m.slice(5)}월`;
   $('#app').innerHTML = header('공무팀 특별 점검', 'Technical Team Special Inspection · 사내용') + `<main>
     <style>.vg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}@media(min-width:640px){.vg{grid-template-columns:repeat(4,minmax(0,1fr))}}.vs{text-align:left;border:1px solid var(--line);background:#fff;border-radius:10px;padding:6px 9px;min-width:0}.vs b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vs small{display:block;font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vs.no{background:#F7F9FC}.vs.no b{color:var(--mut);font-weight:600}.vs.ok{border-color:#BFE5CF;background:var(--okBg)}.vs.warn{border-color:#F0C46A;background:var(--warnBg)}.sec{display:flex;align-items:center;gap:8px;margin:18px 0 8px}.sec h3{margin:0;white-space:nowrap}</style>
     ${homeSeg()}
-    <div class="row" style="margin-bottom:12px">${SHIP() ? '<span class="sp muted" style="font-size:13px">🔒 선박 기기: 보기 · 기관장 확인 서명 · 시정조치 결과 입력</span>' : '<button class="btn p sp" id="snB">＋ 새 특별점검 <span class="en" style="color:#C9D6EE">New</span></button>'}<button class="btn" id="setB" title="설정">⚙</button></div>
+    <div class="row" style="margin-bottom:12px">${CEO() ? '<span class="sp muted" style="font-size:13px">🔒 대표이사 계정: 보기만</span>' : SHIP() ? '<span class="sp muted" style="font-size:13px">🔒 선박 기기: 보기 · 기관장 확인 서명 · 시정조치 결과 입력</span>' : '<button class="btn p sp" id="snB">＋ 새 특별점검 <span class="en" style="color:#C9D6EE">New</span></button>'}<button class="btn" id="setB" title="설정">⚙</button></div>
     <div class="card" style="padding:12px"><div class="row" style="margin-bottom:8px;gap:6px"><button class="btn s" id="mPrev" aria-label="이전 달" style="min-height:32px;padding:2px 10px">‹</button><h3 style="margin:0">${ym(mon)} 특별점검 현황</h3><button class="btn s" id="mNext" aria-label="다음 달" style="min-height:32px;padding:2px 10px" ${mon >= cur ? 'disabled' : ''}>›</button>${mon !== cur ? '<button class="btn s" id="mNow" style="min-height:32px;padding:2px 10px">이번 달</button>' : ''}<span class="sp"></span><span class="muted" style="font-size:12px">${ships.filter(v => list.some(o => o.h.ship === v && (o.h.date || '').startsWith(mon))).length}/${ships.length}척</span></div><div class="vg">${ships.map(cell).join('')}</div></div>
     <div class="sec"><h3>진행 중</h3><span class="chip warn">${prog.length}</span><span class="muted" style="font-size:12.5px">(서명 또는 시정조치가 남은 것 · 지난달 포함)</span></div>
     ${prog.length ? prog.map(spCard).join('') : '<div class="muted" style="padding:6px 2px 4px">진행 중인 특별점검이 없습니다.</div>'}
@@ -470,7 +472,7 @@ function spMenu(x) { if (!x) return; modal(`<h3>🔧 ${esc(x.h.ship)} · ${dot(x
     <div style="display:grid;gap:8px"><button class="btn w" id="m1">📂 열기</button><button class="btn w" id="m2">🖨 출력 · PDF</button>${SHIP() || !CAN('dpa') ? '' : '<button class="btn r w" id="m4">🗑 특별점검 삭제</button>'}</div>`, (m, close) => {
     $('#m1', m).onclick = () => { close(); go('#/s/' + x.id); }; $('#m2', m).onclick = () => { close(); go('#/x/' + x.id); };
     const m4 = $('#m4', m); if (m4) m4.onclick = () => { close(); ask(`${x.h.ship} ${dot(x.h.date)} 공무팀 특별점검을 삭제할까요?\n지적 ${spItems(x).length}건과 사진이 함께 빠지고, 동기화된 다른 기기에서도 사라집니다.`, async () => { x.del = { v: true, u: now(), by: myName() }; await save(x); pushNow(); toast('삭제했습니다'); go('#/'); render(); }, '삭제', true); }; }); }
-function newSp(v0) { if (SHIP()) return toast(SHIPMSG, 3000); const ms = myShip(), t = ymd();
+function newSp(v0) { if (RO()) return toast(SHIPMSG, 3000); const ms = myShip(), t = ymd();
   if (isForeign(v0) || (ms && isForeign(ms))) return toast(FMSG, 3500);
   modal(`<h3>🔧 새 공무팀 특별점검 <button class="x" data-x>✕</button></h3>
     <label class="f">선명 Ship's name</label><select class="i" id="nv">${(ms ? [ms] : VES()).filter(v => !isForeign(v)).map(v => `<option ${v === v0 ? 'selected' : ''}>${esc(v)}</option>`).join('')}</select>
@@ -496,11 +498,11 @@ function viewList() { if (canSp() && S.home === 'sp') return viewListSp(); const
   const cell = v => { if (isForeign(v)) return `<button class="vs no" data-foreign="${esc(v)}" style="opacity:.6"><b>${esc(v)}</b><small>⛔ 외항선 · 별도 양식</small></button>`; const L = Object.values(R).filter(x => live(x) && x.h.ship === v && (x.h.date || '').startsWith(mon)).sort((a, b) => (b.h.date || '').localeCompare(a.h.date || ''));
     const x = L[0]; let cls = 'no', t = '방선 없음';
     if (x) { const st = repState(x), my = mp ? st.sp[PARTS.findIndex(p => p.k === mp)] : null; if (st.done) { cls = 'ok'; t = '완료'; } else if (my && my.signed) { cls = 'ok'; t = '우리 팀 완료'; } else { cls = 'warn'; t = mp ? '우리 팀 미완료' : '진행 중'; } }
-    return `<button class="vs ${cls}" ${L.length > 1 ? `data-pick="${esc(v)}"` : x ? `data-open="${x.id}"` : mon === cur && !SHIP() ? `data-newv="${esc(v)}"` : 'disabled'}><b>${esc(v)}${L.length > 1 ? ` <span class="chip q" style="font-size:11px;padding:0 6px">${L.length}건</span>` : ''}</b><small>${x ? dot(x.h.date).slice(5) + ' ' : ''}${x ? (cls === 'ok' ? '✓ ' : '◐ ') : mon === cur && !SHIP() ? '＋ ' : ''}${t}</small></button>`; };
+    return `<button class="vs ${cls}" ${L.length > 1 ? `data-pick="${esc(v)}"` : x ? `data-open="${x.id}"` : mon === cur && !RO() ? `data-newv="${esc(v)}"` : 'disabled'}><b>${esc(v)}${L.length > 1 ? ` <span class="chip q" style="font-size:11px;padding:0 6px">${L.length}건</span>` : ''}</b><small>${x ? dot(x.h.date).slice(5) + ' ' : ''}${x ? (cls === 'ok' ? '✓ ' : '◐ ') : mon === cur && !RO() ? '＋ ' : ''}${t}</small></button>`; };
   $('#app').innerHTML = header('감독 방선 보고서', `Supervisor's Visit Report · SMM-3C-01F R-4${tm ? ' · ' + tm[0] + ' ' + tm[2] : ''}`) + `<main>
     <style>.vg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}@media(min-width:640px){.vg{grid-template-columns:repeat(4,minmax(0,1fr))}}.vs{text-align:left;border:1px solid var(--line);background:#fff;border-radius:10px;padding:6px 9px;min-width:0}.vs b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vs small{display:block;font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vs.no{background:#F7F9FC}.vs.no b{color:var(--mut);font-weight:600}.vs.ok{border-color:#BFE5CF;background:var(--okBg)}.vs.warn{border-color:#F0C46A;background:var(--warnBg)}.sec{display:flex;align-items:center;gap:8px;margin:18px 0 8px}.sec h3{margin:0;white-space:nowrap}</style>
     ${homeSeg()}
-    <div class="row" style="margin-bottom:12px">${SHIP() ? '<span class="sp muted" style="font-size:13px">🔒 선박 기기: 보기 · 선장·기관장 서명 · 시정조치 결과 입력</span>' : '<button class="btn p sp" id="newB">＋ 새 방선 시작 <span class="en" style="color:#C9D6EE">New visit</span></button><button class="btn" id="impB" title="파일 가져오기">📥</button>'}<button class="btn" id="setB" title="설정">⚙</button></div>
+    <div class="row" style="margin-bottom:12px">${CEO() ? '<span class="sp muted" style="font-size:13px">🔒 대표이사 계정: 보기 · C.E.O 확인 서명</span>' : SHIP() ? '<span class="sp muted" style="font-size:13px">🔒 선박 기기: 보기 · 선장·기관장 서명 · 시정조치 결과 입력</span>' : '<button class="btn p sp" id="newB">＋ 새 방선 시작 <span class="en" style="color:#C9D6EE">New visit</span></button><button class="btn" id="impB" title="파일 가져오기">📥</button>'}<button class="btn" id="setB" title="설정">⚙</button></div>
     ${(SHIP() || !CAN('admin') ? [] : dupGroups()).map((g, i) => `<div class="issues" style="background:var(--warnBg);border-color:#F0C46A">⚠ <b>${esc(g[0].h.ship)} ${+g[0].h.date.slice(5, 7)}월 보고서 ${g.length}건</b> — 선박당 한 달에 1건이어야 합니다. <button class="btn s g" data-mg="${i}" style="margin-left:6px">하나로 합치기</button></div>`).join('')}
     ${isOffice() && !teamCode() ? `<div class="issues" style="background:var(--warnBg);border-color:#F0C46A">이 기기의 소속 팀이 정해지지 않아 모든 파트가 보입니다. <button class="btn s" id="teamB" style="margin-left:6px">팀 고르기</button></div>` : ''}
     <div class="card" style="padding:12px"><div class="row" style="margin-bottom:8px;gap:6px"><button class="btn s" id="mPrev" aria-label="이전 달" style="min-height:32px;padding:2px 10px">‹</button><h3 style="margin:0">${mon.slice(0, 4) !== cur.slice(0, 4) ? mon.slice(0, 4) + '년 ' : ''}${+mon.slice(5)}월 방선 현황</h3><button class="btn s" id="mNext" aria-label="다음 달" style="min-height:32px;padding:2px 10px" ${mon >= cur ? 'disabled' : ''}>›</button>${mon !== cur ? '<button class="btn s" id="mNow" style="min-height:32px;padding:2px 10px">이번 달</button>' : ''}<span class="sp"></span><span class="muted" style="font-size:12px">${ships.filter(v => !isForeign(v) && Object.values(R).some(x => live(x) && x.h.ship === v && (x.h.date || '').startsWith(mon))).length}/${ships.filter(v => !isForeign(v)).length}척</span></div><div class="vg">${ships.map(cell).join('')}</div></div>
@@ -547,7 +549,7 @@ function pickTeam() { modal(`<h3>이 기기의 소속 팀 <button class="x" data
     <div style="display:grid;gap:8px">${TEAMS.map(([v, k, ko, en]) => `<button class="btn w ${teamCode() === v ? 'p' : ''}" data-tm="${v}">${v === 'ALL' ? '' : v + ' · '}${ko} <span class="en">${en}</span></button>`).join('')}</div>`, (m, close) => {
     $$('[data-tm]', m).forEach(b => b.onclick = () => { APP.set('team', b.dataset.tm); close(); toast('저장했습니다'); render(); }); }); }
 
-function newVisit(v0) { if (SHIP()) return toast(SHIPMSG, 3000); const ms = myShip(), V = VES(), t = ymd();
+function newVisit(v0) { if (RO()) return toast(SHIPMSG, 3000); const ms = myShip(), V = VES(), t = ymd();
   if (ms && isForeign(ms)) return modal(`<h3>⛔ 외항선 <button class="x" data-x>✕</button></h3><div class="issues"><b>${FMSG}</b><br>${esc(ms)}은(는) 별도 양식(하드카피) 방선 보고서를 사용합니다.</div><button class="btn p w" data-x>확인</button>`);
   if (isForeign(v0)) return toast(`${v0} — ${FMSG}`, 3500);
   modal(`<h3>새 방선 New visit <button class="x" data-x>✕</button></h3>
@@ -595,17 +597,17 @@ const GIF = 'data:image/gif;base64,R0lGODlhAQABAAAAACw=';
 const thumb = (id, del) => `<span class="tw"><img data-ph="${id}" alt="사진" src="${GIF}">${del ? `<button class="dx" data-dx="${id}" aria-label="사진 삭제" title="사진 삭제">✕</button>` : ''}</span>`;
 async function fillThumbs(root) { for (const im of $$('img[data-ph]', root)) { const s = await photo(im.dataset.ph); if (s) im.src = s; else im.style.background = '#EEF1F5'; } }
 
-function partView(r, k) { const p = PART[k], P = r.parts[k], locked = sig(P.sign) || SHIP(), st = partStat(r, k), mon = p.items.filter(i => !i.q), qi = p.items.filter(i => i.q);
+function partView(r, k) { const p = PART[k], P = r.parts[k], locked = sig(P.sign) || RO(), st = partStat(r, k), mon = p.items.filter(i => !i.q), qi = p.items.filter(i => i.q);
   const m = $('#pm');
   m.innerHTML = `<h2>${PARTS.indexOf(p) + 1}. ${L(p.ko, p.en)}</h2>
     <div class="muted">${st.done}/${st.n} 항목 판정 ${r.h.q ? '' : '· 월간 (분기 추가 항목 제외)'}</div><div class="prog"><i style="width:${st.n ? st.done / st.n * 100 : 0}%"></i></div>
-    ${sig(P.sign) ? `<div class="lock" style="margin-top:12px">✅ <b>${esc(P.sign.name)}</b> 감독 서명 완료 (${hm(P.sign.at)})${SHIP() ? '' : ' — 수정하려면 아래에서 서명을 취소하세요.'}</div>` : SHIP() ? '<div class="lock" style="margin-top:12px;background:#F1F4F9;border-color:var(--line)">🔒 선박 기기는 <b>보기만</b> 할 수 있습니다 — 점검·서명은 감독이 합니다.</div>' : '<div style="height:10px"></div>'}
+    ${sig(P.sign) ? `<div class="lock" style="margin-top:12px">✅ <b>${esc(P.sign.name)}</b> 감독 서명 완료 (${hm(P.sign.at)})${RO() ? '' : ' — 수정하려면 아래에서 서명을 취소하세요.'}</div>` : RO() ? `<div class="lock" style="margin-top:12px;background:#F1F4F9;border-color:var(--line)">🔒 ${CEO() ? '대표이사 계정' : '선박 기기'}는 <b>보기만</b> 할 수 있습니다 — 점검·서명은 감독이 합니다.</div>` : '<div style="height:10px"></div>'}
     <div class="card" style="padding:10px 12px"><div class="row" style="gap:8px;align-items:flex-end"><div style="flex:1;min-width:130px"><label class="f" style="margin-top:0">방선 일자 <span class="en">Date · ${TCODE[k]}</span></label><input class="i" type="date" id="pvD" value="${esc((P.v || {}).date || '')}" ${locked ? 'disabled' : ''}></div><div style="flex:1;min-width:130px"><label class="f" style="margin-top:0">항구 <span class="en">Port</span></label><input class="i" id="pvP" value="${esc((P.v || {}).port || '')}" placeholder="예: 여수, 울산" ${locked ? 'disabled' : ''}></div></div>${!pv(r, k) && !locked ? '<div class="muted" style="font-size:12.5px;margin-top:4px">팀마다 방선 날짜·항구가 다를 수 있습니다 — 우리 팀이 간 날짜·항구를 적어 주세요.</div>' : ''}</div>
     ${mon.map(it => itemCard(r, it, locked)).join('')}
     ${qi.length ? (r.h.q ? `<div class="qh">분기 추가 항목<small>Quarterly add-on</small></div>${qi.map(it => itemCard(r, it, locked)).join('')}` : `<div class="qh" style="background:#F1F4F9;color:var(--mut)">분기 추가 항목 ${qi.length}개는 분기 방선 때만 점검합니다<small>Quarterly add-on is hidden for monthly visits</small></div>`) : ''}
     <div class="card" id="signC"><h3>${L(p.sup[0], p.sup[1])}</h3>
-      ${sig(P.sign) ? `<div class="sigbox"><img src="${P.sign.img}" alt="서명"><div><b>${esc(P.sign.name)}</b><div class="muted">${hm(P.sign.at)}</div></div></div>${SHIP() ? '' : '<div class="row" style="margin-top:12px"><button class="btn r s" id="unsig">서명 취소 (수정하기)</button></div>'}`
-        : SHIP() ? '<div class="muted">감독 서명 전입니다.</div>' : `<div id="iss"></div><button class="btn g w" id="dosig">✍ ${p.ko} 점검 완료 · 서명</button>`}</div>`;
+      ${sig(P.sign) ? `<div class="sigbox"><img src="${P.sign.img}" alt="서명"><div><b>${esc(P.sign.name)}</b><div class="muted">${hm(P.sign.at)}</div></div></div>${RO() ? '' : '<div class="row" style="margin-top:12px"><button class="btn r s" id="unsig">서명 취소 (수정하기)</button></div>'}`
+        : RO() ? '<div class="muted">감독 서명 전입니다.</div>' : `<div id="iss"></div><button class="btn g w" id="dosig">✍ ${p.ko} 점검 완료 · 서명</button>`}</div>`;
   fillThumbs(m);
   const svV = async () => { P.v = { date: $('#pvD', m).value, port: $('#pvP', m).value.trim(), u: now() }; await save(r); };
   $('#pvD', m).onchange = svV; $('#pvP', m).onchange = svV;
@@ -639,7 +641,7 @@ function memoEdit(v0, cb) { modal(`<h3>📝 메모 Memo <button class="x" data-x
 
 /* ---------- 공무팀 특별 점검 사항 (매월 · 별도 출력) ---------- */
 function viewSp(x) { $('#app').innerHTML = header(`🔧 ${esc(x.h.ship || '')} · ${dot(x.h.date)}`, `공무팀 특별 점검 · 사내용${x.h.port ? ' · ' + esc(x.h.port) : ''}`, '#/') + '<main id="pm"></main>'; spView(x); paintSync(); }
-function spView(r) { const m = $('#pm'), SP = r.sp, L0 = spItems(r), locked = spDone(r) || SHIP(), ce = sig(SP.ce);
+function spView(r) { const m = $('#pm'), SP = r.sp, L0 = spItems(r), locked = spDone(r) || RO(), ce = sig(SP.ce);
   const card = (x, i) => `<div class="card spc" data-x="${x.id}">
     <div class="hn"><span class="no">지적 No.${i + 1}</span>${x.done ? '<span class="chip ok">조치 완료</span>' : (x.cph || []).length ? '<span class="chip warn">조치 사진 있음</span>' : ''}<span class="sp"></span>${locked ? '' : '<button class="btn s r" data-a="del" aria-label="이 칸 삭제">🗑 삭제</button>'}</div>
     <label class="f">제목 Title</label><input class="i" data-k="title" value="${esc(x.title || '')}" placeholder="예: 비상발전기 축전지 전해액 부족" ${locked ? 'disabled' : ''}>
@@ -649,10 +651,10 @@ function spView(r) { const m = $('#pm'), SP = r.sp, L0 = spItems(r), locked = sp
         <div class="th">${(x.ph || []).map(id => thumb(id, !locked)).join('') || '<span class="muted" style="font-size:13px">사진 없음</span>'}</div>
         ${locked ? '' : '<div class="act"><button class="btn s" data-a="cam" data-w="ph">📷 촬영</button><button class="btn s" data-a="alb" data-w="ph">🖼 앨범</button></div>'}</div>
       <div class="spb r"><div class="sph">시정조치 결과<small>조치 후 입력 · Result</small></div>
-        <div class="th">${(x.cph || []).map(id => thumb(id, true)).join('') || '<span class="muted" style="font-size:13px">조치 완료 사진</span>'}</div>
-        <div class="act"><button class="btn s" data-a="cam" data-w="cph">📷 촬영</button><button class="btn s" data-a="alb" data-w="cph">🖼 앨범</button></div>
-        <label class="f" style="font-size:13px">조치 완료일 Date completed</label><input class="i" type="date" data-k="done" value="${esc(x.done || '')}"></div></div></div>`;
-  const can = key => !SHIP() || key === 'ce';   /* 선박 기기: 기관장 확인만 */
+        <div class="th">${(x.cph || []).map(id => thumb(id, !CEO())).join('') || '<span class="muted" style="font-size:13px">조치 완료 사진</span>'}</div>
+        ${CEO() ? '' : '<div class="act"><button class="btn s" data-a="cam" data-w="cph">📷 촬영</button><button class="btn s" data-a="alb" data-w="cph">🖼 앨범</button></div>'}
+        <label class="f" style="font-size:13px">조치 완료일 Date completed</label><input class="i" type="date" data-k="done" value="${esc(x.done || '')}" ${CEO() ? 'disabled' : ''}></div></div></div>`;
+  const can = key => CEO() ? false : !SHIP() || key === 'ce';   /* 선박 기기: 기관장 확인만 · 대표이사: 보기만 */
   const sgC = (title, en, s, key) => `<div class="card"><div class="row"><b>${title}</b><span class="en">${en}</span><span class="sp"></span>${sig(s) && can(key) ? `<button class="btn s r" data-un="${key}">서명 취소</button>` : ''}</div>
     ${sig(s) ? `<div class="sigbox" style="margin-top:8px"><img src="${s.img}" alt=""><div><b>${esc(s.name)}</b><div class="muted">${hm(s.at)}</div></div></div>` : !can(key) ? '<div class="muted" style="margin-top:6px">감독 서명 전</div>' : `<div id="${key}Iss"></div><button class="btn ${key === 'sign' ? 'g' : ''} w" style="margin-top:8px" data-sg="${key}">✍ ${key === 'sign' ? '점검 완료 · 서명' : '서명하기'}</button>`}</div>`;
   m.innerHTML = `<h2>${L('공무팀 특별 점검 사항', 'Technical Team Special Inspection Items')}</h2>
@@ -686,7 +688,7 @@ function spView(r) { const m = $('#pm'), SP = r.sp, L0 = spItems(r), locked = sp
       const dx = e.target.closest('[data-dx]');
       const rm = async pid => { await upd(id, o => { o.ph = (o.ph || []).filter(z => z !== pid); o.cph = (o.cph || []).filter(z => z !== pid); }); toast('사진을 삭제했습니다'); keep(); };
       if (dx) { e.stopPropagation(); return ask('이 사진을 삭제할까요?', () => rm(dx.dataset.dx), '삭제', true); }
-      const im = e.target.closest('img[data-ph]'); if (im) { const pid = im.dataset.ph, canDel = !locked || (SP.items[id].cph || []).includes(pid); viewPhoto(pid, canDel ? () => rm(pid) : null); } }); });
+      const im = e.target.closest('img[data-ph]'); if (im) { const pid = im.dataset.ph, canDel = !CEO() && (!locked || (SP.items[id].cph || []).includes(pid)); viewPhoto(pid, canDel ? () => rm(pid) : null); } }); });
   $$('[data-sg]', m).forEach(b => b.onclick = () => { const k = b.dataset.sg;
     if (k === 'sign') { const is = spIssues(r); if (is.length) { $('#signIss').innerHTML = `<div class="issues"><b>서명 전에 확인해 주세요 (${is.length})</b><ul style="margin:6px 0 0;padding-left:18px">${is.map(z => `<li>${esc(z)}</li>`).join('')}</ul></div>`; $('#signIss').scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
       const go2 = () => signPad('공무 감독 (점검)', myName(), async s => { s.team = teamCode(); SP.sign = s; await save(r); toast('공무팀 특별 점검 서명 완료'); viewSp(r); }, `${teamLabel() || '공무'} · ${APP.get('pcname') || ''}`);
@@ -719,17 +721,17 @@ async function docX(r) { const X = spItems(r), ph = {}; for (const x of X) for (
 /* ---------- 지적사항 (공통) ---------- */
 function findView(r) { const F = findings(r), m = $('#pm'), t0 = ymd(), no = id => F.findIndex(x => x.id === id) + 1, open = F.filter(f => !f.done), done = F.filter(f => f.done);
   const card = f => `<div class="card spc" data-fc="${f.id}" style="${f.done ? 'border-left:5px solid var(--ok)' : 'border-left:5px solid var(--err)'}">
-    <div class="hn"><span class="no" style="background:${f.done ? 'var(--ok)' : 'var(--err)'}">지적 No.${no(f.id)}</span>${f.item ? `<span class="chip">${esc(f.item)} ${esc(ITEM[f.item] ? ITEM[f.item].sh || ITEM[f.item].t.replace('[현장] ', '').slice(0, 14) : '')}</span>` : '<span class="chip">기타</span>'}${f.ver ? '<span class="chip ok">현장 확인</span>' : ''}<span class="sp"></span>${SHIP() ? '' : '<button class="btn s" data-a="edit">✏ 수정</button>'}</div>
+    <div class="hn"><span class="no" style="background:${f.done ? 'var(--ok)' : 'var(--err)'}">지적 No.${no(f.id)}</span>${f.item ? `<span class="chip">${esc(f.item)} ${esc(ITEM[f.item] ? ITEM[f.item].sh || ITEM[f.item].t.replace('[현장] ', '').slice(0, 14) : '')}</span>` : '<span class="chip">기타</span>'}${f.ver ? '<span class="chip ok">현장 확인</span>' : ''}<span class="sp"></span>${RO() ? '' : '<button class="btn s" data-a="edit">✏ 수정</button>'}</div>
     <div style="margin-top:8px;white-space:pre-wrap;font-weight:600">${esc(f.desc || '(내용 없음)')}</div>
     <div class="muted" style="font-size:13px;margin-top:2px">조치기한 ${f.due ? dot(f.due) : '—'}${!f.done && f.due && f.due < t0 ? ' · <b style="color:var(--err)">기한 지남</b>' : ''}${f.by ? ' · ' + esc(f.by) : ''}</div>
     <div class="spg"><div class="spb"><div class="sph">지적 사진<small>Photo of finding</small></div><div class="th">${(f.ph || []).map(id => thumb(id, false)).join('') || '<span class="muted" style="font-size:13px">사진 없음</span>'}</div></div>
-      <div class="spb r"><div class="sph">시정조치 결과<small>조치 후 입력 · Result</small></div><div class="th">${(f.cph || []).map(id => thumb(id, true)).join('') || '<span class="muted" style="font-size:13px">조치 완료 사진</span>'}</div>
-        <div class="act"><button class="btn s" data-a="cam">📷 촬영</button><button class="btn s" data-a="alb">🖼 앨범</button></div>
-        <label class="f" style="font-size:13px">조치완료일 Done</label><input class="i" type="date" data-k="done" value="${esc(f.done || '')}"></div></div></div>`;
+      <div class="spb r"><div class="sph">시정조치 결과<small>조치 후 입력 · Result</small></div><div class="th">${(f.cph || []).map(id => thumb(id, !CEO())).join('') || '<span class="muted" style="font-size:13px">조치 완료 사진</span>'}</div>
+        ${CEO() ? '' : '<div class="act"><button class="btn s" data-a="cam">📷 촬영</button><button class="btn s" data-a="alb">🖼 앨범</button></div>'}
+        <label class="f" style="font-size:13px">조치완료일 Done</label><input class="i" type="date" data-k="done" value="${esc(f.done || '')}" ${CEO() ? 'disabled' : ''}></div></div></div>`;
   const sec = (t, n, cls) => `<div class="row" style="margin:16px 0 8px;gap:8px"><h3 style="margin:0">${t}</h3><span class="chip ${cls}">${n}</span></div>`;
   m.innerHTML = `<h2>4. ${L('지적사항 (공통)', 'Findings (all parts)')}</h2><p class="muted" style="margin-top:-6px">${SHIP() ? '조치한 뒤 <b>조치 완료 사진</b>을 찍고 <b>조치완료일</b>을 넣으면 [조치 완료]로 옮겨집니다.' : '안품·공무·해무 감독이 같은 목록에 적습니다. 번호는 적은 순서대로 자동으로 매겨집니다. 지적사항은 부적합 보고서 작성 대상입니다.'}</p>
     ${F.length ? sec('조치 대기', open.length, open.length ? 'err' : '') + (open.length ? open.map(card).join('') : '<div class="muted" style="padding:4px 2px">조치 대기 중인 지적이 없습니다.</div>') + sec('조치 완료', done.length, done.length ? 'ok' : '') + (done.length ? done.map(card).join('') : '<div class="muted" style="padding:4px 2px">아직 조치 완료된 지적이 없습니다.</div>') : '<div class="empty">지적사항이 없습니다.</div>'}
-    ${SHIP() ? '' : '<button class="btn p w" id="fadd" style="margin-top:12px">＋ 지적사항 추가 <span class="en" style="color:#C9D6EE">Add finding</span></button>'}`;
+    ${RO() ? '' : '<button class="btn p w" id="fadd" style="margin-top:12px">＋ 지적사항 추가 <span class="en" style="color:#C9D6EE">Add finding</span></button>'}`;
   fillThumbs(m);
   const keep = () => { const y = window.scrollY; findView(r); window.scrollTo(0, y); updTabs(r); };
   const upd = async (id, fn) => { const o = Object.assign({}, r.fnd[id]); fn(o); o.u = now(); r.fnd[id] = o; await save(r); };
@@ -741,10 +743,10 @@ function findView(r) { const F = findings(r), m = $('#pm'), t0 = ymd(), no = id 
           await upd(id, o => o.cph = [...(o.cph || []), ...ids]); toast(`조치 사진 ${ids.length}장 첨부`); return keep(); } return; }
       const rm = async pid => { await upd(id, o => o.cph = (o.cph || []).filter(z => z !== pid)); toast('사진을 삭제했습니다'); keep(); };
       const dx = e.target.closest('[data-dx]'); if (dx) { e.stopPropagation(); return ask('이 조치 사진을 삭제할까요?', () => rm(dx.dataset.dx), '삭제', true); }
-      const im = e.target.closest('img[data-ph]'); if (im) { const pid = im.dataset.ph; viewPhoto(pid, (r.fnd[id].cph || []).includes(pid) ? () => rm(pid) : null); } }); });
+      const im = e.target.closest('img[data-ph]'); if (im) { const pid = im.dataset.ph; viewPhoto(pid, !CEO() && (r.fnd[id].cph || []).includes(pid) ? () => rm(pid) : null); } }); });
   const fa = $('#fadd'); if (fa) fa.onclick = () => findEdit(r, null, ''); }
 
-function findEdit(r, fid, item0) { if (SHIP() && !fid) return toast(SHIPMSG, 3000); const ro = SHIP(), dis = ro ? 'disabled' : ''; const f = fid ? Object.assign({}, r.fnd[fid]) : { item: item0 || '', desc: '', due: '', done: '', ver: '', title: '', ph: item0 && ITEM[item0] ? [...((r.parts[ITEM[item0].part].items[item0] || {}).ph || [])] : [] }, no = fid ? findings(r).findIndex(x => x.id === fid) + 1 : findings(r).length + 1;
+function findEdit(r, fid, item0) { if (CEO()) return; if (SHIP() && !fid) return toast(SHIPMSG, 3000); const ro = SHIP(), dis = ro ? 'disabled' : ''; const f = fid ? Object.assign({}, r.fnd[fid]) : { item: item0 || '', desc: '', due: '', done: '', ver: '', title: '', ph: item0 && ITEM[item0] ? [...((r.parts[ITEM[item0].part].items[item0] || {}).ph || [])] : [] }, no = fid ? findings(r).findIndex(x => x.id === fid) + 1 : findings(r).length + 1;
   const opts = PARTS.map(p => `<optgroup label="${p.ko}">${p.items.filter(it => !it.q || r.h.q).map(it => `<option value="${it.no}" ${f.item === it.no ? 'selected' : ''}>${it.no} ${esc(it.sh || it.t.replace('[현장] ', ''))}</option>`).join('')}</optgroup>`).join('');
   let ph = [...(f.ph || [])], cph = [...(f.cph || [])];
   modal(`<h3>지적사항 No.${no} <button class="x" data-x>✕</button></h3>
@@ -772,7 +774,7 @@ function findEdit(r, fid, item0) { if (SHIP() && !fid) return toast(SHIPMSG, 300
 
 /* ---------- 확인·출력 ---------- */
 function confView(r) { const m = $('#pm'), E = r.ext || {}, er = E.r || {};
-  const can = key => SHIP() ? (key === 'fin.master' || key === 'fin.ce') : key === 'fin.ceo' || key === 'ext.a' || key === 'ext.c' ? CAN(key === 'fin.ceo' ? 'admin' : 'dpa') : key === 'fin.dpa' ? CAN('dpa') : true;   /* 선박: 선장·기관장 / D.P.A·D.P = DPA·관리자 / C.E.O = 관리자 */
+  const can = key => CEO() ? key === 'fin.ceo' : SHIP() ? (key === 'fin.master' || key === 'fin.ce') : key === 'fin.ceo' || key === 'ext.a' || key === 'ext.c' ? CAN(key === 'fin.ceo' ? 'admin' : 'dpa') : key === 'fin.dpa' ? CAN('dpa') : true;   /* 선박: 선장·기관장 / D.P.A·D.P = DPA·관리자 / C.E.O = 관리자 */
   const sgRow = (title, en, s, key) => `<div class="card"><div class="row"><b>${title}</b><span class="en">${en}</span><span class="sp"></span>${sig(s) && can(key) ? `<button class="btn s r" data-un="${key}">취소</button>` : ''}</div>
     ${sig(s) ? `<div class="sigbox" style="margin-top:8px"><img src="${s.img}" alt=""><div><b>${esc(s.name)}</b><div class="muted">${hm(s.at)}</div></div></div>` : can(key) ? `<button class="btn w" style="margin-top:8px" data-sg="${key}">✍ 서명하기</button>` : '<div class="muted" style="margin-top:6px">서명 전 (회사)</div>'}</div>`;
   m.innerHTML = `<h2>5. ${L('본선 및 회사 확인', 'Confirmation by ship & office')}</h2>
@@ -783,17 +785,17 @@ function confView(r) { const m = $('#pm'), E = r.ext || {}, er = E.r || {};
     <h3 style="margin-top:16px">회사 확인 서명 <span class="en">Office</span></h3>
     ${FINAL.slice(2).map(([k, a, b]) => sgRow(a, b, r.fin[k], 'fin.' + k)).join('')}
     <div class="card"><h3>조치기한 연장 <span class="en">Extension (필요 시)</span></h3>
-      <label class="f">연장 사유 Reason</label><div class="row">${EXTR.map(([k, a, b]) => `<label style="display:flex;gap:6px;align-items:center;margin-right:10px"><input type="checkbox" data-er="${k}" ${er[k] ? 'checked' : ''} style="width:20px;height:20px">${a}</label>`).join('')}</div>
-      <input class="i" id="eot" placeholder="기타 사유" value="${esc(er.other || '')}" style="margin-top:6px">
-      <label class="f">연장기한 Extended to</label><input class="i" type="date" id="eto" value="${esc(er.to || '')}">
+      <label class="f">연장 사유 Reason</label><div class="row">${EXTR.map(([k, a, b]) => `<label style="display:flex;gap:6px;align-items:center;margin-right:10px"><input type="checkbox" data-er="${k}" ${er[k] ? 'checked' : ''} ${CEO() ? 'disabled' : ''} style="width:20px;height:20px">${a}</label>`).join('')}</div>
+      <input class="i" id="eot" placeholder="기타 사유" value="${esc(er.other || '')}" ${CEO() ? 'disabled' : ''} style="margin-top:6px">
+      <label class="f">연장기한 Extended to</label><input class="i" type="date" id="eto" value="${esc(er.to || '')}" ${CEO() ? 'disabled' : ''}>
       <div class="row" style="margin-top:12px;gap:12px">${[['a', 'D.P 승인 Approved'], ['c', 'D.P 종결확인 Closed']].map(([k, t]) => { const s = E[k]; return `<div style="flex:1;min-width:150px"><div class="muted" style="font-weight:700">${t}</div>${sig(s) ? `<div class="sigbox"><img src="${s.img}" style="height:44px">${can('ext.' + k) ? `<button class="btn s r" data-un="ext.${k}">취소</button>` : ''}</div>` : !can('ext.' + k) ? '<span class="muted">— (D.P.A)</span>' : `<button class="btn s w" data-sg="ext.${k}">✍ 서명</button>`}</div>`; }).join('')}</div></div>
     <div class="card"><h3>출력·보관 <span class="en">Output</span></h3>
       <button class="btn p w" id="pvB">📄 보고서 보기 · PDF 저장</button>
-      <div class="row" style="margin-top:8px"><button class="btn sp" id="expB">📤 파일로 내보내기</button>${SHIP() ? '' : '<button class="btn sp" id="impB2">📥 가져와 합치기</button>'}</div>
+      <div class="row" style="margin-top:8px"><button class="btn sp" id="expB">📤 파일로 내보내기</button>${RO() ? '' : '<button class="btn sp" id="impB2">📥 가져와 합치기</button>'}</div>
       <p class="muted" style="margin:8px 0 0">서버 동기화가 안 될 때: 파일로 내보내 카카오톡·메일로 다른 감독에게 보내면, 받은 사람이 '가져와 합치기'로 한 보고서로 합칩니다.</p>
       ${SHIP() || !CAN('admin') ? '' : '<button class="btn r w" id="delB" style="margin-top:14px">보고서 삭제</button>'}</div>`;
   $$('[data-sg]', m).forEach(b => b.onclick = () => { if (!can(b.dataset.sg)) return toast('🔒 권한이 없습니다', 3000); const [g, k] = b.dataset.sg.split('.'), lab = g === 'fin' ? FINAL.find(x => x[0] === k)[1] : (k === 'a' ? 'D.P 승인' : 'D.P 종결확인');
-    signPad(lab, '', async s => { if (g === 'fin') r.fin[k] = s; else r.ext[k] = s; await save(r); toast('서명 저장'); viewRep(r, 'C'); }); });
+    signPad(lab, k === 'ceo' ? myName() : '', async s => { if (g === 'fin') r.fin[k] = s; else r.ext[k] = s; await save(r); toast('서명 저장'); viewRep(r, 'C'); }); });
   $$('[data-un]', m).forEach(b => b.onclick = () => ask('이 서명을 취소할까요?', async () => { const [g, k] = b.dataset.un.split('.'); (g === 'fin' ? r.fin : r.ext)[k] = { cleared: true, u: now() }; await save(r); viewRep(r, 'C'); }, '서명 취소', true));
   const svE = async () => { const o = { other: $('#eot').value.trim(), to: $('#eto').value, u: now() }; $$('[data-er]', m).forEach(c => o[c.dataset.er] = c.checked); r.ext.r = o; await save(r, true); };
   $$('[data-er]', m).forEach(c => c.onchange = svE); $('#eot').onchange = svE; $('#eto').onchange = svE;
@@ -804,7 +806,7 @@ function confView(r) { const m = $('#pm'), E = r.ext || {}, er = E.r || {};
 async function exportRep(r) { const ph = {}; for (const id of photoIds(r)) { const d = await photo(id); if (d) ph[id] = d; }
   const name = `방선보고서_${(r.h.ship || '').replace(/\s+/g, '_')}_${r.h.date}.sjvst.json`;
   await saveFile(new Blob([JSON.stringify({ kind: 'SEJUL-VST-FILE', v: 1, rep: r, ph })], { type: 'application/json' }), name, '방선 보고서 파일', { 'application/json': ['.json'] }); }
-function importFile() { if (SHIP()) return toast(SHIPMSG, 3000); const i = document.createElement('input'); i.type = 'file'; i.accept = '.json,application/json';
+function importFile() { if (RO()) return toast(SHIPMSG, 3000); const i = document.createElement('input'); i.type = 'file'; i.accept = '.json,application/json';
   i.onchange = async () => { let n = 0; for (const f of i.files) { try { const o = JSON.parse(await f.text()); if (o.kind !== 'SEJUL-VST-FILE' || !o.rep) throw 0; n += await applyRep(o.rep, o.ph); } catch (e) { toast('방선 보고서 파일이 아닙니다: ' + f.name); } }
     if (n) { toast('합쳤습니다 · Merged'); render(); } else toast('새로 합칠 내용이 없습니다'); }; i.click(); }
 async function applyRep(o, ph) { let ch = 0; if (ph) for (const [id, d] of Object.entries(ph)) if (!PHK.has(id)) { await photoPut(id, d, o.id, false); ch = 1; }
@@ -932,6 +934,7 @@ window.SJ_VST = {
   async apply(o) { if (!o) return 0;
     /* 선박 기기에서 온 파일: 선장·기관장 서명과 시정조치 결과(조치 사진·완료일)만 받아들임 — 감독 점검·서명·지적·삭제는 무시 */
     /* 사무실 일반·DPA 계정에서 온 파일: 권한 밖의 서명·삭제는 받아들이지 않음 */
+    if (o.role === 'office' && o.perm === 'ceo') { if (o.kind === 'SEJUL-VST' && o.rep && R[o.rep.id]) { const a = cp(R[o.rep.id]); a.fin = a.fin || {}; a.fin.ceo = mrg(a.fin.ceo, (o.rep.fin || {}).ceo); o = Object.assign({}, o, { rep: a }); } else if (o.kind === 'SEJUL-VST' || o.kind === 'SEJUL-VSX') return 0; }
     if (o.role === 'office' && (o.perm === 'user' || o.perm === 'dpa')) { if (o.kind === 'SEJUL-VST' && o.rep && R[o.rep.id]) { const a = R[o.rep.id], b = cp(o.rep); b.fin = b.fin || {}; b.ext = b.ext || {}; b.fin.ceo = a.fin && a.fin.ceo; b.del = a.del; if (o.perm === 'user') { b.fin.dpa = a.fin && a.fin.dpa; b.ext.a = a.ext && a.ext.a; b.ext.c = a.ext && a.ext.c; } o = Object.assign({}, o, { rep: b }); }
       if (o.kind === 'SEJUL-VSX' && o.sp && XS[o.sp.id] && o.perm === 'user') o = Object.assign({}, o, { sp: Object.assign(cp(o.sp), { del: XS[o.sp.id].del }) }); }
     if (o.role === 'ship' && !SHIP()) { if (o.kind === 'SEJUL-VST' && o.rep) o = Object.assign({}, o, { rep: fromShipR(R[o.rep.id], o.rep) }); if (o.kind === 'SEJUL-VSX' && o.sp) o = Object.assign({}, o, { sp: fromShipX(XS[o.sp.id], o.sp) }); if ((o.kind === 'SEJUL-VST' && !o.rep) || (o.kind === 'SEJUL-VSX' && !o.sp)) return 0; }

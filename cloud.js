@@ -39,7 +39,8 @@
       const files = A.files(m) || [], mine = new Set(files.map(f => f.name)); C.state.up = 0; C.state.down = 0;
       const bg = !!(window.SJAPP && SJAPP.bg);   /* 앱 홈이 요약만 만들려고 연 보이지 않는 창: 올리기·저장 없이 받아서 계산만 (열려 있는 도구 화면의 자료를 덮어쓰지 않게) */
       const d0 = LS('sejul_cloud_' + tool + '_dirty') || '', pushAt0 = +LS('sejul_cloud_' + tool + '_pushAt') || 0; let pre = null; try { pre = !bg && A.track ? A.track() : null; } catch (e) { }
-      for (const f of bg ? [] : files) { const core = JSON.stringify(f.core), h = hash(core); if (!force && pushed[f.name] === h) continue;
+      const ro = (m && m.user && m.user.perm === 'ceo' && tool !== 'vst');   /* 대표이사 계정: 보기만 — 계획정비·위험성 자료는 서버로 올리지 않음 */
+      for (const f of bg || ro ? [] : files) { const core = JSON.stringify(f.core), h = hash(core); if (!force && pushed[f.name] === h) continue;
         const at = new Date().toISOString(), body = await C.gz(JSON.stringify(Object.assign({}, f.obj, { savedAt: at })));
         await C.rpc('sj_put', { p_tool: tool, p_name: f.name, p_ship: f.ship, p_body: body, p_size: body.length, p_saved_at: at, p_pc: A.pc() }); pushed[f.name] = h; seen[f.name] = at; C.state.up++; }
       if (!bg) LSS('sejul_cloud_' + tool + '_pushed', JSON.stringify(pushed));
@@ -60,7 +61,7 @@
     } catch (e) { C.state.err = e.message; console.warn('cloud', e); }
     C.state.busy = false; C.badge(); return n; };
   /* 알림용 요약 올리기 — 선박: 자기 선박의 계획정비·위험성 요약 / 사무실: 선박별 DPA 결정 (바뀐 것만) */
-  C.sumPush = async function () { const m = C.me(); if (!m || m.status !== 'approved' || !navigator.onLine) return;
+  C.sumPush = async function () { const m = C.me(); if (!m || m.status !== 'approved' || !navigator.onLine || (m.user && m.user.perm === 'ceo')) return;
     const rd = k => { try { return JSON.parse(LS('sejul_sum_' + k) || 'null'); } catch (e) { return null; } }, sp = rd('pms'), sr = rd('rsk'), out = [];
     if (m.role === 'ship') { const v = m.ship, s = sp && sp.ships && sp.ships[v], r = sr && sr.v && sr.v[v];
       if (s && sp.mode !== 'admin') out.push(['pms', v, { od: s.od || 0, d7: s.d7 || 0, d30: s.d30 || 0, cri: s.cri || 0, def: s.def || 0, defA: s.defA || 0, low: s.low || 0, D: s.D || [], R: s.R || [], P: s.P || [] }]);

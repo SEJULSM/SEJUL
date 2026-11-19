@@ -696,7 +696,7 @@ html.sj-railmin .sjr .sj-vtg{display:none}html.sj-railmin .sjr .sj-flr{margin-to
            fields:[{id, label, type:'text'|'date'|'ta'|'num', value, min, max, ph, req}], acts:[{k, label, tone:'ok'|'cond'|'rej'|'neu', need:[fieldId], run(v, el)}] } */
   U.decide = function (o) { const T = U.T; let el = document.getElementById('sjd'); if (el) el.remove();
     /* DPA 결정(위험성 평가·변화관리)·작업 연기 결정은 DPA·관리자만 — 일반 계정은 내용만 보기 */
-    if (U.role() === 'office' && /DPA|회사 승인|company approval|작업 연기|Postponement/i.test(String(o.kind || '')) && !U.can('dpa')) o = Object.assign({}, o, { acts: [], fields: [], secs: [...(o.secs || []), { h: '🔒', html: `<p>${T('DPA·관리자만 결정할 수 있습니다. 내용 확인만 가능합니다.', 'Only the DPA or an administrator can decide. View only.')}</p>` }] });
+    if (U.role() === 'office' && (U.perm() === 'ceo' || (/DPA|회사 승인|company approval|작업 연기|Postponement/i.test(String(o.kind || '')) && !U.can('dpa')))) o = Object.assign({}, o, { acts: [], fields: [], secs: [...(o.secs || []), { h: '🔒', html: `<p>${T('DPA·관리자만 결정할 수 있습니다. 내용 확인만 가능합니다.', 'Only the DPA or an administrator can decide. View only.')}</p>` }] });
     el = document.createElement('div'); el.id = 'sjd'; el.className = 'sjd';
     const fld = f => { const at = `id="sjd_${f.id}" ${f.min ? `min="${U.esc(f.min)}"` : ''} ${f.max ? `max="${U.esc(f.max)}"` : ''} placeholder="${U.esc(f.ph || '')}"`;
       return `<label class="sjd-f ${f.type === 'ta' ? 'w' : ''}"><span>${f.label}${f.req ? ' <i>*</i>' : ''}</span>${f.type === 'ta' ? `<textarea ${at} rows="3">${U.esc(f.value || '')}</textarea>` : `<input type="${f.type === 'num' ? 'number' : f.type || 'text'}" ${at} value="${U.esc(f.value || '')}">`}</label>`; };
