@@ -454,7 +454,7 @@ async function viewPhoto(id, onDel) { const src = await photo(id); modal(`<h3>�
 const S = { tab: null, home: (() => { try { return localStorage.getItem('sejul_vst_home') || 'rep'; } catch (e) { return 'rep'; } })() };
 function route() { const h = location.hash.replace(/^#\/?/, '').split('/'); return { v: h[0] || '', id: h[1] || '', tab: h[2] || '' }; }
 function go(h) { location.hash = h; }
-addEventListener('hashchange', render);
+addEventListener('hashchange', e => { try { const h = new URL(e.oldURL).hash || '#/'; if (!/^#\/(p|x)\//.test(h)) S.prevH = h; } catch (x) { } render(); });   /* 보기·출력에서 ‹ 돌아가기 = 들어오기 전 화면으로 */
 
 function header(title, sub, back) {
   return `<header class="hd"><a class="home" href="${back || '../index.html'}" aria-label="뒤로">${back ? '‹' : `<img src="../logo.svg" width="22" height="21" alt="">`}</a>
@@ -1017,7 +1017,7 @@ async function docHTML(r) { const ph = {}; for (const id of photoIds(r)) ph[id] 
   A3.forEach((rows, i) => pages.push(pg(`<div class="sh">별지 3 – 시정조치 결과 <span class="e">Appendix 3 – Results of Corrective Actions</span>${A3.length > 1 ? ` (${i + 1}/${A3.length})` : ''}</div><table>${rows.join('')}</table>`)));
   return `<div class="doc">${pages.join('')}</div>`; }
 
-async function viewPrint(r, kind) { const xk = kind === 'x', back = CEO() ? '#/' : xk ? '#/s/' + r.id : '#/r/' + r.id + '/C', ttl = xk ? '공무팀 특별 점검 사항' : '감독 방선 보고서', fn = xk ? '공무특별점검' : '감독방선보고서', base = `${(r.h.ship || '').trim()}_${fn}_${(r.h.date || '').replace(/-/g, '')}`;
+async function viewPrint(r, kind) { const xk = kind === 'x', back = S.prevH && S.prevH !== '#' ? S.prevH : CEO() ? '#/' : xk ? '#/s/' + r.id : '#/r/' + r.id + '/C', ttl = xk ? '공무팀 특별 점검 사항' : '감독 방선 보고서', fn = xk ? '공무특별점검' : '감독방선보고서', base = `${(r.h.ship || '').trim()}_${fn}_${(r.h.date || '').replace(/-/g, '')}`;
   document.title = base;   /* 인쇄 › PDF로 저장할 때 기본 파일 이름 = 선박명_보고서이름_날짜 */
   $('#app').innerHTML = header(xk ? '공무팀 특별 점검 보기' : '보고서 보기', `${esc(r.h.ship)} · ${dot(r.h.date)}`, back) + '<main><div class="empty">보고서를 만드는 중…</div></main>'; paintSync();
   const html = xk ? await docX(r) : await docHTML(r), P = $('#print'); P.innerHTML = `<div class="pvbar"><a class="btn s" href="${back}">‹ 돌아가기</a><span class="sp"></span><button class="btn s p" id="prB">🖨 인쇄 · PDF 저장</button><button class="btn s" id="htB">💾 HTML 파일 저장</button></div><div class="pv" id="pvw">${html}</div>`;
