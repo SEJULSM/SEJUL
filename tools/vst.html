@@ -503,7 +503,7 @@ function viewListSp() { const ms = myShip(); let list = Object.values(XS).filter
     <div class="sec"><h3>진행 중</h3><span class="chip warn">${prog.length}</span>${hp('서명 또는 시정조치가 남은 특별점검입니다. 지난달 것도 끝날 때까지 여기에 남습니다.')}</div>
     ${prog.length ? prog.map(spCard).join('') : '<div class="muted" style="padding:6px 2px 4px">진행 중인 특별점검이 없습니다.</div>'}
     <div class="sec"><h3>완료 · ${ym(mon)}</h3><span class="chip ok">${done.length}</span>${hp('완료 기준: 공무 감독·기관장·D.P.A 서명 + 모든 지적 조치 완료')}</div>
-    ${!done.length ? '<div class="muted" style="padding:6px 2px">완료된 특별점검이 없습니다.</div>' : !WIDE() && !S.doneOpen ? `<button class="btn w" id="doneB">완료 ${done.length}건 보기 ▾</button>` : done.map(spCard).join('')}</main>`;
+    ${!done.length ? '<div class="muted" style="padding:6px 2px">완료된 특별점검이 없습니다.</div>' : !WIDE() && !S.doneOpen ? `<button class="btn w" id="doneB">완료 ${done.length}건 보기 ▾</button>` : done.map(spCard).join('') + (!WIDE() ? `<button class="btn w" id="doneB">완료 접기 ▴</button>` : '')}</main>`;
   const sb = $('#snB'); if (sb) sb.onclick = () => newSp();
   $('#mPrev').onclick = () => { S.mon = mAdd(mon, -1); render(); }; $('#mNext').onclick = () => { S.mon = mAdd(mon, 1); render(); }; const mn = $('#mNow'); if (mn) mn.onclick = () => { S.mon = ''; render(); };
   $('#app').onclick = e => { const h = e.target.closest('[data-home]'); if (h) return setHome(h.dataset.home);
@@ -512,7 +512,7 @@ function viewListSp() { const ms = myShip(); let list = Object.values(XS).filter
     const fg = e.target.closest('[data-foreign]'); if (fg) return toast(`${fg.dataset.foreign} — ${FMSG}`, 3500);
     const nw = e.target.closest('[data-snew]'); if (nw) return newSp(nw.dataset.snew);
     const o = e.target.closest('[data-sopen]'); if (o) { if (WIDE() && !CEO() && o.classList.contains('rep')) { S.ssel = o.dataset.sopen; return render(); } go((CEO() ? '#/x/' : '#/s/') + o.dataset.sopen); } };
-  const dB = $('#doneB'); if (dB) dB.onclick = () => { S.doneOpen = 1; render(); };
+  const dB = $('#doneB'); if (dB) dB.onclick = () => { S.doneOpen = !S.doneOpen; if (!S.doneOpen) S.showDone = 0; render(); };
   /* PC 넓은 화면: 방선 보고서와 같은 2단 (목록 + 고른 특별점검 요약) */
   document.body.classList.toggle('wide', WIDE() && !CEO());
   if (WIDE() && !CEO()) { const mainEl = $('#app main'), sel = XS[S.ssel] && live(XS[S.ssel]) ? XS[S.ssel] : prog[0] || list[0]; if (sel) S.ssel = sel.id; const L = document.createElement('div'); L.style.minWidth = '0'; [...mainEl.children].forEach(c => L.appendChild(c)); mainEl.appendChild(L); mainEl.classList.add('two');
@@ -622,11 +622,11 @@ function viewList() { if (SHIP() && isForeign(myShip())) return viewForeign(mySh
     <div class="sec"><h3>진행 중</h3><span class="chip warn">${prog.length}</span>${hp('서명이 남은 보고서입니다. 지난달 것도 끝날 때까지 여기에 남습니다.')}</div>
     ${prog.length ? prog.map(repCard).join('') : '<div class="muted" style="padding:6px 2px 4px">진행 중인 방선이 없습니다.</div>'}
     <div class="sec"><h3>완료 · ${mon.slice(0, 4) !== cur.slice(0, 4) ? mon.slice(0, 4) + '년 ' : ''}${+mon.slice(5)}월</h3><span class="chip ok">${done.length}</span>${hp('완료 기준: 감독 3개 파트 서명 + 선장·기관장·D.P.A·C.E.O 서명')}</div>
-    ${!done.length ? '<div class="muted" style="padding:6px 2px">완료된 방선이 없습니다.</div>' : !WIDE() && !S.doneOpen ? `<button class="btn w" id="doneB">완료 ${done.length}건 보기 ▾</button>` : showDone.map(repCard).join('') + (done.length > 5 && !S.showDone ? `<button class="btn w" id="moreB">완료 ${done.length - 5}건 더 보기</button>` : '')}
+    ${!done.length ? '<div class="muted" style="padding:6px 2px">완료된 방선이 없습니다.</div>' : !WIDE() && !S.doneOpen ? `<button class="btn w" id="doneB">완료 ${done.length}건 보기 ▾</button>` : showDone.map(repCard).join('') + (done.length > 5 && !S.showDone ? `<button class="btn w" id="moreB">완료 ${done.length - 5}건 더 보기</button>` : '') + (!WIDE() ? `<button class="btn w" id="doneB" style="margin-top:6px">완료 접기 ▴</button>` : '')}
   </main>`;
   const nb = $('#newB'); if (nb) nb.onclick = () => newVisit(); const ib = $('#impB'); if (ib) ib.onclick = importFile;
   const tb = $('#teamB'); if (tb) tb.onclick = pickTeam;
-  const mb = $('#moreB'); if (mb) mb.onclick = () => { S.showDone = 1; render(); }; const dB = $('#doneB'); if (dB) dB.onclick = () => { S.doneOpen = 1; render(); };
+  const mb = $('#moreB'); if (mb) mb.onclick = () => { S.showDone = 1; render(); }; const dB = $('#doneB'); if (dB) dB.onclick = () => { S.doneOpen = !S.doneOpen; if (!S.doneOpen) S.showDone = 0; render(); };
   $('#mPrev').onclick = () => { S.mon = mAdd(mon, -1); S.showDone = 0; render(); }; $('#mNext').onclick = () => { S.mon = mAdd(mon, 1); S.showDone = 0; render(); };
   const mn = $('#mNow'); if (mn) mn.onclick = () => { S.mon = ''; render(); };
   const f = $('#fship'); if (f) f.onchange = () => { S.fship = f.value; render(); };
