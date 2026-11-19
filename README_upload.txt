@@ -1,4 +1,4 @@
-SEJUL v2026.11.19.2100 - upload order (GitHub)
-1) Repository root (7 files): cloud.js, common.js, files.json, index.html, sw.js, ui.js, version.json
-2) tools/ folder (1 file): tools/vst.html
-Do NOT upload any .sql file to GitHub.
+SEJUL 앱 v36 (2026.11.19.2120) 업로드 안내
+- GitHub 저장소 루트에 cloud.js, common.js, files.json, index.html, sw.js, ui.js, version.json 덮어쓰기
+- tools 폴더에 vst.html 덮어쓰기
+- .sql 파일은 절대 GitHub에 올리지 마세요
