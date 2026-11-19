@@ -142,7 +142,7 @@
     return E.length; };
   /* 공무팀 특별 점검 (사내용 · 방선 보고서와 따로 저장) — 공무팀(TST)·전체 사무실 기기에만 알림 */
   const digX = x => { const h = x.h || {}, P = x.sp || {}, I = Object.entries(P.items || {}).filter(([, i]) => i && !i.del);
-    return { s: h.ship || '', d: h.date || '', p: h.port || '', del: !!(x.del && x.del.v), g1: sg(P.sign) ? P.sign.name || '✓' : '', g2: sg(P.ce) ? P.ce.name || '✓' : '',
+    return { s: h.ship || '', d: h.date || '', p: h.port || '', del: !!(x.del && x.del.v), g1: sg(P.sign) ? P.sign.name || '✓' : '', g2: sg(P.ce) ? P.ce.name || '✓' : '', g3: sg(P.dpa) ? P.dpa.name || '✓' : '',
       i: Object.fromEntries(I.map(([id, i]) => [id, [i.title || '', i.done || '', (i.cph || []).length]])) }; };
   C.spNote = function (x, quiet, post) { if (!x || !x.id) return 0; const b0 = LS('sejul_vsx_base'); if (!b0) LSS('sejul_vsx_base', String(Date.now())); if (!b0 || Date.now() - +b0 < 3e5) { quiet = true; post = false; } /* 처음 5분: 기존 특별점검을 기준으로만 기록 (알림 폭주 방지) */ const S = J('sejul_vsx_sum', {}), o = S[x.id], n = digX(x); S[x.id] = n; LSS('sejul_vsx_sum', JSON.stringify(S));
     const role = window.SJUI && SJUI.role ? SJUI.role() : '', team = (window.SJAPP && SJAPP.get && SJAPP.get('team')) || '', show = !quiet && role === 'office' && ['', 'TST', 'ALL'].includes(team); if (!show && !post) return 0;
@@ -154,7 +154,8 @@
       Object.keys(n.i).forEach(id => { const a = (o.i || {})[id], b = n.i[id]; if (a && b[1] && !a[1]) K('d:' + id, T('특별점검 시정조치 완료', 'Corrective action done'), b[0].slice(0, 80)); else if (a && b[2] > a[2] && !b[1]) K('c:' + id + ':' + b[2], T('특별점검 조치 사진 추가', 'Action photo added'), b[0].slice(0, 80)); });
       if (n.g1 && n.g1 !== o.g1) K('g1:' + n.g1, T('공무 감독 점검 완료 · 서명', 'Superintendent signed'), n.g1);
       else if (!n.g1 && o.g1) K('u1:' + Date.now(), T('공무 감독 서명 취소 — 수정 중', 'Superintendent signature cleared'), o.g1);
-      if (n.g2 && n.g2 !== o.g2) K('g2:' + n.g2, T('기관장 확인 서명', 'C/E confirmed'), n.g2); }
+      if (n.g2 && n.g2 !== o.g2) K('g2:' + n.g2, T('기관장 확인 서명', 'C/E confirmed'), n.g2);
+      if (n.g3 && n.g3 !== o.g3) K('g3:' + n.g3, T('D.P.A 검토 서명', 'D.P.A reviewed'), n.g3); }
     if (post) C.notePost('vsx', n.s, E, x.ct); if (!show || !E.length) return 0;
     try { if (window.SJUI && SJUI.inb && SJUI.inb.add) SJUI.inb.add(E); } catch (e) { }
     try { if (document.visibilityState !== 'visible' && 'Notification' in window && Notification.permission === 'granted' && navigator.serviceWorker) navigator.serviceWorker.ready.then(reg => E.slice(0, 3).forEach(z => reg.showNotification(z.t, { body: z.b, tag: z.k.slice(0, 60), icon: (/\/tools\//.test(location.pathname) ? '../' : '') + 'sj2-icon-192.png', data: { url: z.href } }))); } catch (e) { }
