@@ -495,21 +495,19 @@ function viewListCeo() { const cur = ymd().slice(0, 7), mon = S.mon && S.mon <= 
   const ym = m => `${m.slice(0, 4) !== cur.slice(0, 4) ? m.slice(0, 4) + '년 ' : ''}${+m.slice(5)}월`;
   const card = x => { const st = repState(x), F = findings(x), open = F.filter(f => !f.done).length, ok = ready(x), ceo = x.fin.ceo;
     const ck = (l, v) => `<span class="chip ${v ? 'ok' : ''}">${l} ${v ? '✓' : '—'}</span>`;
-    return `<div class="card" style="${!sig(ceo) && ok ? 'border:1.5px solid var(--gold)' : ''}"><div class="row" style="gap:8px"><b style="font-size:17px">${esc(x.h.ship)}</b><span class="muted">${dot(x.h.date)}</span><span class="chip ${x.h.q ? 'q' : ''}">${x.h.q ? '분기' : '월간'}</span><span class="sp"></span>${sig(ceo) ? `<span class="chip ok">✓ C.E.O 서명 ${dot(ymd(ceo.at)).slice(5)}</span>` : ok ? '<span class="chip warn">서명 대기</span>' : '<span class="chip">진행 중</span>'}</div>
-      <div class="chips" style="margin-top:8px">${ck('감독 3개 파트', st.all)}${ck('선장', sig(x.fin.master))}${ck('기관장', sig(x.fin.ce))}${ck('D.P.A', sig(x.fin.dpa))}<span class="chip ${open ? 'err' : F.length ? 'ok' : ''}">지적 ${F.length}${open ? ` · 미조치 ${open}` : ''}</span></div>
-      ${!sig(ceo) && !ok ? '<div class="muted" style="font-size:13px;margin-top:6px">아직 남은 서명이 있습니다 (위 — 표시). 보고서를 확인하신 뒤 서명하실 수 있습니다.</div>' : ''}
-      <div class="row" style="margin-top:10px;gap:8px"><button class="btn sp" data-cv="${x.id}">📄 보고서 보기 · PDF</button>${sig(ceo) ? '' : `<button class="btn ${ok ? 'p' : ''} sp" data-cs="${x.id}">✍ C.E.O 확인 서명</button>`}</div></div>`; };
+    return `<div class="card" style="${!sig(ceo) && ok ? 'border:1.5px solid var(--gold)' : ''}"><div class="row" style="gap:8px"><b style="font-size:17px">${esc(x.h.ship)}</b><span class="muted">${dot(x.h.date)}</span><span class="chip ${x.h.q ? 'q' : ''}">${x.h.q ? '분기' : '월간'}</span><span class="sp"></span><button class="btn s p" data-cv="${x.id}" style="min-height:34px;padding:4px 12px">📄 보기 · 출력</button></div>
+      <div class="chips" style="margin-top:8px">${sig(ceo) ? `<span class="chip ok">✓ C.E.O 서명 ${dot(ymd(ceo.at)).slice(5)}</span>` : ok ? '<span class="chip warn">서명 대기</span>' : '<span class="chip">다른 서명 진행 중</span>'}${ck('감독 3개 파트', st.all)}${ck('선장', sig(x.fin.master))}${ck('기관장', sig(x.fin.ce))}${ck('D.P.A', sig(x.fin.dpa))}<span class="chip ${open ? 'err' : F.length ? 'ok' : ''}">지적 ${F.length}${open ? ` · 미조치 ${open}` : ''}</span></div>
+      ${sig(ceo) ? '' : `<button class="btn ${ok ? 'p' : ''} w" data-cs="${x.id}" ${ok ? '' : 'disabled'} style="margin-top:10px">✍ C.E.O 확인 서명</button>${ok ? '' : '<div class="muted" style="font-size:13px;margin-top:6px">감독·선장·기관장·D.P.A 서명이 모두 끝나면 서명하실 수 있습니다.</div>'}`}</div>`; };
   $('#app').innerHTML = header('감독 방선 보고서', `대표이사 확인 · ${esc(myName())}`) + `<main>
     ${homeSeg()}
-    <div class="row" style="margin:4px 0 8px;gap:8px"><h3 style="margin:0">✍ 서명할 보고서</h3><span class="chip warn">${wait.length}</span>${wait.filter(x => !ready(x)).length ? `<span class="muted" style="font-size:12.5px">다른 서명 남은 것 ${wait.filter(x => !ready(x)).length}건</span>` : ''}</div>
+    <div class="row" style="margin:4px 0 8px;gap:8px"><h3 style="margin:0">✍ 서명할 보고서</h3><span class="chip warn">${wait.filter(ready).length}</span>${wait.filter(x => !ready(x)).length ? `<span class="muted" style="font-size:12.5px">다른 서명 진행 중 ${wait.filter(x => !ready(x)).length}건</span>` : ''}</div>
     ${wait.length ? wait.sort((a, b) => ready(b) - ready(a)).map(card).join('') : '<div class="muted" style="padding:6px 2px">서명할 보고서가 없습니다.</div>'}
     <div class="row" style="margin:18px 0 8px;gap:6px"><h3 style="margin:0">✓ 서명 완료</h3><button class="btn s" id="mPrev" aria-label="이전 달" style="min-height:30px;padding:2px 10px">‹</button><b>${ym(mon)}</b><button class="btn s" id="mNext" aria-label="다음 달" style="min-height:30px;padding:2px 10px" ${mon >= cur ? 'disabled' : ''}>›</button><span class="chip ok">${done.length}</span></div>
     ${done.length ? done.map(card).join('') : '<div class="muted" style="padding:6px 2px">이 달에 서명한 보고서가 없습니다.</div>'}</main>`;
   $('#mPrev').onclick = () => { S.mon = mAdd(mon, -1); render(); }; $('#mNext').onclick = () => { S.mon = mAdd(mon, 1); render(); };
   $('#app').onclick = e => { const h = e.target.closest('[data-home]'); if (h) return setHome(h.dataset.home); const v = e.target.closest('[data-cv]'); if (v) return go('#/p/' + v.dataset.cv);
     const sgb = e.target.closest('[data-cs]'); if (sgb) { const r = R[sgb.dataset.cs]; if (!r) return; const doSign = () => signPad('C.E.O', myName(), async s => { r.fin.ceo = s; await save(r); pushNow(); toast('C.E.O 확인 서명을 저장했습니다'); render(); });
-      if (ready(r)) return doSign(); const st = repState(r), left = [...(st.all ? [] : ['감독 파트']), ...[['master', '선장'], ['ce', '기관장'], ['dpa', 'D.P.A']].filter(([k]) => !sig(r.fin[k])).map(z => z[1])];
-      ask(`아직 서명이 남아 있습니다: ${left.join(', ')}\n그래도 C.E.O 확인 서명을 할까요?`, doSign, '서명하기'); } };
+      if (ready(r)) return doSign(); toast('감독·선장·기관장·D.P.A 서명이 모두 끝나야 서명할 수 있습니다', 3500); } };
   paintSync(); }
 function viewList() { if (CEO()) return S.home === 'sp' ? viewListSp() : viewListCeo(); if (canSp() && S.home === 'sp') return viewListSp(); const ms = myShip(); let list = Object.values(R).filter(live);
   if (ms) list = list.filter(x => x.h.ship === ms);
