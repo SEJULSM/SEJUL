@@ -346,7 +346,7 @@ const noSignR = r => !PARTS.some(p => sig(r.parts[p.k] && r.parts[p.k].sign)) &&
 const noSignX = x => !sig(x.sp.sign) && !sig(x.sp.ce) && !sig(x.sp.dpa);
 /* 작성 취소: 만든 사람(같은 계정)이 서명 전까지 · 관리자는 언제나 삭제 */
 const canCancel = o => !RO() && !!MYUID() && o.cuid === MYUID() && (o.kind === 'sp' ? noSignX(o) : noSignR(o));
-function newRep(h) { const t = now(); return { id: uid('V'), cdev: DEV, cuid: MYUID(), ct: t, h: Object.assign({ ship: '', date: ymd(), port: '', q: false, by: ME.get().name || '', u: t }, h), parts: { S: { items: {} }, T: { items: {} }, M: { items: {}, iv: null } }, fnd: {}, ext: {}, fin: {}, sp: { items: {} }, lu: t, sv: 3 }; }
+function newRep(h) { const t = now(); return { id: uid('V'), cdev: DEV, cuid: MYUID(), ct: t, h: Object.assign({ ship: '', date: ymd(), port: '', q: false, by: myName(), u: t }, h), parts: { S: { items: {} }, T: { items: {} }, M: { items: {}, iv: null } }, fnd: {}, ext: {}, fin: {}, sp: { items: {} }, lu: t, sv: 3 }; }
 /* 서식 R-4 개정(T7 추가): 예전 T7·T8 → T8·T9로 번호 옮김 */
 /* 서식 개정에 따른 항목 번호 옮김 — sv 2: T7 추가(T7·T8→T8·T9) · sv 3: S12 중대작업 허가서 추가(S12~S18→S13~S19) */
 function shiftNo(r, k, mv) { const P = r.parts && r.parts[k] && r.parts[k].items; if (P) Object.keys(mv).forEach(o => { if (o in P) { P[mv[o]] = P[o]; delete P[o]; } });
@@ -452,7 +452,7 @@ async function viewPhoto(id, onDel) { const src = await photo(id); modal(`<h3>�
 
 /* =============================== 화면 =============================== */
 /* 메뉴에서 ?home=rep|sp 로 열면 그 목록으로 */
-try { const q = new URLSearchParams(location.search), hq = q.get('home'); if (hq === 'sp' || hq === 'rep') { localStorage.setItem('sejul_vst_home', hq); q.delete('home'); history.replaceState(null, '', location.pathname + (q.toString() ? '?' + q : '') + location.hash); } } catch (e) { }
+try { const q = new URLSearchParams(location.search), hq = q.get('home'); if (q.get('sync')) { q.delete('sync'); history.replaceState(null, '', location.pathname + (q.toString() ? '?' + q : '') + location.hash); setTimeout(() => syncNow(), 1500); } if (hq === 'sp' || hq === 'rep') { localStorage.setItem('sejul_vst_home', hq); q.delete('home'); history.replaceState(null, '', location.pathname + (q.toString() ? '?' + q : '') + location.hash); } } catch (e) { }
 const LITE = () => { try { return !!(UI && UI.lite && UI.lite()); } catch (e) { return false; } };
 const S = { tab: null, home: (() => { try { return localStorage.getItem('sejul_vst_home') || 'rep'; } catch (e) { return 'rep'; } })() };
 function route() { const h = location.hash.replace(/^#\/?/, '').split('/'); return { v: h[0] || '', id: h[1] || '', tab: h[2] || '' }; }
@@ -468,7 +468,7 @@ function render() { const r = route(); if (r.v !== 'p' && r.v !== 'x') document.
   if (r.v === 'p' && rep(r.id)) return viewPrint(rep(r.id));
   if (r.v === 's' && xrec(r.id)) return CEO() ? viewPrint(xrec(r.id), 'x') : viewSp(xrec(r.id));
   if (r.v === 'x' && xrec(r.id)) return viewPrint(xrec(r.id), 'x');
-  if (r.v === 'set') return viewSet();
+  if (r.v === 'set') { location.replace('../index.html#settings/vst'); return; }   /* 방선 설정은 앱 설정으로 통합 */
   return viewList(); }
 
 /* ---------- 목록 (대시보드) ---------- */
@@ -476,7 +476,7 @@ function repState(x) { const sp = PARTS.map(p => partStat(x, p.k)), all = sp.eve
   return { sp, all, fin, done: all && fin === 4, mine: myPart() ? sp[PARTS.findIndex(p => p.k === myPart())] : null }; }
 function repCard(x) { const st = repState(x), F = findings(x), VP = visParts(), open = F.filter(f => !f.done).length, mp = myPart();
   const c = SHIP() ? '' : PARTS.map((p, i) => { const z = st.sp[i]; return `<span class="mc ${z.signed ? 'ok' : z.done ? 'warn' : ''} ${mp === p.k && VP.length === 1 ? 'me' : ''}">${p.k} ${z.signed ? '✓' : z.done + '/' + z.n}</span>`; }).join('');
-  return `<div class="card rep rc" data-open="${x.id}" style="cursor:pointer"><div class="r1"><span class="nm">${esc(x.h.ship || '선박 미지정')}</span><span class="dt">${dot(x.h.date).slice(5)}${x.h.port ? ' · ' + esc(x.h.port) : ''}</span><span class="mc ${x.h.q ? 'q' : ''}">${x.h.q ? '분기' : '월간'}</span><span class="sp"></span><button class="btn s ib2" data-pv="${x.id}" title="보고서 보기 · 출력">📄</button><button class="btn s ib2" data-menu="${x.id}" aria-label="메뉴">⋯</button></div>
+  return `<div class="card rep rc" data-open="${x.id}" style="cursor:pointer"><div class="r1"><span class="nm">${esc(x.h.ship || '선박 미지정')}</span><span class="dt">${dot(x.h.date).slice(5)}${x.h.port ? ' · ' + esc(x.h.port) : ''}</span><span class="mc ${x.h.q ? 'q' : ''}">${x.h.q ? '분기' : '월간'}</span><span class="sp"></span>${CEO() ? `${!sig(x.fin.ceo) && ceoReady(x) ? `<button class="btn s p ib2" data-cs="${x.id}">✍ 서명</button>` : ''}<button class="btn s ${sig(x.fin.ceo) || !ceoReady(x) ? 'p' : ''} ib2" data-pv="${x.id}">📄 보기 · 출력</button>` : `<button class="btn s ib2" data-pv="${x.id}" title="보고서 보기 · 출력">📄</button><button class="btn s ib2" data-menu="${x.id}" aria-label="메뉴">⋯</button>`}</div>
     <div class="r2">${c}<span class="mc ${open ? 'err' : F.length ? 'ok' : ''}">지적 ${F.length}${open ? ` · 미조치 ${open}` : ''}</span><span class="mc ${st.fin === 4 ? 'ok' : ''}">확인 ${st.fin}/4</span></div></div>`; }
 /* ---------- 홈: [방선 보고서] [공무 특별점검] ---------- */
 const homeSeg = () => canSp() && !LITE() ? `<div class="seg" style="margin-bottom:12px"><button data-home="rep" class="${S.home !== 'sp' ? 'on' : ''}">📄 방선 보고서</button><button data-home="sp" class="${S.home === 'sp' ? 'on' : ''}">🔧 공무 특별점검 <span style="font-weight:400;font-size:12px">사내용</span></button></div>` : '';
@@ -487,34 +487,35 @@ function spCard(x) { const st = spState(x);
     <div class="r2"><span class="mc ${st.n ? 'warn' : ''}">지적 ${st.n}</span><span class="mc ${st.n && st.done === st.n ? 'ok' : st.n ? 'warn' : ''}">조치 ${st.done}/${st.n}</span>${st.over ? `<span class="mc err">기한 지남 ${st.over}</span>` : ''}${(n => `<span class="mc ${n === 3 ? 'ok' : ''}" title="공무 감독 ${st.sg1 ? '✓' : '—'} · 기관장 ${st.sg2 ? '✓' : '—'} · D.P.A ${st.sg3 ? '✓' : '—'}">서명 ${n}/3</span>`)([st.sg1, st.sg2, st.sg3].filter(Boolean).length)}</div></div>`; }
 function viewListSp() { const ms = myShip(); let list = Object.values(XS).filter(live); if (ms) list = list.filter(x => x.h.ship === ms);
   list.sort((a, b) => (b.h.date || '').localeCompare(a.h.date || '') || b.ct - a.ct);
-  const cur = ymd().slice(0, 7), mon = S.mon && S.mon <= cur ? S.mon : cur, ships = (ms ? [ms] : VES()).filter(v => !isForeign(v));
+  const cur = ymd().slice(0, 7), mon = S.mon && S.mon <= cur ? S.mon : cur, ships = ms ? [ms] : VES();
   const mAdd = (m, k) => { const d = new Date(+m.slice(0, 4), +m.slice(5, 7) - 1 + k, 1); return d.getFullYear() + '-' + d2(d.getMonth() + 1); };
   const prog = list.filter(x => !spState(x).ok), done = list.filter(x => spState(x).ok && (x.h.date || '').startsWith(mon));
-  const cell = v => { const x = list.find(o => o.h.ship === v && (o.h.date || '').startsWith(mon)); let cls = 'no', t = mon === cur ? '미작성' : '없음';
+  const cell = v => { if (isForeign(v)) return `<button class="vs no" data-foreign="${esc(v)}" style="opacity:.6"><b>${esc(v)}</b><small>🌐 외항선 · 서식 준비 중</small></button>`; const x = list.find(o => o.h.ship === v && (o.h.date || '').startsWith(mon)); let cls = 'no', t = mon === cur ? '미작성' : '없음';
     if (x) { const st = spState(x); if (st.ok) { cls = 'ok'; t = '완료'; } else if (st.sg1) { cls = 'warn'; t = st.done < st.n ? `조치 대기 ${st.n - st.done}` : !st.sg2 ? '기관장 확인 대기' : 'D.P.A 검토 대기'; } else { cls = 'warn'; t = `작성 중 · ${st.n}건`; } }
     return `<button class="vs ${cls}" ${x ? `data-sopen="${x.id}"` : mon === cur && !RO() ? `data-snew="${esc(v)}"` : 'disabled'}><b>${esc(v)}</b><small>${x ? dot(x.h.date).slice(5) + ' ' : ''}${x ? (cls === 'ok' ? '✓ ' : '◐ ') : mon === cur && !RO() ? '＋ ' : ''}${t}</small></button>`; };
   const ym = m => `${m.slice(0, 4) !== cur.slice(0, 4) ? m.slice(0, 4) + '년 ' : ''}${+m.slice(5)}월`;
-  $('#app').innerHTML = header('감독 방선 보고서', `공무팀 특별점검 · Technical Special Inspection · 사내용${teamCode() ? ' · ' + teamCode() : ''}`) + `<main>
+  $('#app').innerHTML = header('공무 특별점검', `사내용 · ${WHO()}`) + `<main>
     <style>.vg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}@media(min-width:640px){.vg{grid-template-columns:repeat(4,minmax(0,1fr))}}.vs{text-align:left;border:1px solid var(--line);background:#fff;border-radius:10px;padding:6px 9px;min-width:0}.vs b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vs small{display:block;font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vs.no{background:#F7F9FC}.vs.no b{color:var(--mut);font-weight:600}.vs.ok{border-color:#BFE5CF;background:var(--okBg)}.vs.warn{border-color:#F0C46A;background:var(--warnBg)}.sec{display:flex;align-items:center;gap:8px;margin:18px 0 8px}.sec h3{margin:0;white-space:nowrap}</style>
     ${homeSeg()}
-    ${CEO() ? '' : todoHTML()}
-    <div class="row" style="margin-bottom:12px">${CEO() ? '<span class="sp muted" style="font-size:13px">🔒 대표이사: 보기 · 🖨 출력</span>' : SHIP() ? '<span class="sp muted" style="font-size:13px">🔒 선박 기기: 보기 · 기관장 확인 서명 · 시정조치 결과 입력</span>' : '<button class="btn p sp" id="snB">＋ 새 특별점검 <span class="en" style="color:#C9D6EE">New</span></button>'}<button class="btn" id="setB" title="설정">⚙</button></div>
-    <div class="card" style="padding:12px"><div class="row" style="margin-bottom:8px;gap:6px"><button class="btn s" id="mPrev" aria-label="이전 달" style="min-height:32px;padding:2px 10px">‹</button><h3 style="margin:0">${ym(mon)} 특별점검 현황</h3><button class="btn s" id="mNext" aria-label="다음 달" style="min-height:32px;padding:2px 10px" ${mon >= cur ? 'disabled' : ''}>›</button>${mon !== cur ? '<button class="btn s" id="mNow" style="min-height:32px;padding:2px 10px">이번 달</button>' : ''}<span class="sp"></span><span class="muted" style="font-size:12px">${ships.filter(v => list.some(o => o.h.ship === v && (o.h.date || '').startsWith(mon))).length}/${ships.length}척</span></div><div class="vg">${ships.map(cell).join('')}</div></div>
+    ${todoHTML()}
+    <div class="row" style="margin-bottom:12px">${CEO() ? '<span class="sp muted" style="font-size:13px">🔒 대표이사: 보기 · 🖨 출력</span>' : SHIP() ? '<span class="sp muted" style="font-size:13px">🔒 선박 기기: 보기 · 기관장 확인 서명 · 시정조치 결과 입력</span>' : '<button class="btn p sp" id="snB">＋ 새 특별점검 <span class="en" style="color:#C9D6EE">New</span></button>'}</div>
+    <div class="card" style="padding:12px"><div class="row" style="margin-bottom:8px;gap:6px"><button class="btn s" id="mPrev" aria-label="이전 달" style="min-height:32px;padding:2px 10px">‹</button><h3 style="margin:0">${ym(mon)} 특별점검 현황</h3><button class="btn s" id="mNext" aria-label="다음 달" style="min-height:32px;padding:2px 10px" ${mon >= cur ? 'disabled' : ''}>›</button>${mon !== cur ? '<button class="btn s" id="mNow" style="min-height:32px;padding:2px 10px">이번 달</button>' : ''}<span class="sp"></span><span class="muted" style="font-size:12px">${ships.filter(v => !isForeign(v) && list.some(o => o.h.ship === v && (o.h.date || '').startsWith(mon))).length}/${ships.filter(v => !isForeign(v)).length}척</span></div><div class="vg">${ships.map(cell).join('')}</div></div>
     <div class="sec"><h3>진행 중</h3><span class="chip warn">${prog.length}</span>${hp('서명 또는 시정조치가 남은 특별점검입니다. 지난달 것도 끝날 때까지 여기에 남습니다.')}</div>
     ${prog.length ? prog.map(spCard).join('') : '<div class="muted" style="padding:6px 2px 4px">진행 중인 특별점검이 없습니다.</div>'}
     <div class="sec"><h3>완료 · ${ym(mon)}</h3><span class="chip ok">${done.length}</span>${hp('완료 기준: 공무 감독·기관장·D.P.A 서명 + 모든 지적 조치 완료')}</div>
     ${!done.length ? '<div class="muted" style="padding:6px 2px">완료된 특별점검이 없습니다.</div>' : !WIDE() && !S.doneOpen ? `<button class="btn w" id="doneB">완료 ${done.length}건 보기 ▾</button>` : done.map(spCard).join('')}</main>`;
-  const sb = $('#snB'); if (sb) sb.onclick = () => newSp(); $('#setB').onclick = () => go('#/set');
+  const sb = $('#snB'); if (sb) sb.onclick = () => newSp();
   $('#mPrev').onclick = () => { S.mon = mAdd(mon, -1); render(); }; $('#mNext').onclick = () => { S.mon = mAdd(mon, 1); render(); }; const mn = $('#mNow'); if (mn) mn.onclick = () => { S.mon = ''; render(); };
   $('#app').onclick = e => { const h = e.target.closest('[data-home]'); if (h) return setHome(h.dataset.home);
     const pr = e.target.closest('[data-sprint]'); if (pr) { e.stopPropagation(); return go('#/x/' + pr.dataset.sprint); }
     const mu = e.target.closest('[data-smenu]'); if (mu) { e.stopPropagation(); return spMenu(XS[mu.dataset.smenu]); }
+    const fg = e.target.closest('[data-foreign]'); if (fg) return toast(`${fg.dataset.foreign} — ${FMSG}`, 3500);
     const nw = e.target.closest('[data-snew]'); if (nw) return newSp(nw.dataset.snew);
     const o = e.target.closest('[data-sopen]'); if (o) { if (WIDE() && !CEO() && o.classList.contains('rep')) { S.ssel = o.dataset.sopen; return render(); } go((CEO() ? '#/x/' : '#/s/') + o.dataset.sopen); } };
   const dB = $('#doneB'); if (dB) dB.onclick = () => { S.doneOpen = 1; render(); };
   /* PC 넓은 화면: 방선 보고서와 같은 2단 (목록 + 고른 특별점검 요약) */
-  document.body.classList.toggle('wide', WIDE());
-  if (WIDE()) { const mainEl = $('#app main'), sel = XS[S.ssel] && live(XS[S.ssel]) ? XS[S.ssel] : prog[0] || list[0]; if (sel) S.ssel = sel.id; const L = document.createElement('div'); L.style.minWidth = '0'; [...mainEl.children].forEach(c => L.appendChild(c)); mainEl.appendChild(L); mainEl.classList.add('two');
+  document.body.classList.toggle('wide', WIDE() && !CEO());
+  if (WIDE() && !CEO()) { const mainEl = $('#app main'), sel = XS[S.ssel] && live(XS[S.ssel]) ? XS[S.ssel] : prog[0] || list[0]; if (sel) S.ssel = sel.id; const L = document.createElement('div'); L.style.minWidth = '0'; [...mainEl.children].forEach(c => L.appendChild(c)); mainEl.appendChild(L); mainEl.classList.add('two');
     const A = document.createElement('aside'); A.className = 'sumP'; A.innerHTML = spSumHTML(sel); mainEl.appendChild(A); $$('.card.rep', mainEl).forEach(c => c.classList.toggle('sel', c.dataset.sopen === S.ssel)); }
   paintSync(); }
 function spSumHTML(x) { if (!x) return '<div class="card empty">왼쪽에서 특별점검을 고르세요.</div>';
@@ -548,39 +549,18 @@ function newSp(v0) { if (RO()) return toast(SHIPMSG, 3000); const ms = myShip(),
     $('#nok', m).onclick = async () => { chk(); if (ex) return; const x = newX({ ship: $('#nv', m).value, date: $('#nd', m).value || t, port: $('#np', m).value.trim() }); x.by = myName(); await save(x); close(); go('#/s/' + x.id); }; }); }
 
 /* ---------- 대표이사 홈: 확인 서명 · 출력만 ---------- */
-function viewListCeo() { const cur = ymd().slice(0, 7), mon = S.mon && S.mon <= cur ? S.mon : cur;
-  const mAdd = (m, k) => { const d = new Date(+m.slice(0, 4), +m.slice(5, 7) - 1 + k, 1); return d.getFullYear() + '-' + d2(d.getMonth() + 1); };
-  const all = Object.values(R).filter(live).sort((a, b) => (b.h.date || '').localeCompare(a.h.date || '') || b.ct - a.ct);
-  const ready = x => { const st = repState(x); return st.all && ['master', 'ce', 'dpa'].every(k => sig(x.fin[k])); };
-  const wait = all.filter(x => !sig(x.fin.ceo)), done = all.filter(x => sig(x.fin.ceo) && (x.h.date || '').startsWith(mon));
-  const ym = m => `${m.slice(0, 4) !== cur.slice(0, 4) ? m.slice(0, 4) + '년 ' : ''}${+m.slice(5)}월`;
-  const card = x => { const st = repState(x), F = findings(x), open = F.filter(f => !f.done).length, ok = ready(x), ceo = x.fin.ceo;
-    const ck = (l, v) => `<span class="chip ${v ? 'ok' : ''}">${l} ${v ? '✓' : '—'}</span>`;
-    return `<div class="card" style="${!sig(ceo) && ok ? 'border:1.5px solid var(--gold)' : ''}"><div class="row" style="gap:8px"><b style="font-size:17px">${esc(x.h.ship)}</b><span class="muted">${dot(x.h.date)}</span><span class="chip ${x.h.q ? 'q' : ''}">${x.h.q ? '분기' : '월간'}</span><span class="sp"></span><button class="btn s p" data-cv="${x.id}" style="min-height:34px;padding:4px 12px">📄 보기 · 출력</button></div>
-      <div class="chips" style="margin-top:8px">${sig(ceo) ? `<span class="chip ok">✓ C.E.O 서명 ${dot(ymd(ceo.at)).slice(5)}</span>` : ok ? '<span class="chip warn">서명 대기</span>' : '<span class="chip">다른 서명 진행 중</span>'}${ck('감독 3개 파트', st.all)}${ck('선장', sig(x.fin.master))}${ck('기관장', sig(x.fin.ce))}${ck('D.P.A', sig(x.fin.dpa))}<span class="chip ${open ? 'err' : F.length ? 'ok' : ''}">지적 ${F.length}${open ? ` · 미조치 ${open}` : ''}</span></div>
-      ${sig(ceo) ? '' : `<button class="btn ${ok ? 'p' : ''} w" data-cs="${x.id}" ${ok ? '' : 'disabled'} style="margin-top:10px">✍ C.E.O 확인 서명</button>${ok ? '' : '<div class="muted" style="font-size:13px;margin-top:6px">감독·선장·기관장·D.P.A 서명이 모두 끝나면 서명하실 수 있습니다.</div>'}`}</div>`; };
-  $('#app').innerHTML = header('감독 방선 보고서', `대표이사 확인 · ${esc(myName())}`) + `<main>
-    ${homeSeg()}
-    <div class="row" style="margin:4px 0 8px;gap:8px"><h3 style="margin:0">✍ 서명할 보고서</h3><span class="chip warn">${wait.filter(ready).length}</span>${wait.filter(x => !ready(x)).length ? `<span class="muted" style="font-size:12.5px">다른 서명 진행 중 ${wait.filter(x => !ready(x)).length}건</span>` : ''}</div>
-    ${wait.length ? wait.sort((a, b) => ready(b) - ready(a)).map(card).join('') : '<div class="muted" style="padding:6px 2px">서명할 보고서가 없습니다.</div>'}
-    <div class="row" style="margin:18px 0 8px;gap:6px"><h3 style="margin:0">✓ 서명 완료</h3><button class="btn s" id="mPrev" aria-label="이전 달" style="min-height:30px;padding:2px 10px">‹</button><b>${ym(mon)}</b><button class="btn s" id="mNext" aria-label="다음 달" style="min-height:30px;padding:2px 10px" ${mon >= cur ? 'disabled' : ''}>›</button><span class="chip ok">${done.length}</span></div>
-    ${done.length ? done.map(card).join('') : '<div class="muted" style="padding:6px 2px">이 달에 서명한 보고서가 없습니다.</div>'}</main>`;
-  $('#mPrev').onclick = () => { S.mon = mAdd(mon, -1); render(); }; $('#mNext').onclick = () => { S.mon = mAdd(mon, 1); render(); };
-  $('#app').onclick = e => { const h = e.target.closest('[data-home]'); if (h) return setHome(h.dataset.home); const v = e.target.closest('[data-cv]'); if (v) return go('#/p/' + v.dataset.cv);
-    const sgb = e.target.closest('[data-cs]'); if (sgb) { const r = R[sgb.dataset.cs]; if (!r) return; const doSign = () => signPad('C.E.O', myName(), async s => { r.fin.ceo = s; await save(r); pushNow(); toast('C.E.O 확인 서명을 저장했습니다'); render(); });
-      if (ready(r)) return doSign(); toast('감독·선장·기관장·D.P.A 서명이 모두 끝나야 서명할 수 있습니다', 3500); } };
-  paintSync(); }
 /* ---------- 내 할 일 (홈 맨 위) ---------- */
 function myTodo() { const out = [], t0 = ymd(), mp = myPart(), ms = myShip(), md = s => dot(s).slice(5);
   const reps = Object.values(R).filter(live).filter(x => !ms || x.h.ship === ms).filter(x => !repState(x).done);
   for (const x of reps) { const st = repState(x), F = findings(x), lbl = `${x.h.ship} ${md(x.h.date)}`;
+    if (CEO()) { if (!sig(x.fin.ceo) && ceoReady(x)) out.push(['✍', `${lbl} · C.E.O 확인 서명`, '감독·선장·기관장·D.P.A 서명 완료 — 눌러서 바로 서명', 'cs:' + x.id]); continue; }
     if (SHIP()) { const open = F.filter(f => !f.done).length; if (open) out.push(['🛠', `${lbl} · 지적 조치 ${open}건`, '조치 사진·조치완료일 입력', '#/r/' + x.id + '/F']);
       if (st.all && (!sig(x.fin.master) || !sig(x.fin.ce))) out.push(['✍', `${lbl} · 선장·기관장 확인 서명`, '감독 점검이 끝났습니다', '#/r/' + x.id + '/C']); continue; }
     if (mp && !CAN('dpa')) { const s = st.sp[PARTS.findIndex(p => p.k === mp)]; if (!s.signed) out.push(['📋', `${lbl} · 우리 팀(${TCODE[mp]}) 점검`, `${s.done}/${s.n} 판정 · 서명 전`, '#/r/' + x.id + '/' + mp]); }
     if (CAN('dpa') && st.all && sig(x.fin.master) && sig(x.fin.ce) && !sig(x.fin.dpa)) out.push(['✍', `${lbl} · D.P.A 확인 서명`, '감독·선장·기관장 서명 완료', '#/r/' + x.id + '/C']);
     const er = (x.ext && x.ext.r) || {}; if (CAN('dpa') && er.to && !sig((x.ext || {}).a)) out.push(['⏳', `${lbl} · 조치기한 연장 D.P 승인`, `연장기한 ${dot(er.to)}`, '#/r/' + x.id + '/C']);
     const over = F.filter(f => !f.done && f.due && f.due < t0).length; if (over) out.push(['⚠', `${lbl} · 조치기한 지난 지적 ${over}건`, '조치 확인 필요', '#/r/' + x.id + '/F', 'err']); }
-  if (canSp()) { const xs = Object.values(XS).filter(live).filter(x => !ms || x.h.ship === ms).filter(x => !spState(x).ok);
+  if (canSp() && !CEO()) { const xs = Object.values(XS).filter(live).filter(x => !ms || x.h.ship === ms).filter(x => !spState(x).ok);
     for (const x of xs) { const st = spState(x), lbl = `🔧 ${x.h.ship} ${md(x.h.date)}`;
       if (SHIP()) { if (st.done < st.n) out.push(['🛠', `${lbl} · 특별점검 조치 ${st.n - st.done}건`, '조치 사진·완료일 입력', '#/s/' + x.id]); if (st.sg1 && !st.sg2) out.push(['✍', `${lbl} · 기관장 확인 서명`, '', '#/s/' + x.id]); continue; }
       if (!st.sg1 && !CEO()) out.push(['📋', `${lbl} · 공무 감독 서명 전`, `지적 ${st.n}건 작성 중`, '#/s/' + x.id]);
@@ -594,7 +574,7 @@ function todoHTML() { const L = myTodo(); if (!L.length) return '';
     ${L.slice(0, S.todoAll ? 99 : 6).map(([ic, t, sub, go2, cls]) => `<div class="tl" data-todo="${esc(go2)}"><span style="font-size:18px">${ic}</span><b style="${cls === 'err' ? 'color:var(--err)' : ''}">${esc(t)}${sub ? `<br><small>${esc(sub)}</small>` : ''}</b><span style="color:var(--mut);font-size:20px">›</span></div>`).join('')}
     ${L.length > 6 && !S.todoAll ? `<button class="btn s w" data-todoall="1" style="margin-top:6px">${L.length - 6}건 더 보기</button>` : ''}</div>`; }
 document.addEventListener('click', e => { const t = e.target.closest && e.target.closest('[data-todo],[data-todoall]'); if (!t) return; e.stopPropagation();
-  if (t.dataset.todoall) { S.todoAll = 1; return render(); } const g = t.dataset.todo; if (g === 'sp') return setHome('sp'); go(g); }, true);
+  if (t.dataset.todoall) { S.todoAll = 1; return render(); } const g = t.dataset.todo; if (g === 'sp') return setHome('sp'); if (g.startsWith('cs:')) return ceoSign(g.slice(3)); go(g); }, true);
 
 /* ---------- PC 넓은 화면: 오른쪽 요약 ---------- */
 const WIDE = () => innerWidth >= 1100 && !(UI && UI.phone && UI.phone());
@@ -611,7 +591,12 @@ function sumHTML(r) { if (!r) return '<div class="card empty">왼쪽에서 보�
 document.addEventListener('click', e => { const g = e.target.closest && e.target.closest('.sumP [data-go]'); if (!g) return; e.stopPropagation(); go(g.dataset.go); }, true);
 function viewForeign(v) { $('#app').innerHTML = header('점검 보고서', `${esc(v)} · 외항선`) + `<main><div class="card" style="text-align:center;padding:34px 18px"><div style="font-size:40px">🌐</div><h2 style="margin:10px 0 6px">외항선 전용 점검 보고서 준비 중</h2>
   <p class="muted" style="line-height:1.7;margin:0">감독 방선 보고서(SMM-3C-01F)는 내항선 서식입니다.<br>${esc(v)}의 외항선 전용 점검 보고서는 서식이 준비되면 이 화면에서 바로 쓸 수 있습니다.<br><span style="font-size:13px">Foreign-going vessel inspection report — coming soon.</span></p></div></main>`; paintSync(); }
-function viewList() { if (SHIP() && isForeign(myShip())) return viewForeign(myShip()); if (CEO()) return S.home === 'sp' ? viewListSp() : viewListCeo(); if (canSp() && S.home === 'sp') return viewListSp(); const ms = myShip(); let list = Object.values(R).filter(live);
+const WHO = () => SHIP() ? esc(myShip() || '선박') : `${esc(myName())}${teamCode() ? ' · ' + teamCode() : ''}${CEO() ? ' · 대표이사' : CAN('admin') ? ' · 관리자' : CAN('dpa') ? ' · D.P.A' : ''}`;
+/* 대표이사 확인 서명 (홈 「내 할 일」·보고서 카드에서) */
+function ceoReady(x) { const st = repState(x); return st.all && ['master', 'ce', 'dpa'].every(k => sig(x.fin[k])); }
+function ceoSign(id) { const r = R[id]; if (!r || !CEO()) return; if (!ceoReady(r)) return toast('감독·선장·기관장·D.P.A 서명이 모두 끝나야 서명할 수 있습니다', 3500);
+  signPad('C.E.O', myName(), async s => { r.fin.ceo = s; await save(r); pushNow(); toast('C.E.O 확인 서명을 저장했습니다'); render(); }); }
+function viewList() { if (SHIP() && isForeign(myShip())) return viewForeign(myShip()); if (canSp() && S.home === 'sp') return viewListSp(); const ms = myShip(); let list = Object.values(R).filter(live);
   if (ms) list = list.filter(x => x.h.ship === ms);
   const fs = S.fship || ''; if (fs) list = list.filter(x => x.h.ship === fs);
   list.sort((a, b) => (b.h.date || '').localeCompare(a.h.date || '') || b.ct - a.ct);
@@ -624,11 +609,11 @@ function viewList() { if (SHIP() && isForeign(myShip())) return viewForeign(mySh
     const x = L[0]; let cls = 'no', t = '방선 없음';
     if (x) { const st = repState(x), my = mp ? st.sp[PARTS.findIndex(p => p.k === mp)] : null; const ns = st.sp.filter(z => z.signed).length; if (st.done) { cls = 'ok'; t = '완료'; } else if (my && my.signed) { cls = 'ok'; t = `우리 ✓ · ${ns}/3`; } else { cls = 'warn'; t = (mp && my ? '우리 ✗' : '진행') + ` · ${ns}/3`; } }
     return `<button class="vs ${cls}" ${L.length > 1 ? `data-pick="${esc(v)}"` : x ? `data-open="${x.id}"` : mon === cur && !RO() ? `data-newv="${esc(v)}"` : 'disabled'}><b>${esc(v)}${L.length > 1 ? ` <span class="chip q" style="font-size:11px;padding:0 6px">${L.length}건</span>` : ''}</b><small>${x ? dot(x.h.date).slice(5) + ' ' : ''}${x ? (cls === 'ok' ? '✓ ' : '◐ ') : mon === cur && !RO() ? '＋ ' : ''}${t}</small></button>`; };
-  $('#app').innerHTML = header('감독 방선 보고서', `Supervisor's Visit Report · SMM-3C-01F R-4${tm ? ' · ' + tm[0] + ' ' + tm[2] : ''}`) + `<main>
+  $('#app').innerHTML = header('감독 방선 보고서', `SMM-3C-01F · ${WHO()}`) + `<main>
     <style>.vg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}@media(min-width:640px){.vg{grid-template-columns:repeat(4,minmax(0,1fr))}}.vs{text-align:left;border:1px solid var(--line);background:#fff;border-radius:10px;padding:6px 9px;min-width:0}.vs b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vs small{display:block;font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vs.no{background:#F7F9FC}.vs.no b{color:var(--mut);font-weight:600}.vs.ok{border-color:#BFE5CF;background:var(--okBg)}.vs.warn{border-color:#F0C46A;background:var(--warnBg)}.sec{display:flex;align-items:center;gap:8px;margin:18px 0 8px}.sec h3{margin:0;white-space:nowrap}</style>
     ${homeSeg()}
     ${todoHTML()}
-    <div class="row" style="margin-bottom:12px">${CEO() ? '<span class="sp muted" style="font-size:13px">🔒 대표이사 계정: 보기 · C.E.O 확인 서명</span>' : SHIP() ? '<span class="sp muted" style="font-size:13px">🔒 선박 기기: 보기 · 선장·기관장 서명 · 시정조치 결과 입력</span>' : '<button class="btn p sp" id="newB">＋ 새 방선 시작 <span class="en" style="color:#C9D6EE">New visit</span></button><button class="btn" id="impB" title="파일 가져오기">📥</button>'}<button class="btn" id="setB" title="설정">⚙</button></div>
+    <div class="row" style="margin-bottom:12px">${CEO() ? '<span class="sp muted" style="font-size:13px">🔒 대표이사: 보기 · 🖨 출력 · C.E.O 확인 서명</span>' : SHIP() ? '<span class="sp muted" style="font-size:13px">🔒 선박 기기: 보기 · 선장·기관장 서명 · 시정조치 결과 입력</span>' : '<button class="btn p sp" id="newB">＋ 새 방선 시작 <span class="en" style="color:#C9D6EE">New visit</span></button><button class="btn" id="impB" title="파일 가져오기">📥</button>'}</div>
     ${(SHIP() || !CAN('admin') ? [] : dupGroups()).map((g, i) => `<div class="issues" style="background:var(--warnBg);border-color:#F0C46A">⚠ <b>${esc(g[0].h.ship)} ${+g[0].h.date.slice(5, 7)}월 보고서 ${g.length}건</b> — 선박당 한 달에 1건이어야 합니다. <button class="btn s g" data-mg="${i}" style="margin-left:6px">하나로 합치기</button></div>`).join('')}
     ${isOffice() && !teamCode() ? `<div class="issues" style="background:var(--warnBg);border-color:#F0C46A">이 기기의 소속 팀이 정해지지 않아 모든 파트가 보입니다. <button class="btn s" id="teamB" style="margin-left:6px">팀 고르기</button></div>` : ''}
     <div class="card" style="padding:12px"><div class="row" style="margin-bottom:8px;gap:6px"><button class="btn s" id="mPrev" aria-label="이전 달" style="min-height:32px;padding:2px 10px">‹</button><h3 style="margin:0">${mon.slice(0, 4) !== cur.slice(0, 4) ? mon.slice(0, 4) + '년 ' : ''}${+mon.slice(5)}월 방선 현황</h3><button class="btn s" id="mNext" aria-label="다음 달" style="min-height:32px;padding:2px 10px" ${mon >= cur ? 'disabled' : ''}>›</button>${mon !== cur ? '<button class="btn s" id="mNow" style="min-height:32px;padding:2px 10px">이번 달</button>' : ''}<span class="sp"></span><span class="muted" style="font-size:12px">${ships.filter(v => !isForeign(v) && Object.values(R).some(x => live(x) && x.h.ship === v && (x.h.date || '').startsWith(mon))).length}/${ships.filter(v => !isForeign(v)).length}척</span></div><div class="vg">${ships.map(cell).join('')}</div></div>
@@ -638,21 +623,21 @@ function viewList() { if (SHIP() && isForeign(myShip())) return viewForeign(mySh
     <div class="sec"><h3>완료 · ${mon.slice(0, 4) !== cur.slice(0, 4) ? mon.slice(0, 4) + '년 ' : ''}${+mon.slice(5)}월</h3><span class="chip ok">${done.length}</span>${hp('완료 기준: 감독 3개 파트 서명 + 선장·기관장·D.P.A·C.E.O 서명')}</div>
     ${!done.length ? '<div class="muted" style="padding:6px 2px">완료된 방선이 없습니다.</div>' : !WIDE() && !S.doneOpen ? `<button class="btn w" id="doneB">완료 ${done.length}건 보기 ▾</button>` : showDone.map(repCard).join('') + (done.length > 5 && !S.showDone ? `<button class="btn w" id="moreB">완료 ${done.length - 5}건 더 보기</button>` : '')}
   </main>`;
-  const nb = $('#newB'); if (nb) nb.onclick = () => newVisit(); $('#setB').onclick = () => go('#/set'); const ib = $('#impB'); if (ib) ib.onclick = importFile;
+  const nb = $('#newB'); if (nb) nb.onclick = () => newVisit(); const ib = $('#impB'); if (ib) ib.onclick = importFile;
   const tb = $('#teamB'); if (tb) tb.onclick = pickTeam;
   const mb = $('#moreB'); if (mb) mb.onclick = () => { S.showDone = 1; render(); }; const dB = $('#doneB'); if (dB) dB.onclick = () => { S.doneOpen = 1; render(); };
   $('#mPrev').onclick = () => { S.mon = mAdd(mon, -1); S.showDone = 0; render(); }; $('#mNext').onclick = () => { S.mon = mAdd(mon, 1); S.showDone = 0; render(); };
   const mn = $('#mNow'); if (mn) mn.onclick = () => { S.mon = ''; render(); };
   const f = $('#fship'); if (f) f.onchange = () => { S.fship = f.value; render(); };
-  $('#app').onclick = e => { const hm2 = e.target.closest('[data-home]'); if (hm2) return setHome(hm2.dataset.home); const pv0 = e.target.closest('[data-pv]'); if (pv0) { e.stopPropagation(); return go('#/p/' + pv0.dataset.pv); } const mn = e.target.closest('[data-menu]'); if (mn) { e.stopPropagation(); return repMenu(R[mn.dataset.menu]); }
+  $('#app').onclick = e => { const hm2 = e.target.closest('[data-home]'); if (hm2) return setHome(hm2.dataset.home); const pv0 = e.target.closest('[data-pv]'); if (pv0) { e.stopPropagation(); return go('#/p/' + pv0.dataset.pv); } const cs = e.target.closest('[data-cs]'); if (cs) { e.stopPropagation(); return ceoSign(cs.dataset.cs); } const mn = e.target.closest('[data-menu]'); if (mn) { e.stopPropagation(); return repMenu(R[mn.dataset.menu]); }
     const mg = e.target.closest('[data-mg]'); if (mg) return mergeAsk(dupGroups()[+mg.dataset.mg]);
     const fg = e.target.closest('[data-foreign]'); if (fg) return toast(`${fg.dataset.foreign} — ${FMSG}`, 3500);
     const nv = e.target.closest('[data-newv]'); if (nv) return newVisit(nv.dataset.newv);
     const pk = e.target.closest('[data-pick]'); if (pk) return pickRep(pk.dataset.pick, mon);
-    const o = e.target.closest('[data-open]'); if (o && !e.target.closest('select')) { if (WIDE() && o.classList.contains('rep')) { S.sel = o.dataset.open; return render(); } go('#/r/' + o.dataset.open); } };
+    const o = e.target.closest('[data-open]'); if (o && !e.target.closest('select')) { if (CEO()) return go('#/p/' + o.dataset.open); if (WIDE() && o.classList.contains('rep')) { S.sel = o.dataset.open; return render(); } go('#/r/' + o.dataset.open); } };
   /* PC 넓은 화면: 목록(왼쪽) + 고른 보고서 요약(오른쪽) */
-  document.body.classList.toggle('wide', WIDE());
-  if (WIDE()) { const mainEl = $('#app main'), sel = rep(S.sel) || prog[0] || list[0]; if (sel) S.sel = sel.id; const L = document.createElement('div'); L.style.minWidth = '0'; [...mainEl.children].forEach(c => L.appendChild(c)); mainEl.appendChild(L); mainEl.classList.add('two');
+  document.body.classList.toggle('wide', WIDE() && !CEO());
+  if (WIDE() && !CEO()) { const mainEl = $('#app main'), sel = rep(S.sel) || prog[0] || list[0]; if (sel) S.sel = sel.id; const L = document.createElement('div'); L.style.minWidth = '0'; [...mainEl.children].forEach(c => L.appendChild(c)); mainEl.appendChild(L); mainEl.classList.add('two');
     const A = document.createElement('aside'); A.className = 'sumP'; A.innerHTML = sumHTML(sel); mainEl.appendChild(A); $$('.card.rep', mainEl).forEach(c => c.classList.toggle('sel', c.dataset.open === S.sel)); }
   paintSync(); }
 const sameMonth = (v, d) => Object.values(R).filter(x => live(x) && x.h.ship === v && (x.h.date || '').slice(0, 7) === String(d || '').slice(0, 7)).sort((a, b) => (a.ct || 0) - (b.ct || 0));
@@ -1036,25 +1021,6 @@ async function viewPrint(r, kind) { const xk = kind === 'x', back = S.prevH && S
     await saveFile(new Blob([doc], { type: 'text/html' }), `${base}.html`, ttl + ' (HTML)', { 'text/html': ['.html'] }); }; }
 
 /* ---------- 설정 ---------- */
-function viewSet() { const me = ME.get(), m = window.SJCLOUD && SJCLOUD.me ? SJCLOUD.me() : null;
-  $('#app').innerHTML = header('방선 보고서 설정', 'Settings', '#/') + `<main>
-    <div class="card"><h3>내 정보 <span class="en">Me</span></h3><p class="muted" style="margin-top:0">보고서를 열면 내 팀 파트가 먼저 열리고, 서명할 때 이름이 미리 채워집니다.</p>
-      <label class="f">이름 Name</label><input class="i" id="mn" value="${esc(me.name || '')}">
-      ${isOffice() ? `<label class="f">소속 팀 Team <span class="muted">(앱 설정과 같음)</span></label><div class="seg" id="mt" style="flex-wrap:wrap">${TEAMS.map(([v, k, ko]) => `<button data-k="${v}" class="${teamCode() === v ? 'on' : ''}">${v === 'ALL' ? '전체' : v + ' ' + ko}</button>`).join('')}</div>` : ''}
-      <button class="btn p w" id="msv" style="margin-top:12px">저장</button></div>
-    <div class="card"><h3>서버 동기화 <span class="en">Sync</span></h3><div class="kv"><b>기기 상태</b><span>${!m || m.status === 'none' ? '서버 미등록 — 앱 홈 › 설정에서 등록' : m.status === 'approved' ? `승인됨 (${m.role === 'office' ? '사무실' : '선박 ' + esc(m.ship || '')})` : m.status === 'pending' ? '사무실 승인 대기' : esc(m.status)}</span>
-      <b>마지막 동기화</b><span id="slast">—</span><b>보고서</b><span>${Object.values(R).filter(live).length}건</span></div>
-      <button class="btn w" id="snow" style="margin-top:12px">지금 동기화</button></div>
-    <div class="card"><h3>도움말</h3><ol style="margin:0;padding-left:20px;font-size:14px;line-height:1.7">
-      <li>방선한 감독 한 명이 '새 방선 시작'으로 보고서를 만듭니다 (선박·일자·항구·월간/분기).</li>
-      <li>각 팀 감독은 같은 보고서를 열어 <b>자기 파트</b>를 점검합니다 — Y/N/NA, ● 항목 사진, 필요하면 메모.</li>
-      <li>N(부적합)을 누르면 공통 지적사항을 바로 적습니다. 번호는 자동으로 이어집니다.</li>
-      <li>파트 점검이 끝나면 맨 아래 <b>점검 완료 · 서명</b> — 빠진 판정·사진이 있으면 알려 줍니다.</li>
-      <li>'확인·출력'에서 선장·기관장(본선), D.P.A·C.E.O(회사) 서명 후 <b>보고서 보기 · PDF 저장</b>.</li></ol></div></main>`;
-  let team = teamCode(); $$('#mt button').forEach(b => b.onclick = () => { team = b.dataset.k; $$('#mt button').forEach(x => x.classList.toggle('on', x === b)); });
-  $('#msv').onclick = () => { if (isOffice() && team) APP.set('team', team); const t = TEAMS.find(x => x[0] === team); ME.set({ name: $('#mn').value.trim(), team: t ? t[1] : '' }); toast('저장했습니다'); go('#/'); };
-  $('#snow').onclick = syncNow; const s = window.SJCLOUD && SJCLOUD.state; if (s && s.last) $('#slast').textContent = hm(s.last); paintSync(); }
-
 /* ---------- 서버 동기화 (SEJUL cloud.js, 도구 이름 'vst') ---------- */
 function syncInfo() { const C = window.SJCLOUD; if (!C || !C.me) return ['', '이 기기만']; const m = C.me(), s = C.state || {};
   if (!navigator.onLine) return ['warn', '오프라인']; if (!m || m.status === 'none') return ['', '서버 미등록']; if (m.status === 'pending') return ['warn', '승인 대기'];
