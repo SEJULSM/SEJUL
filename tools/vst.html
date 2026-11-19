@@ -307,7 +307,13 @@ async function photo(id) { if (PH.has(id)) return PH.get(id); const o = await ID
 async function photoPut(id, data, rid, mine) { PH.set(id, data); PHK.add(id); await IDB.put('p', { id, data, rid, at: now() }); if (mine) { const s = PEND.get(); s.add(id); PEND.set(s); } }
 
 /* ---------- 보고서 구조 ---------- */
-function newRep(h) { const t = now(); return { id: uid('V'), cdev: DEV, ct: t, h: Object.assign({ ship: '', date: ymd(), port: '', q: false, by: ME.get().name || '', u: t }, h), parts: { S: { items: {} }, T: { items: {} }, M: { items: {}, iv: null } }, fnd: {}, ext: {}, fin: {}, sp: { items: {} }, lu: t, sv: 3 }; }
+const MYUID = () => { try { const u = window.SJCLOUD && SJCLOUD.user && SJCLOUD.user(); return (u && u.uid) || ''; } catch (e) { return ''; } };
+/* 서명이 하나도 없는 보고서·특별점검인지 (작성 취소 가능 조건) */
+const noSignR = r => !PARTS.some(p => sig(r.parts[p.k] && r.parts[p.k].sign)) && !Object.values(r.fin || {}).some(sig) && !sig((r.ext || {}).a) && !sig((r.ext || {}).c);
+const noSignX = x => !sig(x.sp.sign) && !sig(x.sp.ce) && !sig(x.sp.dpa);
+/* 작성 취소: 만든 사람(같은 계정)이 서명 전까지 · 관리자는 언제나 삭제 */
+const canCancel = o => !RO() && !!MYUID() && o.cuid === MYUID() && (o.kind === 'sp' ? noSignX(o) : noSignR(o));
+function newRep(h) { const t = now(); return { id: uid('V'), cdev: DEV, cuid: MYUID(), ct: t, h: Object.assign({ ship: '', date: ymd(), port: '', q: false, by: ME.get().name || '', u: t }, h), parts: { S: { items: {} }, T: { items: {} }, M: { items: {}, iv: null } }, fnd: {}, ext: {}, fin: {}, sp: { items: {} }, lu: t, sv: 3 }; }
 /* 서식 R-4 개정(T7 추가): 예전 T7·T8 → T8·T9로 번호 옮김 */
 /* 서식 개정에 따른 항목 번호 옮김 — sv 2: T7 추가(T7·T8→T8·T9) · sv 3: S12 중대작업 허가서 추가(S12~S18→S13~S19) */
 function shiftNo(r, k, mv) { const P = r.parts && r.parts[k] && r.parts[k].items; if (P) Object.keys(mv).forEach(o => { if (o in P) { P[mv[o]] = P[o]; delete P[o]; } });
@@ -330,7 +336,7 @@ const itemsOf = (r, k) => PART[k].items.filter(it => !it.q || r.h.q);
 const spItems = r => Object.entries((r.sp && r.sp.items) || {}).filter(([, x]) => x && !x.del).map(([id, x]) => Object.assign({ id }, x)).sort((a, b) => (a.at || 0) - (b.at || 0));
 const spDone = r => sig(r.sp && r.sp.sign);
 function normX(x) { x.kind = 'sp'; x.h = x.h || {}; x.sp = x.sp || {}; x.sp.items = x.sp.items || {}; return x; }
-function newX(h) { const t = now(); return normX({ id: uid('XS'), kind: 'sp', cdev: DEV, ct: t, h: Object.assign({ ship: '', date: ymd(), port: '', u: t }, h), sp: { items: {} }, lu: t }); }
+function newX(h) { const t = now(); return normX({ id: uid('XS'), kind: 'sp', cdev: DEV, cuid: MYUID(), ct: t, h: Object.assign({ ship: '', date: ymd(), port: '', u: t }, h), sp: { items: {} }, lu: t }); }
 function mergeX(a, b) { const o = mrg(a, b); o.id = a.id || b.id; o.ct = Math.min(a.ct || Infinity, b.ct || Infinity); o.cdev = a.cdev || b.cdev; o.lu = Math.max(a.lu || 0, b.lu || 0); return normX(o); }
 async function applyX(o) { const a = XS[o.id]; if (!a) { XS[o.id] = normX(o); await IDB.put('r', XS[o.id]); return 1; } const m = mergeX(a, normX(o)); if (JSON.stringify(a) !== JSON.stringify(m)) { XS[o.id] = m; await IDB.put('r', m); return 1; } return 0; }
 /* 특별점검 상태: 지적 수 · 조치 완료 수 · 기한 지남 · 서명 */
@@ -469,9 +475,12 @@ function viewListSp() { const ms = myShip(); let list = Object.values(XS).filter
     const o = e.target.closest('[data-sopen]'); if (o) go((CEO() ? '#/x/' : '#/s/') + o.dataset.sopen); };
   paintSync(); }
 function spMenu(x) { if (!x) return; modal(`<h3>🔧 ${esc(x.h.ship)} · ${dot(x.h.date)} <button class="x" data-x>✕</button></h3>
-    <div style="display:grid;gap:8px"><button class="btn w" id="m1">📂 열기</button><button class="btn w" id="m2">🖨 출력 · PDF</button>${SHIP() || !CAN('dpa') ? '' : '<button class="btn r w" id="m4">🗑 특별점검 삭제</button>'}</div>`, (m, close) => {
+    <div style="display:grid;gap:8px"><button class="btn w" id="m1">📂 열기</button><button class="btn w" id="m2">🖨 출력 · PDF</button>${SHIP() || !CAN('dpa') ? '' : '<button class="btn r w" id="m4">🗑 특별점검 삭제</button>'}${!CAN('dpa') && canCancel(x) ? '<button class="btn r w" id="m5">✖ 작성 취소 (내가 만든 것 · 서명 전)</button>' : ''}</div>`, (m, close) => {
     $('#m1', m).onclick = () => { close(); go('#/s/' + x.id); }; $('#m2', m).onclick = () => { close(); go('#/x/' + x.id); };
-    const m4 = $('#m4', m); if (m4) m4.onclick = () => { close(); ask(`${x.h.ship} ${dot(x.h.date)} 공무팀 특별점검을 삭제할까요?\n지적 ${spItems(x).length}건과 사진이 함께 빠지고, 동기화된 다른 기기에서도 사라집니다.`, async () => { x.del = { v: true, u: now(), by: myName() }; await save(x); pushNow(); toast('삭제했습니다'); go('#/'); render(); }, '삭제', true); }; }); }
+    const m4 = $('#m4', m); if (m4) m4.onclick = () => { close(); ask(`${x.h.ship} ${dot(x.h.date)} 공무팀 특별점검을 삭제할까요?\n지적 ${spItems(x).length}건과 사진이 함께 빠지고, 동기화된 다른 기기에서도 사라집니다.`, async () => { x.del = { v: true, u: now(), by: myName() }; await save(x); pushNow(); toast('삭제했습니다'); go('#/'); render(); }, '삭제', true); };
+    const m5 = $('#m5', m); if (m5) m5.onclick = () => { close(); cancelX(x); }; }); }
+function cancelX(x) { if (!canCancel(x)) return toast('작성 취소는 만든 사람이 서명 전까지만 할 수 있습니다', 3500);
+  ask(`${x.h.ship} ${dot(x.h.date)} 공무 특별점검 작성을 취소할까요?\n지적 칸과 사진이 모두 지워지고, 다른 기기에서도 사라집니다.`, async () => { x.del = { v: true, u: now(), by: myName(), cancel: true }; await save(x); pushNow(); toast('작성을 취소했습니다'); go('#/'); render(); }, '작성 취소', true); }
 function newSp(v0) { if (RO()) return toast(SHIPMSG, 3000); const ms = myShip(), t = ymd();
   if (isForeign(v0) || (ms && isForeign(ms))) return toast(FMSG, 3500);
   modal(`<h3>🔧 새 공무팀 특별점검 <button class="x" data-x>✕</button></h3>
@@ -563,9 +572,11 @@ function pickRep(v, mon) { const L = Object.values(R).filter(x => live(x) && x.h
     m.onclick = e => { const mn = e.target.closest('[data-menu]'); if (mn) { e.stopPropagation(); close(); return repMenu(R[mn.dataset.menu]); } const o = e.target.closest('[data-open]'); if (o) { close(); go('#/r/' + o.dataset.open); } };
   }); }
 function repMenu(r) { if (!r) return; modal(`<h3>${esc(r.h.ship)} · ${dot(r.h.date)} <button class="x" data-x>✕</button></h3>
-    <div style="display:grid;gap:8px"><button class="btn w" id="m1">📂 열기</button><button class="btn w" id="m2">📄 보고서 보기 · PDF</button><button class="btn w" id="m3">📤 파일로 내보내기</button>${SHIP() || !CAN('admin') ? '' : '<button class="btn r w" id="m4">🗑 보고서 삭제</button>'}</div>`, (m, close) => {
+    <div style="display:grid;gap:8px"><button class="btn w" id="m1">📂 열기</button><button class="btn w" id="m2">📄 보고서 보기 · PDF</button><button class="btn w" id="m3">📤 파일로 내보내기</button>${SHIP() || !CAN('admin') ? '' : '<button class="btn r w" id="m4">🗑 보고서 삭제</button>'}${!CAN('admin') && canCancel(r) ? '<button class="btn r w" id="m5">✖ 작성 취소 (내가 만든 보고서 · 서명 전)</button>' : ''}</div>`, (m, close) => {
     $('#m1', m).onclick = () => { close(); go('#/r/' + r.id); }; $('#m2', m).onclick = () => { close(); go('#/p/' + r.id); }; $('#m3', m).onclick = () => { close(); exportRep(r); };
-    const m4 = $('#m4', m); if (m4) m4.onclick = () => { close(); delRep(r); }; }); }
+    const m4 = $('#m4', m); if (m4) m4.onclick = () => { close(); delRep(r); }; const m5 = $('#m5', m); if (m5) m5.onclick = () => { close(); cancelRep(r); }; }); }
+function cancelRep(r) { if (!canCancel(r)) return toast('작성 취소는 만든 사람이 서명 전까지만 할 수 있습니다', 3500);
+  ask(`${r.h.ship} ${dot(r.h.date)} 방선 보고서 작성을 취소할까요?\n입력한 점검 결과·지적·사진이 모두 지워지고, 다른 기기에서도 사라집니다.`, async () => { r.del = { v: true, u: now(), by: myName(), cancel: true }; await save(r); pushNow(); toast('작성을 취소했습니다'); go('#/'); render(); }, '작성 취소', true); }
 function delRep(r) { if (SHIP()) return toast(SHIPMSG, 3000); if (!CAN('admin')) return toast('🔒 보고서 삭제는 관리자만 할 수 있습니다', 3000); const st = repState(r), sg = PARTS.filter((p, i) => st.sp[i].signed).length + st.fin;
   ask(`${r.h.ship} ${dot(r.h.date)} 방선 보고서를 삭제할까요?\n${sg ? `서명 ${sg}개가 들어 있는 보고서입니다.\n` : ''}동기화된 다른 감독의 기기에서도 함께 사라집니다.`, async () => { r.del = { v: true, u: now(), by: ME.get().name || '' }; await save(r); pushNow(); toast('삭제했습니다 — 다른 기기에도 바로 반영됩니다'); go('#/'); render(); }, '삭제', true); }
 function pickTeam() { modal(`<h3>이 기기의 소속 팀 <button class="x" data-x>✕</button></h3><p class="muted" style="margin-top:0">방선 보고서에서 우리 팀 파트만 보이고 작성합니다. (앱 설정 › 이 기기 › 소속 팀과 같음)</p>
@@ -690,7 +701,8 @@ function spView(r) { const m = $('#pm'), SP = r.sp, L0 = spItems(r), locked = sp
     ${sgC('공무 감독 (점검)', 'Technical superintendent', SP.sign, 'sign')}
     ${sgC('기관장 (확인)', 'Chief Engineer', SP.ce, 'ce')}
     ${sgC('D.P.A (검토)', 'D.P.A review', SP.dpa, 'dpa')}
-    <button class="btn w" id="spPrint">📋 공무팀 특별 점검 사항 보기 · PDF <span class="muted">(별도 출력)</span></button>`;
+    <button class="btn w" id="spPrint">📋 공무팀 특별 점검 사항 보기 · PDF <span class="muted">(별도 출력)</span></button>
+    ${!CAN('dpa') && canCancel(r) ? '<button class="btn r w" id="spCancel" style="margin-top:12px">✖ 작성 취소 <span style="font-weight:400">(내가 만든 것 · 서명 전)</span></button>' : ''}`;
   fillThumbs(m);
   const keep = () => { const y = window.scrollY; spView(r); window.scrollTo(0, y); };
   const svH = async () => { const d = $('#xD', m).value; if (!d) return toast('방선 일자를 비울 수 없습니다'); if (d.slice(0, 7) !== (r.h.date || '').slice(0, 7) && Object.values(XS).some(o => o.id !== r.id && live(o) && o.h.ship === r.h.ship && (o.h.date || '').slice(0, 7) === d.slice(0, 7))) { $('#xD', m).value = r.h.date; return toast('그 달 특별점검이 이미 있습니다 — 선박당 한 달에 1건', 3500); }
@@ -720,7 +732,7 @@ function spView(r) { const m = $('#pm'), SP = r.sp, L0 = spItems(r), locked = sp
     if (k === 'dpa') { if (!can('dpa')) return toast('🔒 DPA·관리자만 할 수 있습니다', 3000); return signPad('D.P.A (검토)', myName(), async s => { SP.dpa = s; await save(r); toast('D.P.A 검토 서명 저장'); viewSp(r); }); }
     signPad('기관장 (확인)', '', async s => { SP.ce = s; await save(r); toast('기관장 확인 서명 저장'); viewSp(r); }); });
   $$('[data-un]', m).forEach(b => b.onclick = () => ask('이 서명을 취소할까요?', async () => { SP[b.dataset.un] = { cleared: true, u: now() }; await save(r); viewSp(r); }, '서명 취소', true));
-  $('#spPrint').onclick = () => go('#/x/' + r.id); }
+  $('#spPrint').onclick = () => go('#/x/' + r.id); const sc = $('#spCancel', m); if (sc) sc.onclick = () => cancelX(r); }
 
 /* 출력: 공무팀 특별 점검 사항 (서식 그대로 · 쪽당 3칸) */
 async function docX(r) { const X = spItems(r), ph = {}; for (const x of X) for (const id of [...(x.ph || []), ...(x.cph || [])]) ph[id] = await photo(id);
@@ -818,14 +830,14 @@ function confView(r) { const m = $('#pm'), E = r.ext || {}, er = E.r || {};
       <button class="btn p w" id="pvB">📄 보고서 보기 · PDF 저장</button>
       <div class="row" style="margin-top:8px"><button class="btn sp" id="expB">📤 파일로 내보내기</button>${RO() ? '' : '<button class="btn sp" id="impB2">📥 가져와 합치기</button>'}</div>
       <p class="muted" style="margin:8px 0 0">서버 동기화가 안 될 때: 파일로 내보내 카카오톡·메일로 다른 감독에게 보내면, 받은 사람이 '가져와 합치기'로 한 보고서로 합칩니다.</p>
-      ${SHIP() || !CAN('admin') ? '' : '<button class="btn r w" id="delB" style="margin-top:14px">보고서 삭제</button>'}</div>`;
+      ${SHIP() || !CAN('admin') ? '' : '<button class="btn r w" id="delB" style="margin-top:14px">보고서 삭제</button>'}${!CAN('admin') && canCancel(r) ? '<button class="btn r w" id="cnB" style="margin-top:14px">✖ 작성 취소 <span class="muted" style="color:inherit;font-weight:400">(내가 만든 보고서 · 서명 전)</span></button>' : ''}</div>`;
   $$('[data-sg]', m).forEach(b => b.onclick = () => { if (!can(b.dataset.sg)) return toast('🔒 권한이 없습니다', 3000); const [g, k] = b.dataset.sg.split('.'), lab = g === 'fin' ? FINAL.find(x => x[0] === k)[1] : (k === 'a' ? 'D.P 승인' : 'D.P 종결확인');
     signPad(lab, k === 'ceo' ? myName() : '', async s => { if (g === 'fin') r.fin[k] = s; else r.ext[k] = s; await save(r); toast('서명 저장'); viewRep(r, 'C'); }); });
   $$('[data-un]', m).forEach(b => b.onclick = () => ask('이 서명을 취소할까요?', async () => { const [g, k] = b.dataset.un.split('.'); (g === 'fin' ? r.fin : r.ext)[k] = { cleared: true, u: now() }; await save(r); viewRep(r, 'C'); }, '서명 취소', true));
   const svE = async () => { const o = { other: $('#eot').value.trim(), to: $('#eto').value, u: now() }; $$('[data-er]', m).forEach(c => o[c.dataset.er] = c.checked); r.ext.r = o; await save(r, true); };
   $$('[data-er]', m).forEach(c => c.onchange = svE); $('#eot').onchange = svE; $('#eto').onchange = svE;
   $('#pvB').onclick = () => go('#/p/' + r.id); $('#expB').onclick = () => exportRep(r); const ib = $('#impB2'); if (ib) ib.onclick = importFile;
-  const db = $('#delB'); if (db) db.onclick = () => delRep(r); }
+  const db = $('#delB'); if (db) db.onclick = () => delRep(r); const cn = $('#cnB'); if (cn) cn.onclick = () => cancelRep(r); }
 
 /* ---------- 내보내기 / 가져오기 ---------- */
 async function exportRep(r) { const ph = {}; for (const id of photoIds(r)) { const d = await photo(id); if (d) ph[id] = d; }
@@ -949,9 +961,9 @@ window.SJ_VST = {
   pc: () => APP.get('pcname') || ME.get().name || 'phone',
   files(m) { const out = [], cut = now() - 200 * 864e5, pushed = (() => { try { return JSON.parse(LS.get('sejul_cloud_vst_pushed') || '{}'); } catch (e) { return {}; } })(), pend = PEND.get();
     for (const r of Object.values(R)) { if ((r.lu || 0) < cut || !r.h.ship) continue; if (m && m.role === 'ship' && r.h.ship !== m.ship) continue;
-      out.push({ name: `VST_${r.id}_${DEV}.json`, ship: r.h.ship, core: r, obj: { kind: 'SEJUL-VST', v: 1, role: role(), perm: PERM(), rep: r } }); }
+      out.push({ name: `VST_${r.id}_${DEV}.json`, ship: r.h.ship, core: r, obj: { kind: 'SEJUL-VST', v: 1, role: role(), perm: PERM(), uid: MYUID(), rep: r } }); }
     for (const x of Object.values(XS)) { if ((x.lu || 0) < cut || !x.h.ship) continue; if (m && m.role === 'ship' && x.h.ship !== m.ship) continue;
-      out.push({ name: `VSX_${x.id}_${DEV}.json`, ship: x.h.ship, core: x, obj: { kind: 'SEJUL-VSX', v: 1, role: role(), perm: PERM(), sp: x } }); }
+      out.push({ name: `VSX_${x.id}_${DEV}.json`, ship: x.h.ship, core: x, obj: { kind: 'SEJUL-VSX', v: 1, role: role(), perm: PERM(), uid: MYUID(), sp: x } }); }
     /* 이 기기에서 찍은 사진: 한 장씩 따로 (한 번만 올라감) */
     for (const id of [...pend]) { const nm = `VSTP_${id}.json`; if (pushed[nm]) { pend.delete(id); continue; } const d = PH.get(id); if (!d) continue; const r = Object.values(R).find(r => photoIds(r).has(id)) || Object.values(XS).find(x => photoIds(x).has(id));
       if (!r) continue; if (m && m.role === 'ship' && r.h.ship !== m.ship) continue; out.push({ name: nm, ship: r.h.ship, core: id, obj: { kind: 'SEJUL-VSTP', id, rid: r.id, data: d } }); }
@@ -960,8 +972,8 @@ window.SJ_VST = {
     /* 선박 기기에서 온 파일: 선장·기관장 서명과 시정조치 결과(조치 사진·완료일)만 받아들임 — 감독 점검·서명·지적·삭제는 무시 */
     /* 사무실 일반·DPA 계정에서 온 파일: 권한 밖의 서명·삭제는 받아들이지 않음 */
     if (o.role === 'office' && o.perm === 'ceo') { if (o.kind === 'SEJUL-VST' && o.rep && R[o.rep.id]) { const a = cp(R[o.rep.id]); a.fin = a.fin || {}; a.fin.ceo = mrg(a.fin.ceo, (o.rep.fin || {}).ceo); o = Object.assign({}, o, { rep: a }); } else if (o.kind === 'SEJUL-VST' || o.kind === 'SEJUL-VSX') return 0; }
-    if (o.role === 'office' && (o.perm === 'user' || o.perm === 'dpa')) { if (o.kind === 'SEJUL-VST' && o.rep && R[o.rep.id]) { const a = R[o.rep.id], b = cp(o.rep); b.fin = b.fin || {}; b.ext = b.ext || {}; b.fin.ceo = a.fin && a.fin.ceo; b.del = a.del; if (o.perm === 'user') { b.fin.dpa = a.fin && a.fin.dpa; b.ext.a = a.ext && a.ext.a; b.ext.c = a.ext && a.ext.c; } o = Object.assign({}, o, { rep: b }); }
-      if (o.kind === 'SEJUL-VSX' && o.sp && XS[o.sp.id] && o.perm === 'user') o = Object.assign({}, o, { sp: (z => { z.del = XS[o.sp.id].del; z.sp = z.sp || {}; z.sp.dpa = XS[o.sp.id].sp.dpa; return z; })(cp(o.sp)) }); }
+    if (o.role === 'office' && (o.perm === 'user' || o.perm === 'dpa')) { if (o.kind === 'SEJUL-VST' && o.rep && R[o.rep.id]) { const a = R[o.rep.id], b = cp(o.rep); b.fin = b.fin || {}; b.ext = b.ext || {}; b.fin.ceo = a.fin && a.fin.ceo; if (!(o.uid && a.cuid === o.uid && noSignR(a) && b.del && b.del.cancel)) b.del = a.del; if (o.perm === 'user') { b.fin.dpa = a.fin && a.fin.dpa; b.ext.a = a.ext && a.ext.a; b.ext.c = a.ext && a.ext.c; } o = Object.assign({}, o, { rep: b }); }
+      if (o.kind === 'SEJUL-VSX' && o.sp && XS[o.sp.id] && o.perm === 'user') o = Object.assign({}, o, { sp: (z => { { const a = XS[o.sp.id]; if (!(o.uid && a.cuid === o.uid && noSignX(a) && z.del && z.del.cancel)) z.del = a.del; } z.sp = z.sp || {}; z.sp.dpa = XS[o.sp.id].sp.dpa; return z; })(cp(o.sp)) }); }
     if (o.role === 'ship' && !SHIP()) { if (o.kind === 'SEJUL-VST' && o.rep) o = Object.assign({}, o, { rep: fromShipR(R[o.rep.id], o.rep) }); if (o.kind === 'SEJUL-VSX' && o.sp) o = Object.assign({}, o, { sp: fromShipX(XS[o.sp.id], o.sp) }); if ((o.kind === 'SEJUL-VST' && !o.rep) || (o.kind === 'SEJUL-VSX' && !o.sp)) return 0; }
     if (o.kind === 'SEJUL-VST' && o.rep) { const n = await applyRep(o.rep); if (n && R[o.rep.id]) try { SJCLOUD.vstNote && SJCLOUD.vstNote(R[o.rep.id]); } catch (e) { } return n; } if (o.kind === 'SEJUL-VSX' && o.sp && o.sp.id) { const n = await applyX(o.sp); if (n && XS[o.sp.id]) try { SJCLOUD.spNote && SJCLOUD.spNote(XS[o.sp.id]); } catch (e) { } return n; } if (o.kind === 'SEJUL-VSTP' && o.id && o.data) { if (PHK.has(o.id)) return 0; await photoPut(o.id, o.data, o.rid, false); return 1; } return 0; },
   async after(n) { const typing = document.activeElement && /INPUT|TEXTAREA/.test(document.activeElement.tagName); if (!$('.mb') && !typing && !['p', 'x'].includes(route().v)) render(); toast('🔄 다른 감독의 내용을 받았습니다', 2500); paintSync(); }
