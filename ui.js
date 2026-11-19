@@ -309,7 +309,7 @@ html.sj-anim .sjh>*{animation:sjIn .25s ease both}html.sj-anim .sjh>*:nth-child(
 html.sj-railmin .sjr{padding:16px 10px}html.sj-railmin .sjr .sj-lg span,html.sj-railmin .sjr .sj-lt,html.sj-railmin .sjr .sj-srch span,html.sj-railmin .sjr .sj-srch kbd,html.sj-railmin .sjr .sj-vt,html.sj-railmin .sjr .sj-vl,html.sj-railmin .sjr .sj-hd span,html.sj-railmin .sjr .sj-ftl .sj-t,html.sj-railmin .sjr .sj-ftl .sj-up{display:none!important}
 html.sj-railmin .sjr .sj-lgr{flex-direction:column}html.sj-railmin .sjr .sj-min{transform:rotate(180deg);margin:0 0 8px}html.sj-railmin .sjr .sj-lg{padding:4px 0 6px;justify-content:center}html.sj-railmin .sjr .sj-it,html.sj-railmin .sjr .sj-srch{justify-content:center;padding:9px 0;gap:0}html.sj-railmin .sjr .sj-vb{justify-content:center;padding:8px 0}
 html.sj-railmin .sjr .sj-it .sj-bd,html.sj-railmin .sjr .sj-srch .sj-bd{position:absolute;top:3px;right:4px;padding:0 5px!important;font-size:11px!important;margin:0}html.sj-railmin .sjr .sj-hd{margin:8px 4px 2px}html.sj-railmin .sjr .sj-it.on::before{left:-10px}html.sj-railmin .sjr .sj-ftl{justify-content:center;padding:6px 0}html.sj-railmin .sjr .sj-ftl .sj-sy{flex:none;padding:6px!important}
-.sji-k.inv{background:var(--sj-pur-bg,#F1ECFB);color:var(--sj-pur-fg,#6A3FB5)}
+.sji-k.inv{background:var(--sj-pur-bg,#F1ECFB);color:var(--sj-pur-fg,#6A3FB5)}.sji-k.vst{background:#E6F4EE;color:#1E7A52}
 .sjr .sj-flr{display:flex;align-items:center;gap:2px;margin-top:6px}.sjr .sj-flr .sj-it{flex:1;min-width:0}.sjr .sj-vtg{flex:none;width:32px;height:32px;border:0;border-radius:8px;background:none;color:var(--sj-blu-fg,#1D5FAE);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .15s}.sjr .sj-vtg:hover{background:var(--sj-navy2,#22396B);color:var(--sj-on,#FFFFFF)}.sjr .sj-vtg.min{transform:rotate(-90deg)}
 html.sj-railmin .sjr .sj-vtg{display:none}html.sj-railmin .sjr .sj-flr{margin-top:4px}
 .sjr *{box-sizing:border-box}.sjr [hidden]{display:none!important}.sjr a{text-decoration:none}
@@ -616,7 +616,7 @@ html.sj-railmin .sjr .sj-vtg{display:none}html.sj-railmin .sjr .sj-flr{margin-to
       return { scope: 'ship:' + v, E }; }
     /* 승인함: 지금 결정·서명이 필요한 일 (실시간 — 처리하면 사라짐). 모든 종류를 같은 카드·같은 상태·같은 버튼으로
        사무실 = 선박이 보낸 요청 / 선박 = 내가 보낸 요청의 진행 상황 + 반려되어 보완할 것 */
-    const KIND = () => ({ def: [U.T('결함', 'Defect'), 'pms'], req: [U.T('청구서', 'Requisition'), 'inv'], pp: [U.T('작업 연기', 'Postponement'), 'pms'], dpa: [U.T('위험성 평가', 'Risk assessment'), 'rsk'], mocw: ['MoC', 'rsk'], wait: [U.T('위험성 평가', 'Risk assessment'), 'rsk'], dev: [U.T('기기', 'Device'), 'dev'] });
+    const KIND = () => ({ def: [U.T('결함', 'Defect'), 'pms'], req: [U.T('청구서', 'Requisition'), 'inv'], pp: [U.T('작업 연기', 'Postponement'), 'pms'], dpa: [U.T('위험성 평가', 'Risk assessment'), 'rsk'], mocw: ['MoC', 'rsk'], wait: [U.T('위험성 평가', 'Risk assessment'), 'rsk'], dev: [U.T('기기', 'Device'), 'dev'], vst: [U.T('방선 보고서', 'Visit report'), 'vst'], vsx: [U.T('공무 특별점검', 'Special insp.'), 'vst'] });
     function pend() { const T = U.T, role = U.role(), off = role === 'office', sp = U.sum('pms'), sr = U.sum('rsk'), out = [];
       if (off) { Object.entries((sp && sp.ships) || {}).forEach(([n, s]) => (s.O || []).forEach(([k, id, what, tx]) => { if (k === 'cls') return;
           out.push({ k, n, t: what, b: tx || '', st: k === 'req' ? 'rcv' : k === 'def' ? 'sign' : 'wait', btn: k === 'req' ? T('접수·처리', 'Process') : k === 'def' ? T('확인·서명', 'Review & sign') : T('검토·결정', 'Review'), tool: U.toolOf(k), o: { view: n, attrs: { opsk: k, opsid: id, opsship: n } } }); }));
@@ -626,7 +626,29 @@ html.sj-railmin .sjr .sj-vtg{display:none}html.sj-railmin .sjr .sj-flr{margin-to
       else { const v = C.get('vessel') || '', s = ((sp && sp.ships) || {})[v], r = ((sr && sr.v) || {})[v];
         if (s) (s.S || []).filter(x => x[0] === 'pp').forEach(([k, id, what, tx]) => { const rej = /반려|returned/i.test(what); out.push({ k: 'pp', n: v, t: what, b: tx || '', st: rej ? 'rej' : 'mine', btn: rej ? T('확인', 'Open') : T('보기', 'View'), tool: 'pms', o: { attrs: { opsk: 'pp', opsid: id } } }); });
         if (r) (r.items || []).filter(x => x[0] === 'wait' || x[0] === 'mocw').forEach(([k, id, tx]) => out.push({ k: k === 'mocw' ? 'mocw' : 'dpa', n: v, t: k === 'mocw' ? T('MoC — 회사 승인 대기', 'MoC — awaiting approval') : T('위험성 평가 — DPA 승인 대기', 'RA — awaiting DPA'), b: tx || '', st: 'mine', btn: T('보기', 'View'), tool: 'rsk', o: { attrs: { a: 'open', k: k === 'mocw' ? 'moc' : 'ra', id } } })); }
+      try { out.push(...vstPend()); } catch (e) { console.warn('vst pend', e); }
       const ord = { rej: 0, wait: 1, sign: 1, rcv: 2, mine: 3 }; return out.sort((a, b) => (ord[a.st] - ord[b.st]) || a.n.localeCompare(b.n)); }
+    /* 방선 보고서 · 공무 특별점검: 내 서명·결정이 필요한 것 (보고서 요약 sejul_vst_sum / sejul_vsx_sum 에서 계산) */
+    function vstPend() { const T = U.T, role = U.role(), m = U.me() || {}, us = m.user || {}, perm = U.perm(), dpa = U.can('dpa'), ceo = perm === 'ceo', out = [];
+      const J = k => { try { return JSON.parse(localStorage.getItem(k) || '{}') || {}; } catch (e) { return {}; } }, cut = new Date(Date.now() - 150 * 864e5).toISOString().slice(0, 10);
+      const team = String(us.team || C.get('team') || '').toUpperCase(), myP = { SQOT: 'S', TST: 'T', MAT: 'M' }[team] || '', TN = { S: 'SQOT 안품', T: 'TST 공무', M: 'MAT 해무' };
+      const v = role === 'ship' ? (C.get('vessel') || m.ship || '') : '', md = d => String(d || '').slice(5).replace('-', '.'), H = (id, t) => 'tools/vst.html#/r/' + id + '/' + t;
+      const add = (k, n, t, b, st, btn, href) => out.push({ k, n, t, b, st, btn, href });
+      Object.entries(J('sejul_vst_sum')).forEach(([id, n]) => { if (!n || n.del || !n.s || (n.d || '') < cut || (v && n.s !== v)) return;
+        const sg = n.sg || {}, fin = n.fin || {}, all = sg.S && sg.T && sg.M, d = md(n.d), x = n.x || [], open = Object.values(n.f || {}).filter(f => !f[1]).length;
+        if (all && fin.master && fin.ce && fin.dpa && fin.ceo && !(x[0] && !x[1])) return;
+        if (role === 'ship') { if (open) add('vst', n.s, T(`${d} 방선 · 지적 조치 결과 입력 ${open}건`, `${d} visit · ${open} finding(s) to close`), T('조치 사진 · 조치완료일', 'Photos · date'), 'rcv', T('입력하기', 'Open'), H(id, 'F'));
+          if (all && (!fin.master || !fin.ce)) add('vst', n.s, T(`${d} 방선 · 선장·기관장 확인 서명`, `${d} visit · Master/C/E sign`), T('감독 점검이 끝났습니다', 'Inspection finished'), 'sign', T('서명하기', 'Sign'), H(id, 'C')); return; }
+        if (ceo) { if (all && fin.master && fin.ce && fin.dpa && !fin.ceo) add('vst', n.s, T(`${d} 방선 · C.E.O 확인 서명`, `${d} visit · C.E.O sign`), T('다른 서명이 모두 끝났습니다', 'All other signatures done'), 'sign', T('서명하기', 'Sign'), 'tools/vst.html#/'); return; }
+        if (myP && !dpa && !sg[myP]) add('vst', n.s, T(`${d} 방선 · 우리 팀(${TN[myP]}) 점검·서명`, `${d} visit · our part`), T('팀 파트 서명 전', 'Part not signed'), 'sign', T('점검하기', 'Open'), H(id, myP));
+        if (dpa && all && fin.master && fin.ce && !fin.dpa) add('vst', n.s, T(`${d} 방선 · D.P.A 확인 서명`, `${d} visit · D.P.A sign`), T('감독·선장·기관장 서명 완료', 'Superintendents, Master, C/E signed'), 'sign', T('서명하기', 'Sign'), H(id, 'C'));
+        if (dpa && x[0] && !x[1]) add('vst', n.s, T(`${d} 방선 · 조치기한 연장 D.P 승인`, `${d} visit · extension approval`), T('연장기한 ', 'Until ') + String(x[0]).replace(/-/g, '.'), 'wait', T('검토·결정', 'Review'), H(id, 'C')); });
+      Object.entries(J('sejul_vsx_sum')).forEach(([id, n]) => { if (!n || n.del || !n.s || (n.d || '') < cut || (v && n.s !== v)) return;
+        const d = md(n.d), open = Object.values(n.i || {}).filter(i => !i[1]).length, href = 'tools/vst.html#/s/' + id;
+        if (role === 'ship') { if (open) add('vsx', n.s, T(`${d} 특별점검 · 조치 결과 입력 ${open}건`, `${d} special · ${open} item(s) to close`), T('조치 사진 · 조치완료일', 'Photos · date'), 'rcv', T('입력하기', 'Open'), href);
+          if (n.g1 && !n.g2) add('vsx', n.s, T(`${d} 특별점검 · 기관장 확인 서명`, `${d} special · C/E sign`), '', 'sign', T('서명하기', 'Sign'), href); return; }
+        if (dpa && !ceo && n.g1 && n.g2 && !n.g3) add('vsx', n.s, T(`${d} 특별점검 · D.P.A 검토 서명`, `${d} special · D.P.A review`), T('공무 감독·기관장 서명 완료', 'Supt. and C/E signed'), 'sign', T('서명하기', 'Sign'), href); });
+      return out; }
     const STL = () => ({ wait: [U.T('승인 대기', 'Awaiting decision'), 'y'], sign: [U.T('서명 대기', 'Awaiting signature'), 'y'], rcv: [U.T('접수 대기', 'To process'), 'b'], mine: [U.T('사무실 결정 대기', 'Waiting for office'), 'g'], rej: [U.T('반려 — 보완 필요', 'Returned — revise'), 'r'] });
     /* 새 일 넣기 (같은 열쇠는 한 번만) */
     function put(list, scope) { const o = load(), have = new Set(o.it.map(x => x.k)), first = scope && !o.sc[scope]; let n = 0;
@@ -644,7 +666,7 @@ html.sj-railmin .sjr .sj-vtg{display:none}html.sj-railmin .sjr .sj-flr{margin-to
       box.querySelector('.sji-tb').innerHTML = `<button type="button" data-sjit="apv" class="${tab === 'apv' ? 'on' : ''}">${off ? T('승인함', 'Approvals') : T('요청·결정', 'Requests')} <b class="${P.length ? 'y' : ''}">${P.length}</b></button><button type="button" data-sjit="news" class="${tab === 'news' ? 'on' : ''}">${T('알림', 'Notifications')} <b class="${un ? 'r' : ''}">${un}</b></button>`;
       box.querySelector('[data-sjiall]').hidden = tab !== 'news'; box.querySelector('.sji-f').hidden = tab !== 'news';
       if (tab === 'apv') { const K = KIND(), S = STL();
-        box.querySelector('.sji-l').innerHTML = P.length ? `<div class="sji-ah">${off ? T('선박이 보낸 요청 — 결정·서명하면 목록에서 빠집니다', 'Requests from vessels — they leave the list once decided') : T('내가 보낸 요청의 진행 상황 — 반려된 건은 보완해서 다시 보내세요', 'Status of your requests — revise returned ones')}</div>` + P.map((x, i) => `<div class="sji-c"><div class="sji-ct"><span class="sji-k ${(K[x.k] || [])[1] || ''}">${U.esc((K[x.k] || [x.k])[0])}</span>${off ? `<span class="sji-v">${U.esc(x.n)}</span>` : ''}<span class="sji-st ${S[x.st][1]}">${S[x.st][0]}</span></div><b>${U.esc(x.t)}</b>${x.b ? `<small>${U.esc(x.b)}</small>` : ''}<button type="button" class="sji-go ${x.st === 'mine' ? '' : 'pri'}" data-sjip="${i}">${U.esc(x.btn)} →</button></div>`).join('')
+        box.querySelector('.sji-l').innerHTML = P.length ? `<div class="sji-ah">${off ? T('결정·서명할 일 — 처리하면 목록에서 빠집니다', 'To decide or sign — items leave the list once done') : T('서명·조치할 일과 내가 보낸 요청의 진행 상황 — 반려된 건은 보완해서 다시 보내세요', 'To sign or close, and status of your requests')}</div>` + P.map((x, i) => `<div class="sji-c"><div class="sji-ct"><span class="sji-k ${(K[x.k] || [])[1] || ''}">${U.esc((K[x.k] || [x.k])[0])}</span>${off ? `<span class="sji-v">${U.esc(x.n)}</span>` : ''}<span class="sji-st ${S[x.st][1]}">${S[x.st][0]}</span></div><b>${U.esc(x.t)}</b>${x.b ? `<small>${U.esc(x.b)}</small>` : ''}<button type="button" class="sji-go ${x.st === 'mine' ? '' : 'pri'}" data-sjip="${i}">${U.esc(x.btn)} →</button></div>`).join('')
           : `<div class="sji-e">${off ? T('결정·서명할 일이 없습니다 ✓', 'Nothing to decide ✓') : T('진행 중인 요청이 없습니다 ✓', 'No open requests ✓')}</div>`; return; }
       const L = o.it.filter(x => flt === 'all' || (flt === 'un' ? !x.rd : flt === 'apv' ? (x.g === 'apv' || x.g === 'rej') : x.g === flt));
       box.querySelector('.sji-f').innerHTML = Object.entries(G()).map(([k, l]) => `<button type="button" data-sjif="${k}" class="${flt === k ? 'on' : ''}">${l}${k === 'un' ? ' ' + o.it.filter(x => !x.rd).length : ''}</button>`).join('');

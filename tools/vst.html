@@ -396,7 +396,7 @@ async function loadAll() { const a = await IDB.all('r'); R = {}; XS = {}; (a || 
   /* 예전 버전(보고서 안에 들어 있던 특별점검) → 따로 저장. id를 보고서 id로 정해 여러 기기에서 옮겨도 하나로 합쳐짐 */
   for (const r of Object.values(R)) { const o = r.sp || {}; if (!(Object.keys(o.items || {}).length || sig(o.sign) || sig(o.ce))) continue; const id = 'XS' + r.id; if (XS[id]) continue;
     const v = pv(r, 'T') || r.h; await save(normX({ id, kind: 'sp', cdev: r.cdev, ct: r.ct, h: { ship: r.h.ship, date: v.date || r.h.date, port: v.port || '', u: 1 }, sp: JSON.parse(JSON.stringify(o)), del: r.del }), true); } }
-async function save(r, silent) { r.lu = now(); if (r.kind === 'sp') XS[r.id] = r; else R[r.id] = r; await IDB.put('r', r); if (window.SJCLOUD) { try { SJCLOUD.onSave && SJCLOUD.onSave(); } catch (e) { } try { if (r.kind === 'sp') SJCLOUD.spNote && SJCLOUD.spNote(r, true, true); else SJCLOUD.vstNote && SJCLOUD.vstNote(r, true, true); } catch (e) { } } if (!silent) paintSync(); }
+async function save(r, silent) { setTimeout(() => { try { window.SJUI && SJUI.inb && SJUI.inb.paint(); } catch (e) { } }, 200); r.lu = now(); if (r.kind === 'sp') XS[r.id] = r; else R[r.id] = r; await IDB.put('r', r); if (window.SJCLOUD) { try { SJCLOUD.onSave && SJCLOUD.onSave(); } catch (e) { } try { if (r.kind === 'sp') SJCLOUD.spNote && SJCLOUD.spNote(r, true, true); else SJCLOUD.vstNote && SJCLOUD.vstNote(r, true, true); } catch (e) { } } if (!silent) paintSync(); }
 const rep = id => R[id] && live(R[id]) ? R[id] : null;
 const xrec = id => XS[id] && live(XS[id]) ? XS[id] : null;
 

@@ -123,7 +123,8 @@
     return { s: h.ship || '', d: h.date || '', q: !!h.q, p: h.port || '', del: !!(r.del && r.del.v),
       sg: Object.fromEntries(['S', 'T', 'M'].map(k => [k, sg(P[k] && P[k].sign) ? P[k].sign.name || '✓' : ''])),
       f: Object.fromEntries(F.map(([id, f]) => [id, [f.desc || '', f.done || '', (f.cph || []).length]])),
-      fin: Object.fromEntries(Object.keys(FN).map(k => [k, sg((r.fin || {})[k]) ? r.fin[k].name || '✓' : ''])) }; };
+      fin: Object.fromEntries(Object.keys(FN).map(k => [k, sg((r.fin || {})[k]) ? r.fin[k].name || '✓' : ''])),
+      x: [((r.ext || {}).r || {}).to || '', sg((r.ext || {}).a) ? 1 : 0] }; };
   C.vstNote = function (r, quiet, post) { if (!r || !r.id) return 0; const S = J('sejul_vst_sum', {}), o = S[r.id], n = dig(r); S[r.id] = n; LSS('sejul_vst_sum', JSON.stringify(S));
     const role = window.SJUI && SJUI.role ? SJUI.role() : '', show = !quiet && role === 'office'; if (!show && !post) return 0;
     const head = `${n.s} ${String(n.d).replace(/-/g, '.')}`, E = [], K = (k, t, b) => E.push({ k: `vst:${r.id}:${k}`, g: 'vst', t: `${head} · ${t}`, b: b || '', href: 'tools/vst.html#/r/' + r.id });
@@ -173,14 +174,15 @@
   C.teamPush = async function () { const m = C.me(); if (!m || m.status !== 'approved' || m.role !== 'office') return; const t = (window.SJAPP && SJAPP.get && SJAPP.get('team')) || '';
     if (LS('sejul_team_sent') === t + '|' + m.id) return; try { await C.rpc('sj_team', { p_team: t }); LSS('sejul_team_sent', t + '|' + m.id); } catch (e) { if (/does not exist|Could not find the function/i.test(e.message)) LSS('sejul_team_sent', t + '|' + m.id); } };
   /* 앱 홈·다른 도구: 서버 목록에서 바뀐 방선 보고서만 받아 확인 (사무실 승인 기기만) */
-  C.vstPoll = async function () { if (window.SJ_VST || C.vstBusy || !navigator.onLine) return; const m = C.me(); if (!m || m.status !== 'approved' || m.role !== 'office') return;
+  C.vstPoll = async function () { if (window.SJ_VST || C.vstBusy || !navigator.onLine) return; const m = C.me(); if (!m || m.status !== 'approved' || !['office', 'ship'].includes(m.role)) return; const shipV = m.role === 'ship' ? (SJAPP.get('vessel') || m.ship || '') : ''; if (m.role === 'ship' && !shipV) return;
+    if (!LS('sejul_vst_dig2')) { try { localStorage.removeItem('sejul_vst_hubseen'); } catch (e) { } LSS('sejul_vst_dig2', '1'); }   /* 요약에 연장 승인 정보 추가 → 한 번 다시 읽음 (알림 없이) */
     C.vstBusy = true; try { const list = await C.rpc('sj_list', { p_tool: 'vst' }) || [], first = LS('sejul_vst_hubseen') == null, seen = J('sejul_vst_hubseen', {}), R = J('sejul_vst_hubrep', {});
       const RX = J('sejul_vsx_hubrep', {});
       for (const r of list) { if (/^VSX_/.test(r.name)) { const at = new Date(r.saved_at).toISOString(); if (seen[r.name] && seen[r.name] >= at) continue;
-          try { const b64 = await C.rpc('sj_get', { p_tool: 'vst', p_name: r.name }); if (b64) { const o = JSON.parse(await C.ungz(b64)); if (o && o.sp && o.sp.id) { const x = mrg(RX[o.sp.id], o.sp); RX[o.sp.id] = x; C.spNote(x, first || r.mine); } } } catch (e) { console.warn('vsx poll', r.name, e); }
+          try { const b64 = await C.rpc('sj_get', { p_tool: 'vst', p_name: r.name }); if (b64) { const o = JSON.parse(await C.ungz(b64)); if (o && o.sp && o.sp.id && (!shipV || (o.sp.h || {}).ship === shipV)) { const x = mrg(RX[o.sp.id], o.sp); RX[o.sp.id] = x; C.spNote(x, first || r.mine); } } } catch (e) { console.warn('vsx poll', r.name, e); }
           seen[r.name] = at; continue; }
         if (!/^VST_/.test(r.name)) continue; const at = new Date(r.saved_at).toISOString(); if (seen[r.name] && seen[r.name] >= at) continue;
-        try { const b64 = await C.rpc('sj_get', { p_tool: 'vst', p_name: r.name }); if (b64) { const o = JSON.parse(await C.ungz(b64)); if (o && o.rep && o.rep.id) { const x = mrg(R[o.rep.id], o.rep); R[o.rep.id] = x; C.vstNote(x, first || r.mine); } } } catch (e) { console.warn('vst poll', r.name, e); }
+        try { const b64 = await C.rpc('sj_get', { p_tool: 'vst', p_name: r.name }); if (b64) { const o = JSON.parse(await C.ungz(b64)); if (o && o.rep && o.rep.id && (!shipV || (o.rep.h || {}).ship === shipV)) { const x = mrg(R[o.rep.id], o.rep); R[o.rep.id] = x; C.vstNote(x, first || r.mine); } } } catch (e) { console.warn('vst poll', r.name, e); }
         seen[r.name] = at; }
       /* 오래된 보고서 정리 (200일) */
       const cut = Date.now() - 200 * 864e5; Object.keys(R).forEach(k => { if ((R[k].lu || 0) < cut) delete R[k]; }); Object.keys(RX).forEach(k => { if ((RX[k].lu || 0) < cut) delete RX[k]; }); try { LSS('sejul_vsx_hubrep', JSON.stringify(RX)); } catch (e) { }
