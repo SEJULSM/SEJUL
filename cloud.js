@@ -16,7 +16,10 @@
     if (!r || r.error) { const e = new Error((r && r.error) || 'login failed'); e.left = r && r.left; e.until = r && r.until; throw e; } C.setMe(Object.assign(r, { at: Date.now() })); return r; };
   C.logout = async () => { try { if (C.pushOff) await C.pushOff(); } catch (e) { } try { await C.rpc('sj_logout'); } catch (e) { } LSS('sejul_cloud_me', ''); };
   C.user = () => { const m = C.me(); return m && m.status === 'approved' && m.user ? m.user : null; };
-  C.refresh = async () => { const m = await C.rpc('sj_me'); C.setMe(Object.assign(m || {}, { at: Date.now() }));
+  /* 도구 공개 설정 (관리자가 정함) — 바뀌면 화면 다시 그림 */
+  C.toolsLoad = async () => { try { let v = await C.rpc('sj_tools_get'); if (v && typeof v !== 'string') v = JSON.stringify(v); if (!v) return; JSON.parse(v); const old = LS('sejul_tools'); if (v !== old) { LSS('sejul_tools', v); try { dispatchEvent(new CustomEvent('sejul-tools')); } catch (e) { } } } catch (e) { } };
+  C.toolsSet = async o => { const v = await C.rpc('sj_tools_set', { p_v: JSON.stringify(o) }); LSS('sejul_tools', typeof v === 'string' ? v : JSON.stringify(o)); try { dispatchEvent(new CustomEvent('sejul-tools')); } catch (e) { } return v; };
+  C.refresh = async () => { const m = await C.rpc('sj_me'); C.setMe(Object.assign(m || {}, { at: Date.now() })); if (m && m.status === 'approved') C.toolsLoad();
     /* 관리자가 계정의 팀·이름을 바꾸면 이 기기 설정도 따라감 */
     try { const u = m && m.status === 'approved' && m.user, A = window.SJAPP; if (u && A && A.get && A.set) { if (u.role === 'office' && (A.get('team') || '') !== (u.team || '')) A.set('team', u.team || ''); if (u.name && A.get('username') !== u.name) A.set('username', u.name); } } catch (e) { }
     return m; };

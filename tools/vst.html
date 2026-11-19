@@ -237,7 +237,7 @@ const VES = () => (UI && UI.VES && UI.VES.length ? UI.VES : VES0);
 /* 외항선은 별도 양식(하드카피) 방선 보고서 사용 — 이 도구로 만들 수 없음 */
 const FOREIGN = ['SUNNY QUEEN', 'KTS WHITE'];
 const isForeign = v => FOREIGN.includes(String(v || '').toUpperCase().trim());
-const FMSG = '외항선은 이 보고서를 사용할 수 없습니다.';
+const FMSG = '외항선 전용 점검 보고서는 서식이 준비되면 추가됩니다 (감독 방선 보고서는 내항선 서식).';
 
 /* ---------- 점검 항목 (최종 서식 그대로) ---------- */
 const I = (no, t, te, p, pe, ph, b, q, sh) => ({ no, t, te, p, pe, ph, b, q: !!q, sh: sh || '' });
@@ -451,6 +451,9 @@ async function viewPhoto(id, onDel) { const src = await photo(id); modal(`<h3>�
   <div class="row" style="margin-top:12px">${onDel ? '<button class="btn r" id="pdel">사진 삭제</button>' : ''}<span class="sp"></span><button class="btn p" data-x>닫기</button></div>`, (m, close) => { const b = $('#pdel', m); if (b) b.onclick = () => { close(); onDel(); }; }); }
 
 /* =============================== 화면 =============================== */
+/* 메뉴에서 ?home=rep|sp 로 열면 그 목록으로 */
+try { const q = new URLSearchParams(location.search), hq = q.get('home'); if (hq === 'sp' || hq === 'rep') { localStorage.setItem('sejul_vst_home', hq); q.delete('home'); history.replaceState(null, '', location.pathname + (q.toString() ? '?' + q : '') + location.hash); } } catch (e) { }
+const LITE = () => { try { return !!(UI && UI.lite && UI.lite()); } catch (e) { return false; } };
 const S = { tab: null, home: (() => { try { return localStorage.getItem('sejul_vst_home') || 'rep'; } catch (e) { return 'rep'; } })() };
 function route() { const h = location.hash.replace(/^#\/?/, '').split('/'); return { v: h[0] || '', id: h[1] || '', tab: h[2] || '' }; }
 function go(h) { location.hash = h; }
@@ -476,8 +479,9 @@ function repCard(x) { const st = repState(x), F = findings(x), VP = visParts(), 
   return `<div class="card rep rc" data-open="${x.id}" style="cursor:pointer"><div class="r1"><span class="nm">${esc(x.h.ship || '선박 미지정')}</span><span class="dt">${dot(x.h.date).slice(5)}${x.h.port ? ' · ' + esc(x.h.port) : ''}</span><span class="mc ${x.h.q ? 'q' : ''}">${x.h.q ? '분기' : '월간'}</span><span class="sp"></span><button class="btn s ib2" data-pv="${x.id}" title="보고서 보기 · 출력">📄</button><button class="btn s ib2" data-menu="${x.id}" aria-label="메뉴">⋯</button></div>
     <div class="r2">${c}<span class="mc ${open ? 'err' : F.length ? 'ok' : ''}">지적 ${F.length}${open ? ` · 미조치 ${open}` : ''}</span><span class="mc ${st.fin === 4 ? 'ok' : ''}">확인 ${st.fin}/4</span></div></div>`; }
 /* ---------- 홈: [방선 보고서] [공무 특별점검] ---------- */
-const homeSeg = () => canSp() ? `<div class="seg" style="margin-bottom:12px"><button data-home="rep" class="${S.home !== 'sp' ? 'on' : ''}">📄 방선 보고서</button><button data-home="sp" class="${S.home === 'sp' ? 'on' : ''}">🔧 공무 특별점검 <span style="font-weight:400;font-size:12px">사내용</span></button></div>` : '';
-function setHome(v) { S.home = v; LS.set('sejul_vst_home', v); S.mon = S.mon || ''; render(); window.scrollTo(0, 0); }
+const homeSeg = () => canSp() && !LITE() ? `<div class="seg" style="margin-bottom:12px"><button data-home="rep" class="${S.home !== 'sp' ? 'on' : ''}">📄 방선 보고서</button><button data-home="sp" class="${S.home === 'sp' ? 'on' : ''}">🔧 공무 특별점검 <span style="font-weight:400;font-size:12px">사내용</span></button></div>` : '';
+function setHome(v) { S.home = v; LS.set('sejul_vst_home', v); S.mon = S.mon || ''; try { UI.vstHomePaint && UI.vstHomePaint(); } catch (e) { } if (route().v) { go('#/'); } else render(); window.scrollTo(0, 0); }
+window.SJ_VSTHOME = v => setHome(v === 'sp' && canSp() ? 'sp' : 'rep');   /* 왼쪽 메뉴·아래 탭에서 */
 function spCard(x) { const st = spState(x);
   return `<div class="card rep rc" data-sopen="${x.id}" style="cursor:pointer"><div class="r1"><span class="nm">🔧 ${esc(x.h.ship || '선박 미지정')}</span><span class="dt">${dot(x.h.date).slice(5)}${x.h.port ? ' · ' + esc(x.h.port) : ''}</span><span class="sp"></span>${CEO() ? `<button class="btn s p ib2" data-sprint="${x.id}">📄 보기 · 출력</button>` : `<button class="btn s ib2" data-sprint="${x.id}" title="출력">📄</button><button class="btn s ib2" data-smenu="${x.id}" aria-label="메뉴">⋯</button>`}</div>
     <div class="r2"><span class="mc ${st.n ? 'warn' : ''}">지적 ${st.n}</span><span class="mc ${st.n && st.done === st.n ? 'ok' : st.n ? 'warn' : ''}">조치 ${st.done}/${st.n}</span>${st.over ? `<span class="mc err">기한 지남 ${st.over}</span>` : ''}${(n => `<span class="mc ${n === 3 ? 'ok' : ''}" title="공무 감독 ${st.sg1 ? '✓' : '—'} · 기관장 ${st.sg2 ? '✓' : '—'} · D.P.A ${st.sg3 ? '✓' : '—'}">서명 ${n}/3</span>`)([st.sg1, st.sg2, st.sg3].filter(Boolean).length)}</div></div>`; }
@@ -605,7 +609,9 @@ function sumHTML(r) { if (!r) return '<div class="card empty">왼쪽에서 보�
     <div class="card"><h3 style="margin-top:0">지적사항 <span class="chip ${F.filter(f => !f.done).length ? 'err' : F.length ? 'ok' : ''}">${F.length}</span></h3>
       ${F.length ? F.map((f, i) => `<div style="padding:6px 0;border-bottom:1px solid var(--line);font-size:14px"><b style="color:${f.done ? 'var(--ok)' : 'var(--err)'}">No.${i + 1}</b> ${f.item ? `<span class="chip" style="font-size:11px;padding:0 6px">${esc(f.item)}</span> ` : ''}${esc(f.desc || '')}<div class="muted" style="font-size:12.5px">${f.done ? `✓ 조치 완료 ${dot(f.done)}` : `조치기한 ${f.due ? dot(f.due) : '—'}${f.due && f.due < t0 ? ' · <b style="color:var(--err)">기한 지남</b>' : ''}`}</div></div>`).join('') : '<div class="muted">지적사항이 없습니다.</div>'}</div>`; }
 document.addEventListener('click', e => { const g = e.target.closest && e.target.closest('.sumP [data-go]'); if (!g) return; e.stopPropagation(); go(g.dataset.go); }, true);
-function viewList() { if (CEO()) return S.home === 'sp' ? viewListSp() : viewListCeo(); if (canSp() && S.home === 'sp') return viewListSp(); const ms = myShip(); let list = Object.values(R).filter(live);
+function viewForeign(v) { $('#app').innerHTML = header('점검 보고서', `${esc(v)} · 외항선`) + `<main><div class="card" style="text-align:center;padding:34px 18px"><div style="font-size:40px">🌐</div><h2 style="margin:10px 0 6px">외항선 전용 점검 보고서 준비 중</h2>
+  <p class="muted" style="line-height:1.7;margin:0">감독 방선 보고서(SMM-3C-01F)는 내항선 서식입니다.<br>${esc(v)}의 외항선 전용 점검 보고서는 서식이 준비되면 이 화면에서 바로 쓸 수 있습니다.<br><span style="font-size:13px">Foreign-going vessel inspection report — coming soon.</span></p></div></main>`; paintSync(); }
+function viewList() { if (SHIP() && isForeign(myShip())) return viewForeign(myShip()); if (CEO()) return S.home === 'sp' ? viewListSp() : viewListCeo(); if (canSp() && S.home === 'sp') return viewListSp(); const ms = myShip(); let list = Object.values(R).filter(live);
   if (ms) list = list.filter(x => x.h.ship === ms);
   const fs = S.fship || ''; if (fs) list = list.filter(x => x.h.ship === fs);
   list.sort((a, b) => (b.h.date || '').localeCompare(a.h.date || '') || b.ct - a.ct);
@@ -614,7 +620,7 @@ function viewList() { if (CEO()) return S.home === 'sp' ? viewListSp() : viewLis
   /* 진행 중 = 끝나지 않은 보고서 전부 (지난달 것 포함) · 완료 = 고른 달의 완료 보고서 */
   const prog = list.filter(x => !repState(x).done), done = list.filter(x => repState(x).done && (x.h.date || '').startsWith(mon)), showDone = S.showDone ? done : done.slice(0, 5);
   /* 이번 달 선박별 현황 */
-  const cell = v => { if (isForeign(v)) return `<button class="vs no" data-foreign="${esc(v)}" style="opacity:.6"><b>${esc(v)}</b><small>⛔ 외항선 · 별도 양식</small></button>`; const L = Object.values(R).filter(x => live(x) && x.h.ship === v && (x.h.date || '').startsWith(mon)).sort((a, b) => (b.h.date || '').localeCompare(a.h.date || ''));
+  const cell = v => { if (isForeign(v)) return `<button class="vs no" data-foreign="${esc(v)}" style="opacity:.6"><b>${esc(v)}</b><small>🌐 외항선 · 서식 준비 중</small></button>`; const L = Object.values(R).filter(x => live(x) && x.h.ship === v && (x.h.date || '').startsWith(mon)).sort((a, b) => (b.h.date || '').localeCompare(a.h.date || ''));
     const x = L[0]; let cls = 'no', t = '방선 없음';
     if (x) { const st = repState(x), my = mp ? st.sp[PARTS.findIndex(p => p.k === mp)] : null; const ns = st.sp.filter(z => z.signed).length; if (st.done) { cls = 'ok'; t = '완료'; } else if (my && my.signed) { cls = 'ok'; t = `우리 ✓ · ${ns}/3`; } else { cls = 'warn'; t = (mp && my ? '우리 ✗' : '진행') + ` · ${ns}/3`; } }
     return `<button class="vs ${cls}" ${L.length > 1 ? `data-pick="${esc(v)}"` : x ? `data-open="${x.id}"` : mon === cur && !RO() ? `data-newv="${esc(v)}"` : 'disabled'}><b>${esc(v)}${L.length > 1 ? ` <span class="chip q" style="font-size:11px;padding:0 6px">${L.length}건</span>` : ''}</b><small>${x ? dot(x.h.date).slice(5) + ' ' : ''}${x ? (cls === 'ok' ? '✓ ' : '◐ ') : mon === cur && !RO() ? '＋ ' : ''}${t}</small></button>`; };
