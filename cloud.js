@@ -16,7 +16,10 @@
     if (!r || r.error) { const e = new Error((r && r.error) || 'login failed'); e.left = r && r.left; e.until = r && r.until; throw e; } C.setMe(Object.assign(r, { at: Date.now() })); return r; };
   C.logout = async () => { try { if (C.pushOff) await C.pushOff(); } catch (e) { } try { await C.rpc('sj_logout'); } catch (e) { } LSS('sejul_cloud_me', ''); };
   C.user = () => { const m = C.me(); return m && m.status === 'approved' && m.user ? m.user : null; };
-  C.refresh = async () => { const m = await C.rpc('sj_me'); C.setMe(Object.assign(m || {}, { at: Date.now() })); return m; };
+  C.refresh = async () => { const m = await C.rpc('sj_me'); C.setMe(Object.assign(m || {}, { at: Date.now() }));
+    /* 관리자가 계정의 팀·이름을 바꾸면 이 기기 설정도 따라감 */
+    try { const u = m && m.status === 'approved' && m.user, A = window.SJAPP; if (u && A && A.get && A.set) { if (u.role === 'office' && (A.get('team') || '') !== (u.team || '')) A.set('team', u.team || ''); if (u.name && A.get('username') !== u.name) A.set('username', u.name); } } catch (e) { }
+    return m; };
   C.register = async (role, ship, pc, pin, kind) => { const m = await C.rpc('sj_register', { p_role: role, p_ship: ship, p_pc: pc, p_pin: pin || null, p_kind: kind || (window.SJAPP && SJAPP.get('kind')) || null }); C.setMe(Object.assign(m, { at: Date.now() })); return m; };
   /* gzip + base64 */
   C.gz = async s => { const b = await new Response(new Blob([s]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer(), u = new Uint8Array(b); let o = ''; for (let i = 0; i < u.length; i += 0x8000) o += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000)); return btoa(o); };
