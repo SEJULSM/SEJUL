@@ -131,14 +131,37 @@
     try { if (window.SJUI && SJUI.inb && SJUI.inb.add) SJUI.inb.add(E); } catch (e) { }
     try { if (document.visibilityState !== 'visible' && 'Notification' in window && Notification.permission === 'granted' && navigator.serviceWorker) navigator.serviceWorker.ready.then(reg => E.slice(0, 3).forEach(x => reg.showNotification(x.t, { body: x.b, tag: x.k.slice(0, 60), icon: (/\/tools\//.test(location.pathname) ? '../' : '') + 'sj2-icon-192.png', data: { url: x.href } }))); } catch (e) { }
     return E.length; };
+  /* 공무팀 특별 점검 (사내용 · 방선 보고서와 따로 저장) — 공무팀(TST)·전체 사무실 기기에만 알림 */
+  const digX = x => { const h = x.h || {}, P = x.sp || {}, I = Object.entries(P.items || {}).filter(([, i]) => i && !i.del);
+    return { s: h.ship || '', d: h.date || '', p: h.port || '', del: !!(x.del && x.del.v), g1: sg(P.sign) ? P.sign.name || '✓' : '', g2: sg(P.ce) ? P.ce.name || '✓' : '',
+      i: Object.fromEntries(I.map(([id, i]) => [id, [i.title || '', i.done || '', (i.cph || []).length]])) }; };
+  C.spNote = function (x, quiet) { if (!x || !x.id) return 0; const b0 = LS('sejul_vsx_base'); if (!b0) LSS('sejul_vsx_base', String(Date.now())); if (!b0 || Date.now() - +b0 < 3e5) quiet = true; /* 처음 5분: 기존 특별점검을 기준으로만 기록 (알림 폭주 방지) */ const S = J('sejul_vsx_sum', {}), o = S[x.id], n = digX(x); S[x.id] = n; LSS('sejul_vsx_sum', JSON.stringify(S));
+    const role = window.SJUI && SJUI.role ? SJUI.role() : '', team = (window.SJAPP && SJAPP.get && SJAPP.get('team')) || ''; if (quiet || role !== 'office' || !['', 'TST', 'ALL'].includes(team)) return 0;
+    const head = `🔧 ${n.s} ${String(n.d).replace(/-/g, '.')}`, E = [], K = (k, t, b) => E.push({ k: `vsx:${x.id}:${k}`, g: 'vst', t: `${head} · ${t}`, b: b || '', href: 'tools/vst.html#/s/' + x.id });
+    if (!o) { if (!n.del) K('new', T('공무 특별점검 등록', 'Technical inspection created'), n.p); }
+    else if (n.del && !o.del) K('del:' + Date.now(), T('공무 특별점검 삭제', 'Technical inspection deleted'));
+    else if (!n.del) {
+      const ni = Object.keys(n.i).filter(id => !(o.i || {})[id]); if (ni.length) K('i:' + ni.join(','), T(`특별점검 지적 ${ni.length}건 추가`, `${ni.length} item(s) added`), ni.map(id => n.i[id][0] || T('(제목 없음)', '(no title)')).join(' / ').slice(0, 120));
+      Object.keys(n.i).forEach(id => { const a = (o.i || {})[id], b = n.i[id]; if (a && b[1] && !a[1]) K('d:' + id, T('특별점검 시정조치 완료', 'Corrective action done'), b[0].slice(0, 80)); else if (a && b[2] > a[2] && !b[1]) K('c:' + id + ':' + b[2], T('특별점검 조치 사진 추가', 'Action photo added'), b[0].slice(0, 80)); });
+      if (n.g1 && n.g1 !== o.g1) K('g1:' + n.g1, T('공무 감독 점검 완료 · 서명', 'Superintendent signed'), n.g1);
+      else if (!n.g1 && o.g1) K('u1:' + Date.now(), T('공무 감독 서명 취소 — 수정 중', 'Superintendent signature cleared'), o.g1);
+      if (n.g2 && n.g2 !== o.g2) K('g2:' + n.g2, T('기관장 확인 서명', 'C/E confirmed'), n.g2); }
+    if (!E.length) return 0;
+    try { if (window.SJUI && SJUI.inb && SJUI.inb.add) SJUI.inb.add(E); } catch (e) { }
+    try { if (document.visibilityState !== 'visible' && 'Notification' in window && Notification.permission === 'granted' && navigator.serviceWorker) navigator.serviceWorker.ready.then(reg => E.slice(0, 3).forEach(z => reg.showNotification(z.t, { body: z.b, tag: z.k.slice(0, 60), icon: (/\/tools\//.test(location.pathname) ? '../' : '') + 'sj2-icon-192.png', data: { url: z.href } }))); } catch (e) { }
+    return E.length; };
   /* 앱 홈·다른 도구: 서버 목록에서 바뀐 방선 보고서만 받아 확인 (사무실 승인 기기만) */
   C.vstPoll = async function () { if (window.SJ_VST || C.vstBusy || !navigator.onLine) return; const m = C.me(); if (!m || m.status !== 'approved' || m.role !== 'office') return;
     C.vstBusy = true; try { const list = await C.rpc('sj_list', { p_tool: 'vst' }) || [], first = LS('sejul_vst_hubseen') == null, seen = J('sejul_vst_hubseen', {}), R = J('sejul_vst_hubrep', {});
-      for (const r of list) { if (!/^VST_/.test(r.name)) continue; const at = new Date(r.saved_at).toISOString(); if (seen[r.name] && seen[r.name] >= at) continue;
+      const RX = J('sejul_vsx_hubrep', {});
+      for (const r of list) { if (/^VSX_/.test(r.name)) { const at = new Date(r.saved_at).toISOString(); if (seen[r.name] && seen[r.name] >= at) continue;
+          try { const b64 = await C.rpc('sj_get', { p_tool: 'vst', p_name: r.name }); if (b64) { const o = JSON.parse(await C.ungz(b64)); if (o && o.sp && o.sp.id) { const x = mrg(RX[o.sp.id], o.sp); RX[o.sp.id] = x; C.spNote(x, first || r.mine); } } } catch (e) { console.warn('vsx poll', r.name, e); }
+          seen[r.name] = at; continue; }
+        if (!/^VST_/.test(r.name)) continue; const at = new Date(r.saved_at).toISOString(); if (seen[r.name] && seen[r.name] >= at) continue;
         try { const b64 = await C.rpc('sj_get', { p_tool: 'vst', p_name: r.name }); if (b64) { const o = JSON.parse(await C.ungz(b64)); if (o && o.rep && o.rep.id) { const x = mrg(R[o.rep.id], o.rep); R[o.rep.id] = x; C.vstNote(x, first || r.mine); } } } catch (e) { console.warn('vst poll', r.name, e); }
         seen[r.name] = at; }
       /* 오래된 보고서 정리 (200일) */
-      const cut = Date.now() - 200 * 864e5; Object.keys(R).forEach(k => { if ((R[k].lu || 0) < cut) delete R[k]; });
+      const cut = Date.now() - 200 * 864e5; Object.keys(R).forEach(k => { if ((R[k].lu || 0) < cut) delete R[k]; }); Object.keys(RX).forEach(k => { if ((RX[k].lu || 0) < cut) delete RX[k]; }); try { LSS('sejul_vsx_hubrep', JSON.stringify(RX)); } catch (e) { }
       LSS('sejul_vst_hubseen', JSON.stringify(seen)); try { LSS('sejul_vst_hubrep', JSON.stringify(R)); } catch (e) { } } catch (e) { console.warn('vst poll', e); }
     C.vstBusy = false; };
   const tick = () => { if (window.SJ_VST || window.top !== window || (window.SJAPP && SJAPP.bg) || /[?&]bg\b/.test(location.search)) return; C.vstPoll().catch(() => { }); };
