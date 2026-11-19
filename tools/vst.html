@@ -200,9 +200,11 @@ const PARTS = [
     I('T3', 'PMS 이행', 'PMS', '기한 경과 정비 작업 및 사유 확인', 'Overdue maintenance jobs and reasons.', 0, '해상교통안전법(SMS)'),
     I('T4', '보급·수리 요청', 'Supply / repair requests', '본선 요청 미결 사항 현황 확인', 'Status of outstanding ship requests.', 0, 'SMS'),
     I('T5', '[현장] 기관실 순회 (누유·빌지·정리정돈, 육안)', '[Site] Engine room walk-round (leaks, bilges, housekeeping).', '', '', 1, 'SMS', 0, '기관실 순회'),
-    I('T6', '[현장] 갑판 설비 육안 확인 (하역 밸브·배관 누설, 앵커·계류 설비)', '[Site] Deck equipment visual (cargo valves / piping leaks, anchor / mooring gear).', '', '', 1, 'SMS', 0, '갑판 설비'),
-    I('T7', '선박 증서 유효 및 검사 일정 확인', 'Ship certificates valid; survey schedule.', '', '', 0, '선박안전법', 1),
-    I('T8', '유류 수급·이송 절차 준수', 'Bunkering / transfer procedure followed.', '', '', 0, 'SMS 6.20.7', 1)] },
+    I('T6', '[현장] 갑판 설비 육안 확인 (하역 밸브·배관 누설, 앵커·계류 설비)', '[Site] Deck equipment visual (cargo valves / piping leaks, anchor / mooring gear).', '', '', 0, 'SMS'),
+    I('T7', '[현장] 최근 공무팀 관련 ISSUE 본선 이행도 확인', '[On-site] Follow-up on recent TST issues onboard', '', '', 0, 'SMS', 0, '공무팀 ISSUE 이행도'),
+    I('T8', '선박 증서 유효 및 검사 일정 확인', 'Ship certificates valid; survey schedule.', '', '', 0, '선박안전법', 1),
+    I('T9', '유류 수급·이송 절차 준수', 'Bunkering / transfer procedure followed.', '', '', 0, 'SMS 6.20.7', 1),
+    I('T10', '[현장] 비상기기류 작동 상태 확인 (Emergency fire pump, Emergency generator & battery, OWS 등)', 'Check of operational condition of emergency and pollution prevention equipment (Emergency fire pump, Emergency generator & batteries, OWS, etc.)', '', '', 1, '선박안전법', 1, '(분기) 비상기기류 작동 상태')] },
   { k: 'M', ko: '해무 파트', en: 'Marine', sup: ['해무 감독 (점검)', 'Marine superintendent'], items: [
     I('M1', '근로·휴식시간 기록', 'Work / rest hour records', '기록 유지 및 기준 준수 확인', 'Work / rest hours recorded and limits complied with.', 1, '선원법', 0, '근로·휴식시간 기록'),
     I('M2', '승무원 면담', 'Crew interview', '건의·불만·복지 사항 청취', 'Suggestions, complaints, welfare', 0, '선원법'),
@@ -257,14 +259,18 @@ async function photo(id) { if (PH.has(id)) return PH.get(id); const o = await ID
 async function photoPut(id, data, rid, mine) { PH.set(id, data); PHK.add(id); await IDB.put('p', { id, data, rid, at: now() }); if (mine) { const s = PEND.get(); s.add(id); PEND.set(s); } }
 
 /* ---------- 보고서 구조 ---------- */
-function newRep(h) { const t = now(); return { id: uid('V'), cdev: DEV, ct: t, h: Object.assign({ ship: '', date: ymd(), port: '', q: false, by: ME.get().name || '', u: t }, h), parts: { S: { items: {} }, T: { items: {} }, M: { items: {}, iv: null } }, fnd: {}, ext: {}, fin: {}, lu: t }; }
-function norm(r) { r.parts = r.parts || {}; PARTS.forEach(p => { r.parts[p.k] = r.parts[p.k] || { items: {} }; r.parts[p.k].items = r.parts[p.k].items || {}; }); r.fnd = r.fnd || {}; r.ext = r.ext || {}; r.fin = r.fin || {}; r.h = r.h || {}; return r; }
+function newRep(h) { const t = now(); return { id: uid('V'), cdev: DEV, ct: t, h: Object.assign({ ship: '', date: ymd(), port: '', q: false, by: ME.get().name || '', u: t }, h), parts: { S: { items: {} }, T: { items: {} }, M: { items: {}, iv: null } }, fnd: {}, ext: {}, fin: {}, lu: t, sv: 2 }; }
+/* 서식 R-4 개정(T7 추가): 예전 T7·T8 → T8·T9로 번호 옮김 */
+function migr(r) { if (!r || r.sv >= 2) return r; const T = r.parts && r.parts.T && r.parts.T.items, mv = { T8: 'T9', T7: 'T8' };
+  if (T) { ['T8', 'T7'].forEach(o => { if (o in T) { T[mv[o]] = T[o]; delete T[o]; } }); }
+  Object.values(r.fnd || {}).forEach(f => { if (f && mv[f.item]) f.item = mv[f.item]; }); r.sv = 2; return r; }
+function norm(r) { migr(r); r.parts = r.parts || {}; PARTS.forEach(p => { r.parts[p.k] = r.parts[p.k] || { items: {} }; r.parts[p.k].items = r.parts[p.k].items || {}; }); r.fnd = r.fnd || {}; r.ext = r.ext || {}; r.fin = r.fin || {}; r.h = r.h || {}; return r; }
 /* 합치기: u(고친 시각)가 있는 단위는 더 나중 것, 없는 묶음은 안쪽을 다시 합침 */
 function mrg(a, b) { if (a == null) return b; if (b == null) return a;
   if (typeof a !== 'object' || typeof b !== 'object' || Array.isArray(a) || Array.isArray(b)) return b;
   if ('u' in a || 'u' in b) return (b.u || 0) > (a.u || 0) ? b : a;
   const o = {}; new Set([...Object.keys(a), ...Object.keys(b)]).forEach(k => o[k] = mrg(a[k], b[k])); return o; }
-function mergeRep(a, b) { const o = mrg(a, b); o.id = a.id || b.id; o.ct = Math.min(a.ct || Infinity, b.ct || Infinity); o.cdev = a.cdev || b.cdev; o.lu = Math.max(a.lu || 0, b.lu || 0); return norm(o); }
+function mergeRep(a, b) { migr(a); migr(b); const o = mrg(a, b); o.id = a.id || b.id; o.ct = Math.min(a.ct || Infinity, b.ct || Infinity); o.cdev = a.cdev || b.cdev; o.lu = Math.max(a.lu || 0, b.lu || 0); return norm(o); }
 const sig = s => s && s.img && !s.cleared;
 const live = r => !(r.del && r.del.v);
 const itemsOf = (r, k) => PART[k].items.filter(it => !it.q || r.h.q);

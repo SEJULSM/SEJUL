@@ -1,5 +1,4 @@
-SEJUL app update v2026.11.19.0900
-
-Upload: extract the zip first, then github.com/SEJULSM/SEJUL -> Add file -> Upload files -> drag the 8 root files -> Commit; then open the tools folder -> Add file -> Upload files -> vst.html -> Commit.
-
-v12: delete / merge are sent to the server immediately; pending changes are sent when the window is hidden or closed, and new changes are pulled when it comes back. Includes all earlier changes.
+SEJUL v2026.11.19.1100 - upload order
+1) Upload to repository root (5 files): common.js, files.json, index.html, sw.js, version.json
+2) Upload to tools/ folder (1 file): tools/vst.html
+Unchanged this time: cloud.js, ui.js, manifest.webmanifest (no need to upload)
