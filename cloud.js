@@ -11,6 +11,11 @@
   C.rpc = async (fn, args, timeout = 60e3) => { const ac = new AbortController(), tm = setTimeout(() => ac.abort(), timeout);
     try { const r = await fetch(C.url + '/rest/v1/rpc/' + fn, { method: 'POST', headers: { apikey: C.key, 'Content-Type': 'application/json' }, body: JSON.stringify(Object.assign({ p_key: C.devKey() }, args || {})), signal: ac.signal });
       const tx = await r.text(); let j; try { j = tx ? JSON.parse(tx) : null; } catch (e) { j = tx; } if (!r.ok) throw new Error((j && (j.message || j.hint)) || ('HTTP ' + r.status)); return j; } finally { clearTimeout(tm); } };
+  /* 로그인 (아이디·비밀번호) — 성공하면 이 기기가 그 계정으로 승인됨 · 선박 = 선박 공용 계정, 사무실 = 개인 계정 */
+  C.login = async (uid, pw, pc, kind) => { const r = await C.rpc('sj_login', { p_uid: uid, p_pw: pw, p_pc: pc || null, p_kind: kind || (window.SJAPP && SJAPP.get('kind')) || null });
+    if (!r || r.error) { const e = new Error((r && r.error) || 'login failed'); e.left = r && r.left; e.until = r && r.until; throw e; } C.setMe(Object.assign(r, { at: Date.now() })); return r; };
+  C.logout = async () => { try { if (C.pushOff) await C.pushOff(); } catch (e) { } try { await C.rpc('sj_logout'); } catch (e) { } LSS('sejul_cloud_me', ''); };
+  C.user = () => { const m = C.me(); return m && m.status === 'approved' && m.user ? m.user : null; };
   C.refresh = async () => { const m = await C.rpc('sj_me'); C.setMe(Object.assign(m || {}, { at: Date.now() })); return m; };
   C.register = async (role, ship, pc, pin, kind) => { const m = await C.rpc('sj_register', { p_role: role, p_ship: ship, p_pc: pc, p_pin: pin || null, p_kind: kind || (window.SJAPP && SJAPP.get('kind')) || null }); C.setMe(Object.assign(m, { at: Date.now() })); return m; };
   /* gzip + base64 */

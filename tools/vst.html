@@ -282,7 +282,7 @@ const isOffice = () => role() === 'office';
 const SHIP = () => role() === 'ship';
 const SHIPMSG = '선박 기기에서는 할 수 없습니다 — 감독(사무실)이 합니다';
 /* 서명자 이름: 방선 보고서 설정의 이름 → 없으면 기기 이름(앱 등록)에서 '스마트폰·PC' 같은 말을 뺀 것 */
-const myName = () => { const n = (ME.get().name || '').trim(); if (n) return n; return String(APP.get('pcname') || '').replace(/^(test|테스트)\s*/i, '').replace(/사무실\s*-?\s*/g, '').replace(/\s*(스마트폰|휴대폰|핸드폰|폰|노트북|태블릿|PC|피씨|데스크탑)\s*$/i, '').trim(); };
+const myName = () => { try { const u = window.SJCLOUD && SJCLOUD.user && SJCLOUD.user(); if (u && u.role === 'office' && u.name) return u.name; } catch (e) { } const n = (ME.get().name || '').trim(); if (n) return n; return String(APP.get('pcname') || '').replace(/^(test|테스트)\s*/i, '').replace(/사무실\s*-?\s*/g, '').replace(/\s*(스마트폰|휴대폰|핸드폰|폰|노트북|태블릿|PC|피씨|데스크탑)\s*$/i, '').trim(); };
 const teamLabel = () => { const t = TEAMS.find(x => x[0] === teamCode()); return t ? (t[0] === 'ALL' ? t[2] : `${t[0]} ${t[2]}`) : ''; };
 const visParts = () => { const k = myPart(); return isOffice() && k ? [k] : ['S', 'T', 'M']; };
 const myShip = () => { try { const m = window.SJCLOUD && SJCLOUD.me && SJCLOUD.me(); if (m && m.role === 'ship' && m.ship) return m.ship; } catch (e) { } return role() === 'ship' ? (APP.get('vessel') || '') : ''; };
