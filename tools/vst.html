@@ -596,8 +596,10 @@ function dpIssues(x) { const out = [], h = x.h;
   findings(x).forEach((f, i) => { if (!f.due) out.push(`부적합 No.${i + 1} — 조치기한이 없습니다`); });
   return out; }
 /* 선박별 연간 현황: 마지막 완료(방선자 서명) 방선일 · 다음 기한(+12개월) · 진행 중 */
+/* 직전 D.P.A 방선일 기준표 (서버 · 앱에 기록이 없을 때 기준) */
+const DPL = () => { try { return JSON.parse(LS.get('sejul_dpa_last') || '{}') || {}; } catch (e) { return {}; } };
 function dpShip(v) { const L = Object.values(DP).filter(o => live(o) && o.h.ship === v).sort((a, b) => (b.h.date || '').localeCompare(a.h.date || ''));
-  const prog = L.find(o => !dpState(o).ok), last = L.find(o => sig(o.sg.vis)), lastD = last ? last.h.date : (L.length ? '' : ''), due = lastD ? addMon(lastD, 12) : (prog ? '' : '');
+  const prog = L.find(o => !dpState(o).ok), last = L.find(o => sig(o.sg.vis)), base = DPL()[v] || '', lastD = [last ? last.h.date : '', base].sort().pop() || '', due = lastD ? addMon(lastD, 12) : '';
   return { L, prog, last, lastD, due, left: due ? dDays(due) : null }; }
 /* 위임받을 감독 목록 (서버 sj_office_users · 없으면 직접 입력) */
 const OU = { get: () => { try { return JSON.parse(LS.get('sejul_office_users') || '[]') || []; } catch (e) { return []; } } };
@@ -619,18 +621,18 @@ function viewListDp() { const ms = myShip(), cur = String(new Date().getFullYear
     else if (s.due) { cls = s.left < 0 ? 'bad' : s.left <= 30 ? 'warn' : 'ok'; t = s.left < 0 ? `기한 지남 ${-s.left}일` : s.left <= 30 ? `기한 ${dot(s.due).slice(5)} · ${s.left}일` : `${dot(s.lastD).slice(2)} · 다음 ${dot(s.due).slice(2, 7)}`; }
     const go2 = s.prog ? `data-dopen="${s.prog.id}"` : y ? `data-dopen="${y.id}"` : yr === cur && CAN('dpa') && !SHIP() && !CEO() ? `data-dnew="${esc(v)}"` : 'disabled';
     return `<button class="vs ${cls}" ${go2}><b>${esc(v)}</b><small>${t}</small></button>`; };
-  const nOk = ships.filter(v => !isForeign(v) && list.some(o => o.h.ship === v && (o.h.date || '').startsWith(yr) && sig(o.sg.vis))).length;
+  const nOk = ships.filter(v => !isForeign(v) && (list.some(o => o.h.ship === v && (o.h.date || '').startsWith(yr) && sig(o.sg.vis)) || (DPL()[v] || '').startsWith(yr))).length;
   $('#app').innerHTML = header('D.P.A 연간 방선', `SMM-3C-03F · ${WHO()}`) + `<main>
     <style>.vg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}@media(min-width:640px){.vg{grid-template-columns:repeat(4,minmax(0,1fr))}}.vs{text-align:left;border:1px solid var(--line);background:#fff;border-radius:10px;padding:6px 9px;min-width:0}.vs b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vs small{display:block;font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vs.no{background:#F7F9FC}.vs.no b{color:var(--mut);font-weight:600}.vs.ok{border-color:#BFE5CF;background:var(--okBg)}.vs.warn{border-color:#F0C46A;background:var(--warnBg)}.sec{display:flex;align-items:center;gap:8px;margin:18px 0 8px}.sec h3{margin:0;white-space:nowrap}</style>
     <style>.vs.bad{border-color:#F3B4B4;background:var(--errBg,#FDECEC)}.vs.bad small{color:var(--err)}</style>
     ${homeSeg()}${todoHTML()}
     <div class="row" style="margin-bottom:12px">${CEO() ? '<span class="sp muted" style="font-size:13px">🔒 대표이사: 보기 · 🖨 출력 · C.E.O 확인 서명</span>' : SHIP() ? '<span class="sp muted" style="font-size:13px">🔒 선박: 보기 · 선장 서명 · 시정조치 결과 입력</span>' : CAN('dpa') ? '<button class="btn p sp" id="dnB">＋ 새 D.P.A 방선 <span class="en" style="color:#C9D6EE">New</span></button>' : '<span class="sp muted" style="font-size:13px">🔒 보기 · 출력 (작성은 D.P.A와 위임받은 감독)</span>'}</div>
-    <div class="card" style="padding:12px"><div class="row" style="margin-bottom:8px;gap:6px"><button class="btn s" id="yPrev" aria-label="이전 해" style="min-height:32px;padding:2px 10px">‹</button><h3 style="margin:0">${yr}년 D.P.A 방선 현황</h3><button class="btn s" id="yNext" aria-label="다음 해" style="min-height:32px;padding:2px 10px" ${yr >= cur ? 'disabled' : ''}>›</button>${hp('내항선 안전관리매뉴얼 3.2 1) (8): 안전관리책임자는 선박마다 연 1회 이상 방선합니다 (부득이하면 감독에게 위임).\n칸 색: 초록 = 기한 여유 · 노랑 = 진행 중이거나 기한 30일 이내 · 빨강 = 기한 지남.\n다음 기한 = 직전 방선일 + 12개월.')}<span class="sp"></span><span class="muted" style="font-size:12px">${nOk}/${ships.filter(v => !isForeign(v)).length}척</span></div><div class="vg">${ships.map(cell).join('')}</div></div>
+    <div class="card" style="padding:12px"><div class="row" style="margin-bottom:8px;gap:6px"><button class="btn s" id="yPrev" aria-label="이전 해" style="min-height:32px;padding:2px 10px">‹</button><h3 style="margin:0">${yr}년 D.P.A 방선 현황</h3><button class="btn s" id="yNext" aria-label="다음 해" style="min-height:32px;padding:2px 10px" ${yr >= cur ? 'disabled' : ''}>›</button>${hp('내항선 안전관리매뉴얼 3.2 1) (8): 안전관리책임자는 선박마다 연 1회 이상 방선합니다 (부득이하면 감독에게 위임).\n칸 색: 초록 = 기한 여유 · 노랑 = 진행 중이거나 기한 30일 이내 · 빨강 = 기한 지남.\n다음 기한 = 직전 방선일 + 12개월.')}<span class="sp"></span>${CAN('dpa') && !SHIP() && !CEO() ? '<button class="btn s" id="dlB" style="min-height:30px;padding:2px 10px" title="직전 방선일 기준표" aria-label="직전 방선일 기준표">✏</button>' : ''}<span class="muted" style="font-size:12px">${nOk}/${ships.filter(v => !isForeign(v)).length}척</span></div><div class="vg">${ships.map(cell).join('')}</div></div>
     <div class="sec"><h3>진행 중</h3><span class="chip warn">${prog.length}</span>${hp('서명이 남은 D.P.A 방선입니다. 서명 순서: 방선자 → 선장 → D.P.A 검토(위임 방선일 때만) → 대표이사')}</div>
     ${prog.length ? prog.map(dpCard).join('') : '<div class="muted" style="padding:6px 2px 4px">진행 중인 D.P.A 방선이 없습니다.</div>'}
     <div class="sec"><h3>완료 · ${yr}년</h3><span class="chip ok">${done.length}</span></div>
     ${!done.length ? '<div class="muted" style="padding:6px 2px">완료된 D.P.A 방선이 없습니다.</div>' : !WIDE() && !S.doneOpen ? `<button class="btn w" id="doneB">완료 ${done.length}건 보기 ▾</button>` : done.map(dpCard).join('') + (!WIDE() ? `<button class="btn w" id="doneB" style="margin-top:6px">완료 접기 ▴</button>` : '')}</main>`;
-  const nb = $('#dnB'); if (nb) nb.onclick = () => newDp();
+  const nb = $('#dnB'); if (nb) nb.onclick = () => newDp(); const dl = $('#dlB'); if (dl) dl.onclick = dpLastEdit;
   $('#yPrev').onclick = () => { S.dyr = String(+yr - 1); render(); }; $('#yNext').onclick = () => { S.dyr = String(+yr + 1); render(); };
   const dB = $('#doneB'); if (dB) dB.onclick = () => { S.doneOpen = !S.doneOpen; render(); };
   $('#app').onclick = e => { const h = e.target.closest('[data-home]'); if (h) return setHome(h.dataset.home); dpListClick(e); };
@@ -638,6 +640,12 @@ function viewListDp() { const ms = myShip(), cur = String(new Date().getFullYear
   if (WIDE() && !CEO()) { const mainEl = $('#app main'), sel = dprec(S.dsel) || prog[0] || list[0]; if (sel) S.dsel = sel.id; const L2 = document.createElement('div'); L2.style.minWidth = '0'; [...mainEl.children].forEach(c => L2.appendChild(c)); mainEl.appendChild(L2); mainEl.classList.add('two');
     const A = document.createElement('aside'); A.className = 'sumP'; A.innerHTML = dpSumHTML(sel); mainEl.appendChild(A); $$('.card.rep', mainEl).forEach(c => c.classList.toggle('sel', c.dataset.dopen === S.dsel)); }
   paintSync(); }
+function dpLastEdit() { const B = DPL(), ships = VES().filter(v => !isForeign(v));
+  modal(`<h3>직전 D.P.A 방선일 기준표 <button class="x" data-x>✕</button></h3><p class="muted" style="margin-top:0">앱에 방선 기록이 없을 때 다음 기한(+12개월)을 계산하는 기준입니다. 앱에서 방선자 서명을 하면 그 날짜가 더 최근이면 자동으로 그 날짜를 씁니다.</p>
+    ${ships.map(v => `<label class="f">${esc(v)}</label><input class="i" type="date" data-dl="${esc(v)}" value="${esc(B[v] || '')}">`).join('')}
+    <div class="row" style="margin-top:14px"><button class="btn sp" data-x>취소</button><button class="btn p sp" id="dlok">서버에 저장</button></div>`, (m, close) => {
+    $('#dlok', m).onclick = async () => { const o = Object.assign({}, B); $$('[data-dl]', m).forEach(i => { if (i.value) o[i.dataset.dl] = i.value; else delete o[i.dataset.dl]; });
+      try { if (!window.SJCLOUD || !SJCLOUD.dpaLastSet) throw new Error('서버 동기화를 쓸 수 없습니다'); await SJCLOUD.dpaLastSet(o); toast('저장했습니다'); } catch (e) { LS.set('sejul_dpa_last', JSON.stringify(o)); toast('⚠ 서버 저장 실패 — 이 기기에만 저장: ' + (e.message || e), 4000); } close(); render(); }; }); }
 /* 목록 카드 클릭 (D.P.A 목록·선박 방선 목록 공통) */
 function dpListClick(e) { const pr = e.target.closest('[data-dpr]'); if (pr) { e.stopPropagation(); go('#/y/' + pr.dataset.dpr); return true; }
   const cs = e.target.closest('[data-dcs]'); if (cs) { e.stopPropagation(); ceoSignD(cs.dataset.dcs); return true; }
@@ -1422,6 +1430,7 @@ window.SJ_VST = {
   /* 올릴 사진 미리 불러오기 */
   for (const id of PEND.get()) { try { await photo(id); } catch (e) { } }
   render();
+  try { if (window.SJCLOUD && SJCLOUD.dpaLastLoad) SJCLOUD.dpaLastLoad().then(() => { if (!route().v && S.home === 'dp') render(); }); } catch (e) { }
   try { if (window.SJCLOUD && SJCLOUD.start) { SJCLOUD.start(window.SJ_VST); setInterval(paintSync, 5000);
     /* 창을 닫거나 다른 화면으로 넘어갈 때 보낼 변경이 있으면 바로 보냄 · 다시 보이면 바로 받음 */
     document.addEventListener('visibilitychange', () => { const C = window.SJCLOUD; if (!C || !C.A) return; if (document.visibilityState === 'hidden') { if (LS.get('sejul_cloud_vst_dirty')) C.sync(C.A).catch(() => { }); } else setTimeout(() => C.sync(C.A).then(paintSync).catch(() => { }), 800); });
