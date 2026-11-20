@@ -6,6 +6,7 @@
 <script src="../common.js"></script><script>if (window.SJAPP) SJAPP.shell = true; /* 자체 화면 틀 사용 (shell.js 미사용) */</script>
 <script src="../ui.js"></script><script src="../cloud.js"></script>
 <style>
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}/* 아이폰 Safari 글자 자동 확대 끔 (출력 화면 글자 겹침) */
 @font-face{font-family:'Pretendard';src:url(../fonts/Pretendard-Regular.subset.woff2) format('woff2');font-weight:400}
 @font-face{font-family:'Pretendard';src:url(../fonts/Pretendard-Bold.subset.woff2) format('woff2');font-weight:700}
 :root{--navy:#14244A;--navy2:#1F3864;--gold:#E0A100;--bg:#F4F6FA;--card:#fff;--ink:#1A2233;--mut:#5B6578;--line:#DDE3EC;--blu:#1F64B8;--bluBg:#E8F0FB;
@@ -1018,7 +1019,7 @@ async function viewPrint(r, kind) { const xk = kind === 'x', back = S.prevH && S
   const miss = xk ? (spDone(r) ? [] : ['공무 감독']) : PARTS.filter(p => !partStat(r, p.k).signed).map(p => p.ko);
   $('#prB').onclick = () => { if (miss.length) toast((xk ? '서명 안 됨: ' : '서명 안 된 파트: ') + miss.join(', '), 3500); setTimeout(() => window.print(), miss.length ? 600 : 0); };
   $('#htB').onclick = async () => { const css = [...document.querySelectorAll('style')].map(s => s.textContent).join('\n').match(/\/\* =+ 출력[\s\S]*$/);
-    const doc = `<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(base)}</title><style>body{margin:0;background:#E6E9EF;font-family:'Malgun Gothic',sans-serif}${css ? css[0] : ''}</style></head><body><div id="print"><div class="pv">${html}</div></div></body></html>`;
+    const doc = `<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(base)}</title><style>html{-webkit-text-size-adjust:100%;text-size-adjust:100%}body{margin:0;background:#E6E9EF;font-family:'Malgun Gothic',sans-serif}${css ? css[0] : ''}</style></head><body><div id="print"><div class="pv">${html}</div></div></body></html>`;
     await saveFile(new Blob([doc], { type: 'text/html' }), `${base}.html`, ttl + ' (HTML)', { 'text/html': ['.html'] }); }; }
 
 /* ---------- 설정 ---------- */

@@ -54,7 +54,8 @@
   U.phoneApply = () => { const on = U.phone(); document.documentElement.classList.toggle('sj-phone', on); return on; };
   try { U.phoneApply(); } catch (e) { }
   try { U.theme(); if (window.matchMedia) matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => U.theme()); addEventListener('storage', e => { if (/theme/.test(e.key || '')) U.theme(); }); } catch (e) { }
-  U.css = `/* ===== SEJUL 디자인 기준값 (Design tokens) — 계획정비·위험성 관리·앱 홈 공통 =====
+  U.css = `html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+/* ===== SEJUL 디자인 기준값 (Design tokens) — 계획정비·위험성 관리·앱 홈 공통 =====
    밝게(기본) / 어둡게(data-sjt=dark) / 선교 야간(data-sjt=night, 붉은 빛) — 출력물은 항상 밝게.
    도구 원본의 색은 tokenize.py 로 var(--sj-…) 로 바뀌어 있음. 새 색을 직접 쓰지 말 것 (빌드 검사가 경고). */
 :root{
