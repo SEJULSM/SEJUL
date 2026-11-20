@@ -164,10 +164,30 @@
     try { if (window.SJUI && SJUI.inb && SJUI.inb.add) SJUI.inb.add(E); } catch (e) { }
     try { if (document.visibilityState !== 'visible' && 'Notification' in window && Notification.permission === 'granted' && navigator.serviceWorker) navigator.serviceWorker.ready.then(reg => E.slice(0, 3).forEach(z => reg.showNotification(z.t, { body: z.b, tag: z.k.slice(0, 60), icon: (/\/tools\//.test(location.pathname) ? '../' : '') + 'sj2-icon-192.png', data: { url: z.href } }))); } catch (e) { }
     return E.length; };
+  /* D.P.A 연간 방선 (SMM-3C-03F) — D.P.A·관리자·대표이사 + 위임받은 감독에게 알림 */
+  const digD = x => { const h = x.h || {}, G = x.sg || {}, F = Object.entries(x.fnd || {}).filter(([, f]) => f && !f.del), g = k => sg(G[k]) ? G[k].name || '✓' : '';
+    return { s: h.ship || '', d: h.date || '', ty: h.ty || 'D', px: h.px || '', pxn: h.pxn || '', last: h.last || '', del: !!(x.del && x.del.v), f: Object.fromEntries(F.map(([id, f]) => [id, [String(f.desc || '').slice(0, 60), f.done || '', (f.cph || []).length]])),
+      g: { vis: g('vis'), mas: g('mas'), dpa: g('dpa'), ceo: g('ceo') }, x: [((x.ext || {}).r || {}).to || '', sg((x.ext || {}).a) ? 1 : 0] }; };
+  C.dpNote = function (x, quiet, post) { if (!x || !x.id) return 0; const b0 = LS('sejul_vsd_base'); if (!b0) LSS('sejul_vsd_base', String(Date.now())); if (!b0 || Date.now() - +b0 < 3e5) { quiet = true; post = false; }
+    const S = J('sejul_vsd_sum', {}), o = S[x.id], n = digD(x); S[x.id] = n; LSS('sejul_vsd_sum', JSON.stringify(S));
+    const role = window.SJUI && SJUI.role ? SJUI.role() : '', perm = window.SJUI && SJUI.perm ? SJUI.perm() : '', me = (C.user && C.user() || {}).uid || '', show = !quiet && role === 'office' && (['dpa', 'admin', 'ceo'].includes(perm) || (n.px && n.px === me)); if (!show && !post) return 0;
+    const head = `🛡 ${n.s} ${String(n.d).replace(/-/g, '.')}`, E = [], K = (k, t, b, to) => E.push({ k: `vsd:${x.id}:${k}`, g: 'vst', t: `${head} · ${t}`, b: b || '', href: 'tools/vst.html#/d/' + x.id, to: to || '' });
+    if (!o) { if (!n.del) K('new', n.ty === 'P' ? T(`D.P.A 방선 위임 — ${n.pxn}`, `D.P.A visit delegated — ${n.pxn}`) : T('D.P.A 방선 등록', 'D.P.A visit created'), n.ty === 'P' ? T('위임받은 감독이 작성합니다', 'Proxy superintendent fills it in') : '', n.px); }
+    else if (n.del && !o.del) K('del:' + Date.now(), T('D.P.A 방선 삭제', 'D.P.A visit deleted'));
+    else if (!n.del) {
+      if (n.ty === 'P' && n.px && n.px !== o.px) K('px:' + n.px, T(`D.P.A 방선 위임 — ${n.pxn}`, `D.P.A visit delegated — ${n.pxn}`), T('위임받은 감독이 작성합니다', 'Proxy superintendent fills it in'), n.px);
+      const nf = Object.keys(n.f).filter(id => !(o.f || {})[id]); if (nf.length) K('f:' + nf.join(','), T(`부적합 ${nf.length}건 추가`, `${nf.length} NC(s) added`), nf.map(id => n.f[id][0]).join(' / ').slice(0, 120));
+      Object.keys(n.f).forEach(id => { const a = (o.f || {})[id], b = n.f[id]; if (a && b[1] && !a[1]) K('fd:' + id, T('부적합 조치 완료', 'NC closed'), b[0].slice(0, 80)); });
+      const GN = { vis: ['방선자 서명 (점검 완료)', 'Visitor signed'], mas: ['선장 확인 서명', 'Master signed'], dpa: ['D.P.A 검토 서명', 'D.P.A reviewed'], ceo: ['대표이사 서명', 'C.E.O signed'] };
+      Object.keys(GN).forEach(k => { if (n.g[k] && n.g[k] !== (o.g || {})[k]) K(`g:${k}:${n.g[k]}`, T(GN[k][0], GN[k][1]), n.g[k]); });
+      if (!n.g.vis && (o.g || {}).vis) K('u:' + Date.now(), T('방선자 서명 취소 — 수정 중', 'Visitor signature cleared'), o.g.vis, n.px); }
+    if (post) C.notePost('vsd', n.s, E, x.ct); if (!show || !E.length) return 0;
+    try { if (window.SJUI && SJUI.inb && SJUI.inb.add) SJUI.inb.add(E); } catch (e) { }
+    return E.length; };
   /* 앱이 닫혀 있어도 오는 푸시: 고친 기기가 알림 내용을 서버 대기열(sj_note_put)에 올림 → 서버가 10분마다 사무실 기기로 보냄
      · 인터넷이 없으면 이 기기에 모아 두었다가 다음 동기화 때 보냄 · 서버에 함수가 없으면 조용히 건너뜀 */
   C.notePost = function (kind, ship, E, ct) { if (!E || !E.length || !ship) return; const recent = ct && Date.now() - ct < 864e5;
-    const L = E.filter(e => !/:new$/.test(e.k) || recent).map(e => ({ k: e.k, t: e.t, b: e.b || '', u: e.href || 'tools/vst.html' })); if (!L.length) return;
+    const L = E.filter(e => !/:new$/.test(e.k) || recent || e.to).map(e => Object.assign({ k: e.k, t: e.t, b: e.b || '', u: e.href || 'tools/vst.html' }, e.to ? { to: e.to } : {})); if (!L.length) return;
     const Q = J('sejul_note_q', []); Q.push({ kind, ship, items: L, at: Date.now() }); LSS('sejul_note_q', JSON.stringify(Q.filter(q => Date.now() - q.at < 864e5).slice(-50))); setTimeout(() => C.noteFlush().catch(() => { }), 1500); };
   C.noteFlush = async function () { if (C.noteBusy || !navigator.onLine) return; const m = C.me(); if (!m || m.status !== 'approved') return; let Q = J('sejul_note_q', []); if (!Q.length) return; C.noteBusy = true;
     try { while (Q.length) { const q = Q[0]; try { await C.rpc('sj_note_put', { p_kind: q.kind, p_ship: q.ship, p_items: q.items.slice(0, 30) }); } catch (e) { if (/does not exist|Could not find the function|wrong ship|bad /i.test(e.message)) { /* 서버 미설치·잘못된 건: 버림 */ } else throw e; }
@@ -181,7 +201,11 @@
     if (!LS('sejul_vst_dig2')) { try { localStorage.removeItem('sejul_vst_hubseen'); } catch (e) { } LSS('sejul_vst_dig2', '1'); }   /* 요약에 연장 승인 정보 추가 → 한 번 다시 읽음 (알림 없이) */
     C.vstBusy = true; try { const list = await C.rpc('sj_list', { p_tool: 'vst' }) || [], first = LS('sejul_vst_hubseen') == null, seen = J('sejul_vst_hubseen', {}), R = J('sejul_vst_hubrep', {});
       const RX = J('sejul_vsx_hubrep', {});
-      for (const r of list) { if (/^VSX_/.test(r.name)) { const at = new Date(r.saved_at).toISOString(); if (seen[r.name] && seen[r.name] >= at) continue;
+      const RD = J('sejul_vsd_hubrep', {});
+      for (const r of list) { if (/^VSD_/.test(r.name)) { const at = new Date(r.saved_at).toISOString(); if (seen[r.name] && seen[r.name] >= at) continue;
+          try { const b64 = await C.rpc('sj_get', { p_tool: 'vst', p_name: r.name }); if (b64) { const o = JSON.parse(await C.ungz(b64)); if (o && o.dp && o.dp.id && (!shipV || (o.dp.h || {}).ship === shipV)) { const x = mrg(RD[o.dp.id], o.dp); RD[o.dp.id] = x; C.dpNote(x, first || r.mine); } } } catch (e) { console.warn('vsd poll', r.name, e); }
+          seen[r.name] = at; try { LSS('sejul_vsd_hubrep', JSON.stringify(RD)); } catch (e) { } continue; }
+        if (/^VSX_/.test(r.name)) { const at = new Date(r.saved_at).toISOString(); if (seen[r.name] && seen[r.name] >= at) continue;
           try { const b64 = await C.rpc('sj_get', { p_tool: 'vst', p_name: r.name }); if (b64) { const o = JSON.parse(await C.ungz(b64)); if (o && o.sp && o.sp.id && (!shipV || (o.sp.h || {}).ship === shipV)) { const x = mrg(RX[o.sp.id], o.sp); RX[o.sp.id] = x; C.spNote(x, first || r.mine); } } } catch (e) { console.warn('vsx poll', r.name, e); }
           seen[r.name] = at; continue; }
         if (!/^VST_/.test(r.name)) continue; const at = new Date(r.saved_at).toISOString(); if (seen[r.name] && seen[r.name] >= at) continue;
