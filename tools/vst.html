@@ -1056,9 +1056,14 @@ function newVisit(v0) { if (RO()) return toast(SHIPMSG, 3000); const ms = myShip
       const o = $('#exo', m); if (o) o.onclick = () => { close(); go('#/r/' + ex.id + '/' + (myPart() || 'S')); };
       const qq = $('#exq', m); if (qq) qq.onclick = async () => { ex.h = Object.assign({}, ex.h, { q: true, u: now() }); await save(ex); close(); toast('분기 방선으로 바꿨습니다'); go('#/r/' + ex.id + '/' + (myPart() || 'S')); }; };
     $('#nv', m).onchange = dupChk; $('#nd', m).onchange = dupChk; dupChk();
+    /* 창을 여는 즉시 서버와 동기화 → 다른 감독이 먼저 만든 이 달 보고서가 있는지 확인 */
+    const C = window.SJCLOUD, on = !!(C && C.A && C.syncWait && navigator.onLine !== false); let synced = 0;
+    const b0 = $('#nok', m), sy = async () => { b0.disabled = true; b0.textContent = '서버 확인 중…'; const st = document.createElement('p'); st.className = 'muted'; st.id = 'nsy'; st.style.cssText = 'margin:8px 0 0;font-size:13px'; st.textContent = '🔄 서버에서 최신 보고서를 받는 중… (다른 감독이 먼저 만든 보고서 확인)'; $('#dup', m).before(st);
+      try { await C.syncWait(C.A); synced = Date.now(); } catch (e) { } st.remove(); b0.disabled = false; b0.textContent = '시작'; if (document.body.contains(m)) dupChk(); };
+    if (on) sy();
     $('#nok', m).onclick = async () => { if (isForeign($('#nv', m).value)) return toast(FMSG, 3500); dupChk(); if (ex) return;
-      const C = window.SJCLOUD, b = $('#nok', m); if (C && C.A && C.syncWait && navigator.onLine !== false) { b.disabled = true; b.textContent = '서버 확인 중…'; try { await C.syncWait(C.A); } catch (e) {} b.disabled = false; b.textContent = '시작'; dupChk(); if (ex) return toast('다른 감독이 먼저 만든 이 달 보고서가 있습니다 — 그 보고서에 이어서 작성하세요', 4500); }
-      else if (C && C.A) { const vals = { v: $('#nv', m).value, d: $('#nd', m).value || t, p: $('#np', m).value.trim() }; close(); return ask('지금 오프라인이라 다른 감독이 이 달 보고서를 먼저 만들었는지 확인할 수 없습니다.\n나중에 동기화되면 같은 달 보고서는 자동으로 하나로 합쳐집니다.\n계속할까요?', () => mk0(vals)); }
+      const b = $('#nok', m); if (on && Date.now() - synced > 20000) { b.disabled = true; b.textContent = '서버 확인 중…'; try { await C.syncWait(C.A); } catch (e) {} b.disabled = false; b.textContent = '시작'; dupChk(); if (ex) return toast('다른 감독이 먼저 만든 이 달 보고서가 있습니다 — 그 보고서에 이어서 작성하세요', 4500); }
+      else if (!on && C && C.A) { const vals = { v: $('#nv', m).value, d: $('#nd', m).value || t, p: $('#np', m).value.trim() }; close(); return ask('지금 오프라인이라 다른 감독이 이 달 보고서를 먼저 만들었는지 확인할 수 없습니다.\n나중에 동기화되면 같은 달 보고서는 자동으로 하나로 합쳐집니다.\n계속할까요?', () => mk0(vals)); }
       mk0({ v: $('#nv', m).value, d: $('#nd', m).value || t, p: $('#np', m).value.trim() }); };
     const mk0 = async x => { const r = newRep({ ship: x.v, date: x.d, port: x.p, q }); const mk = myPart(); if (mk) r.parts[mk].v = { date: r.h.date, port: r.h.port, u: now() }; await save(r); close(); go('#/r/' + r.id + '/' + (myPart() || ME.get().team || 'S')); };
   }); }
