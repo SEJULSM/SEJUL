@@ -1,4 +1,4 @@
-SEJUL 앱 v49 (2026.11.22.1500) 업로드 안내
+SEJUL 앱 v50 (2026.11.22.1510) 업로드 안내
 - GitHub 저장소 루트에 cloud.js, common.js, files.json, index.html, sw.js, ui.js, version.json 덮어쓰기
 - tools 폴더에 vst.html 덮어쓰기
 - .sql 파일은 절대 GitHub에 올리지 마세요
