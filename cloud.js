@@ -130,7 +130,7 @@
   C.vstMerge = mrg;
   /* 보고서 요약 (알림 비교용) */
   const dig = r => { const h = r.h || {}, P = r.parts || {}, F = Object.entries(r.fnd || {}).filter(([, f]) => f && !f.del);
-    return { s: h.ship || '', d: h.date || '', q: !!h.q, p: h.port || '', del: !!(r.del && r.del.v),
+    return { s: h.ship || '', d: h.date || '', q: !!h.q, p: h.port || '', del: !!(r.del && r.del.v), into: (r.del && r.del.into) || '',
       sg: Object.fromEntries(['S', 'T', 'M'].map(k => [k, sg(P[k] && P[k].sign) ? P[k].sign.name || '✓' : ''])),
       f: Object.fromEntries(F.map(([id, f]) => [id, [f.desc || '', f.done || '', (f.cph || []).length]])),
       fin: Object.fromEntries(Object.keys(FN).map(k => [k, sg((r.fin || {})[k]) ? r.fin[k].name || '✓' : ''])),
@@ -139,7 +139,7 @@
     const role = window.SJUI && SJUI.role ? SJUI.role() : '', show = !quiet && role === 'office'; if (!show && !post) return 0;
     const head = `${n.s} ${String(n.d).replace(/-/g, '.')}`, E = [], K = (k, t, b) => E.push({ k: `vst:${r.id}:${k}`, g: 'vst', t: `${head} · ${t}`, b: b || '', href: 'tools/vst.html#/r/' + r.id });
     if (!o) { if (!n.del) K('new', T('방선 보고서 등록', 'Visit report created'), `${n.q ? T('분기', 'Quarterly') : T('월간', 'Monthly')}${n.p ? ' · ' + n.p : ''}`); }
-    else if (n.del && !o.del) K('del:' + Date.now(), T('방선 보고서 삭제', 'Visit report deleted'));
+    else if (n.del && !o.del) { if (n.into) K('merged', T('같은 달 보고서가 하나로 합쳐졌습니다', 'Duplicate report merged'), T('두 감독이 따로 만든 보고서를 먼저 만든 보고서로 합침', 'Merged into the earlier report')); else K('del:' + Date.now(), T('방선 보고서 삭제', 'Visit report deleted')); }
     else if (!n.del) {
       if (o.d !== n.d || o.q !== n.q || o.p !== n.p || o.s !== n.s) K('h:' + n.s + n.d + n.q + n.p, T('보고서 정보 변경', 'Report details changed'), `${n.q ? T('분기', 'Quarterly') : T('월간', 'Monthly')}${n.p ? ' · ' + n.p : ''}`);
       Object.keys(PN).forEach(k => { if (n.sg[k] && n.sg[k] !== (o.sg || {})[k]) K(`sg:${k}:${n.sg[k]}:${Date.now()}`, T(`${PN[k][0]} 파트 점검 완료`, `${PN[k][1]} part completed`), n.sg[k]);

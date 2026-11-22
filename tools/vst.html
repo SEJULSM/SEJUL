@@ -383,6 +383,8 @@ function spIssues(r) { const out = []; spItems(r).forEach((x, i) => { const n = 
 /* 팀별 방선 일자·항구 (팀마다 다른 날·다른 항구에 갈 수 있음) */
 const TCODE = { S: 'SQOT', T: 'TST', M: 'MAT' };
 const pv = (r, k) => { const v = r.parts[k] && r.parts[k].v; return v && v.date ? v : null; };
+function portsOf(r) { const P = [...new Set(PARTS.map(p => (pv(r, p.k) || {}).port).filter(Boolean).map(x => x.trim()))]; return P.length ? P : (r.h.port ? [r.h.port] : []); }   /* 팀별로 적은 항구 (다르면 모두 표시) */
+const portTxt = r => portsOf(r).map(esc).join(' / ');
 function visitLines(r) { const L = PARTS.map(p => [p.k, pv(r, p.k)]).filter(([, v]) => v); return L.length ? L.map(([k, v]) => `${dot(v.date)}${v.port ? ' ' + esc(v.port) : ''} <b>${TCODE[k]}</b>`) : [`${dot(r.h.date)}${r.h.port ? ' / ' + esc(r.h.port) : ''}`]; }
 const findings = r => Object.entries(r.fnd || {}).filter(([, f]) => f && !f.del).map(([id, f]) => Object.assign({ id }, f)).sort((a, b) => (a.at || 0) - (b.at || 0));
 function photoIds(r) { const s = new Set(); if (r.kind === 'dp') { Object.values(r.a || {}).forEach(v => (v && v.ph || []).forEach(i => s.add(i))); findings(r).forEach(f => [...(f.ph || []), ...(f.cph || [])].forEach(i => s.add(i))); return s; } if (r.kind === 'sp') { spItems(r).forEach(x => [...(x.ph || []), ...(x.cph || [])].forEach(i => s.add(i))); return s; } PARTS.forEach(p => Object.values(r.parts[p.k].items).forEach(x => (x && x.ph || []).forEach(i => s.add(i)))); findings(r).forEach(f => [...(f.ph || []), ...(f.cph || [])].forEach(i => s.add(i))); return s; }
@@ -483,7 +485,7 @@ function repState(x) { const sp = PARTS.map(p => partStat(x, p.k)), all = sp.eve
 function repCard(x) { const st = repState(x), F = findings(x), VP = visParts(), open = F.filter(f => !f.done).length, mp = myPart();
   const c = SHIP() ? '' : PARTS.map((p, i) => { const z = st.sp[i]; return `<span class="mc ${z.signed ? 'ok' : z.done ? 'warn' : ''} ${mp === p.k && VP.length === 1 ? 'me' : ''}">${p.k} ${z.signed ? '✓' : z.done + '/' + z.n}</span>`; }).join('');
   return `<div class="card rep rc" data-open="${x.id}" style="cursor:pointer"><div class="r1"><span class="nm">${esc(x.h.ship || '선박 미지정')}</span><span class="dt">${dot(x.h.date).slice(5)}</span><span class="sp"></span>${CEO() ? `${!sig(x.fin.ceo) && ceoReady(x) ? `<button class="btn s p ib2" data-cs="${x.id}">✍ 서명</button>` : ''}<button class="btn s ${sig(x.fin.ceo) || !ceoReady(x) ? 'p' : ''} ib2" data-pv="${x.id}">📄 보기 · 출력</button>` : `<button class="btn s p ib2" data-go2="#/r/${x.id}" title="보고서 열기">📂 열기</button><button class="btn s ib2" data-pv="${x.id}" title="보고서 보기 · 출력">📄</button><button class="btn s ib2" data-menu="${x.id}" aria-label="메뉴">⋯</button>`}</div>
-    <div class="r2"><span class="mc ${x.h.q ? 'q' : ''}">${x.h.q ? '분기' : '월간'}${x.h.port ? ' · ' + esc(x.h.port) : ''}</span>${c}<span class="mc ${open ? 'err' : F.length ? 'ok' : ''}">지적 ${F.length}${open ? ` · 미조치 ${open}` : ''}</span><span class="mc ${st.fin === 4 ? 'ok' : ''}">확인 ${st.fin}/4</span></div></div>`; }
+    <div class="r2"><span class="mc ${x.h.q ? 'q' : ''}">${x.h.q ? '분기' : '월간'}${portTxt(x) ? ' · ' + portTxt(x) : ''}</span>${c}<span class="mc ${open ? 'err' : F.length ? 'ok' : ''}">지적 ${F.length}${open ? ` · 미조치 ${open}` : ''}</span><span class="mc ${st.fin === 4 ? 'ok' : ''}">확인 ${st.fin}/4</span></div></div>`; }
 /* ---------- 홈: [방선 보고서] [공무 특별점검] ---------- */
 const homeSeg = () => canSp() && !LITE() && isOffice() ? `<div class="seg" style="margin-bottom:12px"><button data-home="rep" class="${S.home !== 'sp' ? 'on' : ''}">📄 방선 보고서</button><button data-home="sp" class="${S.home === 'sp' ? 'on' : ''}">🔧 공무 특별점검 <span style="font-weight:400;font-size:12px">사내용</span></button><button data-home="dp" class="${S.home === 'dp' ? 'on' : ''}">🛡 D.P.A 방선</button></div>` : !LITE() && isOffice() ? `<div class="seg" style="margin-bottom:12px"><button data-home="rep" class="${S.home !== 'dp' ? 'on' : ''}">📄 방선 보고서</button><button data-home="dp" class="${S.home === 'dp' ? 'on' : ''}">🛡 D.P.A 방선</button></div>` : '';
 function setHome(v) { S.home = v; LS.set('sejul_vst_home', v); S.mon = S.mon || ''; try { UI.vstHomePaint && UI.vstHomePaint(); } catch (e) { } if (route().v) { go('#/'); } else render(); window.scrollTo(0, 0); }
@@ -937,7 +939,7 @@ document.addEventListener('click', e => { const t = e.target.closest && e.target
 const WIDE = () => innerWidth >= 1100 && !(UI && UI.phone && UI.phone());
 function sumHTML(r) { if (!r) return '<div class="card empty">왼쪽에서 보고서를 고르세요.</div>';
   const st = repState(r), F = findings(r), t0 = ymd(), er = (r.ext && r.ext.r) || {}, sgc = (l, s) => `<span class="chip ${sig(s) ? 'ok' : ''}">${l} ${sig(s) ? '✓ ' + esc(s.name || '') : '—'}</span>`;
-  return `<div class="card"><div class="row" style="gap:8px"><b style="font-size:18px">${esc(r.h.ship)}</b><span class="muted">${dot(r.h.date)}${r.h.port ? ' · ' + esc(r.h.port) : ''}</span><span class="chip ${r.h.q ? 'q' : ''}">${r.h.q ? '분기' : '월간'}</span></div>
+  return `<div class="card"><div class="row" style="gap:8px"><b style="font-size:18px">${esc(r.h.ship)}</b><span class="muted">${dot(r.h.date)}${portTxt(r) ? ' · ' + portTxt(r) : ''}</span><span class="chip ${r.h.q ? 'q' : ''}">${r.h.q ? '분기' : '월간'}</span></div>
     <div class="row" style="gap:8px;margin-top:10px"><button class="btn p sp" data-go="#/r/${r.id}">📂 열기</button><button class="btn sp" data-go="#/p/${r.id}">📄 보기 · 출력</button></div></div>
     <div class="card"><h3 style="margin-top:0">팀별 점검</h3>${PARTS.map((p, i) => { const s = st.sp[i], v = pv(r, p.k); return `<div style="padding:6px 0;border-bottom:1px solid var(--line)"><div class="row" style="gap:8px"><b style="width:76px">${p.k} ${p.ko.replace(' 파트', '')}</b><div class="prog" style="flex:1;margin:0"><i style="width:${s.n ? s.done / s.n * 100 : 0}%"></i></div><span class="muted" style="width:44px;text-align:right">${s.done}/${s.n}</span></div>
       <div class="muted" style="font-size:12.5px;margin-top:2px">${s.signed ? `✓ ${esc(s.name || '')} 서명` : '서명 전'}${v ? ` · ${dot(v.date)} ${esc(v.port || '')}` : ''}</div></div>`; }).join('')}</div>
@@ -999,12 +1001,21 @@ function viewList() { if (SHIP() && isForeign(myShip())) return viewForeign(mySh
     const A = document.createElement('aside'); A.className = 'sumP'; A.innerHTML = sumHTML(sel); mainEl.appendChild(A); $$('.card.rep', mainEl).forEach(c => c.classList.toggle('sel', c.dataset.open === S.sel)); }
   paintSync(); }
 const sameMonth = (v, d) => Object.values(R).filter(x => live(x) && x.h.ship === v && (x.h.date || '').slice(0, 7) === String(d || '').slice(0, 7)).sort((a, b) => (a.ct || 0) - (b.ct || 0));
+/* 자동 합치기: 서버 동기화 전에 두 감독이 같은 선박·같은 달 보고서를 따로 만든 경우.
+   모든 기기가 똑같은 규칙(가장 먼저 만든 보고서로, 항목·서명은 나중에 고친 쪽, 지적사항은 모두)으로 각자 합치므로 결과가 같아짐 */
+async function mergeLocal(g) { const [a, ...rest] = g; let o = JSON.parse(JSON.stringify(a));
+  for (const b of rest) { migr(b); o.parts = mrg(o.parts, b.parts); o.fnd = mrg(o.fnd, b.fnd); o.fin = mrg(o.fin, b.fin); o.ext = mrg(o.ext, b.ext); o.sp = mrg(o.sp, b.sp);
+    if (b.h.q && !o.h.q) o.h = Object.assign({}, o.h, { q: true, u: Math.max(o.h.u || 0, b.h.u || 0) + 1 }); if (!o.h.port && b.h.port) o.h = Object.assign({}, o.h, { port: b.h.port, u: Math.max(o.h.u || 0, b.h.u || 0) + 1 }); }
+  norm(o); await save(o, true); for (const b of rest) { b.del = { v: true, u: now(), into: a.id, by: '자동 합치기' }; await save(b, true); } return o; }
+let MERGING = false;
+async function autoMerge() { if (MERGING) return 0; MERGING = true; let n = 0; try { for (const g of dupGroups()) { await mergeLocal(g); n += g.length - 1; }
+    if (n) { pushNow(); toast(`같은 달 보고서 ${n + 1}건을 하나로 합쳤습니다 (다른 감독이 따로 만든 것)`, 4500); } } catch (e) { console.warn('autoMerge', e); } MERGING = false; return n; }
 /* 중복 합치기: 같은 선박·같은 달 보고서를 가장 먼저 만든 보고서 하나로 (항목·서명은 나중에 고친 쪽, 지적사항은 모두) */
-async function mergeDup(list) { if (list.length < 2 || SHIP() || !CAN('admin')) return; const [a, ...rest] = list; let o = JSON.parse(JSON.stringify(a));
+async function mergeDup(list) { if (list.length < 2 || SHIP() || !CAN('admin')) return; const o0 = await mergeLocal(list); pushNow(); toast(`${list.length}건을 한 보고서로 합쳤습니다`); return o0; const [a, ...rest] = list; let o = JSON.parse(JSON.stringify(a));
   for (const b of rest) { o.parts = mrg(o.parts, b.parts); o.fnd = mrg(o.fnd, b.fnd); o.fin = mrg(o.fin, b.fin); o.ext = mrg(o.ext, b.ext); o.sp = mrg(o.sp, b.sp);
     if (b.h.q && !o.h.q) o.h = Object.assign({}, o.h, { q: true, u: now() }); if (!o.h.port && b.h.port) o.h = Object.assign({}, o.h, { port: b.h.port, u: now() }); }
   norm(o); await save(o); for (const b of rest) { b.del = { v: true, u: now(), into: a.id }; await save(b, true); } pushNow(); toast(`${list.length}건을 한 보고서로 합쳤습니다`); return o; }
-function dupGroups() { const G = {}; Object.values(R).filter(live).forEach(x => { const k = x.h.ship + '|' + (x.h.date || '').slice(0, 7); (G[k] = G[k] || []).push(x); }); return Object.values(G).filter(g => g.length > 1).map(g => g.sort((a, b) => (a.ct || 0) - (b.ct || 0))); }
+function dupGroups() { const G = {}; Object.values(R).filter(live).forEach(x => { const k = x.h.ship + '|' + (x.h.date || '').slice(0, 7); (G[k] = G[k] || []).push(x); }); return Object.values(G).filter(g => g.length > 1).map(g => g.sort((a, b) => (a.ct || 0) - (b.ct || 0) || String(a.id).localeCompare(String(b.id)))); }
 function mergeAsk(g) { const a = g[0]; ask(`${a.h.ship} ${+a.h.date.slice(5, 7)}월 보고서 ${g.length}건을 하나로 합칠까요?\n· 남는 보고서: ${dot(a.h.date)} ${a.h.q ? '분기' : '월간'} (가장 먼저 만든 것)\n· 점검 결과·사진·서명: 나중에 입력한 내용 우선\n· 지적사항: 모두 모음\n· 분기가 하나라도 있으면 분기로`, async () => { const o = await mergeDup(g); render(); if (o) go('#/r/' + o.id); }, '합치기'); }
 /* 같은 선박에 이번 달 보고서가 여러 건(월간·분기 등)일 때 고르기 */
 function pickRep(v, mon) { const L = Object.values(R).filter(x => live(x) && x.h.ship === v && (x.h.date || '').startsWith(mon)).sort((a, b) => (b.h.date || '').localeCompare(a.h.date || '') || b.ct - a.ct);
@@ -1045,14 +1056,18 @@ function newVisit(v0) { if (RO()) return toast(SHIPMSG, 3000); const ms = myShip
       const o = $('#exo', m); if (o) o.onclick = () => { close(); go('#/r/' + ex.id + '/' + (myPart() || 'S')); };
       const qq = $('#exq', m); if (qq) qq.onclick = async () => { ex.h = Object.assign({}, ex.h, { q: true, u: now() }); await save(ex); close(); toast('분기 방선으로 바꿨습니다'); go('#/r/' + ex.id + '/' + (myPart() || 'S')); }; };
     $('#nv', m).onchange = dupChk; $('#nd', m).onchange = dupChk; dupChk();
-    $('#nok', m).onclick = async () => { if (isForeign($('#nv', m).value)) return toast(FMSG, 3500); dupChk(); if (ex) return; const r = newRep({ ship: $('#nv', m).value, date: $('#nd', m).value || t, port: $('#np', m).value.trim(), q }); const mk = myPart(); if (mk) r.parts[mk].v = { date: r.h.date, port: r.h.port, u: now() }; await save(r); close(); go('#/r/' + r.id + '/' + (myPart() || ME.get().team || 'S')); };
+    $('#nok', m).onclick = async () => { if (isForeign($('#nv', m).value)) return toast(FMSG, 3500); dupChk(); if (ex) return;
+      const C = window.SJCLOUD, b = $('#nok', m); if (C && C.A && C.syncWait && navigator.onLine !== false) { b.disabled = true; b.textContent = '서버 확인 중…'; try { await C.syncWait(C.A); } catch (e) {} b.disabled = false; b.textContent = '시작'; dupChk(); if (ex) return toast('다른 감독이 먼저 만든 이 달 보고서가 있습니다 — 그 보고서에 이어서 작성하세요', 4500); }
+      else if (C && C.A) { const vals = { v: $('#nv', m).value, d: $('#nd', m).value || t, p: $('#np', m).value.trim() }; close(); return ask('지금 오프라인이라 다른 감독이 이 달 보고서를 먼저 만들었는지 확인할 수 없습니다.\n나중에 동기화되면 같은 달 보고서는 자동으로 하나로 합쳐집니다.\n계속할까요?', () => mk0(vals)); }
+      mk0({ v: $('#nv', m).value, d: $('#nd', m).value || t, p: $('#np', m).value.trim() }); };
+    const mk0 = async x => { const r = newRep({ ship: x.v, date: x.d, port: x.p, q }); const mk = myPart(); if (mk) r.parts[mk].v = { date: r.h.date, port: r.h.port, u: now() }; await save(r); close(); go('#/r/' + r.id + '/' + (myPart() || ME.get().team || 'S')); };
   }); }
 
 /* ---------- 보고서 ---------- */
 function viewRep(r, tab) { const VP = visParts(); if (CEO() && !tab) tab = 'C'; tab = tab || S.tab || myPart() || ME.get().team || VP[0]; if (!['S', 'T', 'M', 'F', 'C'].includes(tab) || ('STM'.includes(tab) && !VP.includes(tab))) tab = VP[0] || 'F'; S.tab = tab;
   const tb = (k, ko, sub, ck) => `<button data-t="${k}" class="${tab === k ? 'on' : ''}">${ck ? '<span class="ck">✓</span> ' : ''}${ko}<small>${sub}</small></button>`;
   const st = k => partStat(r, k), F = findings(r);
-  $('#app').innerHTML = header(`${esc(r.h.ship || '')} · ${dot(r.h.date)}`, `${r.h.q ? '분기 Quarterly' : '월간 Monthly'}${r.h.port ? ' · ' + esc(r.h.port) : ''}`, '#/') +
+  $('#app').innerHTML = header(`${esc(r.h.ship || '')} · ${dot(r.h.date)}`, `${r.h.q ? '분기 Quarterly' : '월간 Monthly'}${portTxt(r) ? ' · ' + portTxt(r) : ''}`, '#/') +
     `<nav class="tabs">${PARTS.filter(p => VP.includes(p.k)).map(p => { const s = st(p.k); return tb(p.k, p.ko.replace(' 파트', ''), s.signed ? '서명 완료' : `${s.done}/${s.n}`, s.signed); }).join('')}${tb('F', '지적', `${F.length}건`)}${tb('C', '확인·출력', `${FINAL.filter(([k]) => sig(r.fin[k])).length}/4`)}<button data-t="P" style="flex:0 0 auto;min-width:56px">📄<small>출력</small></button></nav>${VP.length < 3 ? `<div style="display:flex;gap:6px;flex-wrap:wrap;padding:8px 12px;background:#F7F9FC;border-bottom:1px solid var(--line);font-size:13px"><span class="muted" style="align-self:center">팀별 진행</span>${PARTS.map(p => { const z = st(p.k); return `<span class="chip ${z.signed ? 'ok' : z.done ? 'warn' : ''}" title="${esc(z.name || '')}">${p.k} ${p.ko.replace(' 파트', '')} ${z.signed ? '✓ ' + esc(z.name || '') : z.done + '/' + z.n}</span>`; }).join('')}</div>` : ''}<main id="pm"></main>`;
   $$('.tabs button').forEach(b => b.onclick = () => { if (b.dataset.t === 'P') return go('#/p/' + r.id); S.tab = b.dataset.t; history.replaceState(null, '', '#/r/' + r.id + '/' + b.dataset.t); viewRep(r, b.dataset.t); window.scrollTo(0, 0); });
   if ('STM'.includes(tab)) partView(r, tab); else if (tab === 'F') findView(r); else confView(r);
@@ -1420,7 +1435,7 @@ window.SJ_VST = {
       if (o.kind === 'SEJUL-VSX' && o.sp && XS[o.sp.id] && o.perm === 'user') o = Object.assign({}, o, { sp: (z => { { const a = XS[o.sp.id]; if (!(o.uid && a.cuid === o.uid && noSignX(a) && z.del && z.del.cancel)) z.del = a.del; } z.sp = z.sp || {}; z.sp.dpa = XS[o.sp.id].sp.dpa; return z; })(cp(o.sp)) }); }
     if (o.role === 'ship' && !SHIP()) { if (o.kind === 'SEJUL-VST' && o.rep) o = Object.assign({}, o, { rep: fromShipR(R[o.rep.id], o.rep) }); if (o.kind === 'SEJUL-VSX' && o.sp) o = Object.assign({}, o, { sp: fromShipX(XS[o.sp.id], o.sp) }); if ((o.kind === 'SEJUL-VST' && !o.rep) || (o.kind === 'SEJUL-VSX' && !o.sp)) return 0; }
     if (o.kind === 'SEJUL-VST' && o.rep) { const n = await applyRep(o.rep); if (n && R[o.rep.id]) try { SJCLOUD.vstNote && SJCLOUD.vstNote(R[o.rep.id]); } catch (e) { } return n; } if (o.kind === 'SEJUL-VSX' && o.sp && o.sp.id) { const n = await applyX(o.sp); if (n && XS[o.sp.id]) try { SJCLOUD.spNote && SJCLOUD.spNote(XS[o.sp.id]); } catch (e) { } return n; } if (o.kind === 'SEJUL-VSTP' && o.id && o.data) { if (PHK.has(o.id)) return 0; await photoPut(o.id, o.data, o.rid, false); return 1; } return 0; },
-  async after(n) { const typing = document.activeElement && /INPUT|TEXTAREA/.test(document.activeElement.tagName); if (!$('.mb') && !typing && !['p', 'x', 'y'].includes(route().v)) render(); toast('🔄 다른 감독의 내용을 받았습니다', 2500); paintSync(); }
+  async after(n) { if (n) await autoMerge(); const typing = document.activeElement && /INPUT|TEXTAREA/.test(document.activeElement.tagName); if (!$('.mb') && !typing && !['p', 'x', 'y'].includes(route().v)) render(); toast('🔄 다른 감독의 내용을 받았습니다', 2500); paintSync(); }
 };
 
 /* ---------- 시작 ---------- */
@@ -1432,7 +1447,7 @@ window.SJ_VST = {
       else if (UI.mobPhone) { w.innerHTML = UI.mobPhone('vst', '../', { off: isOffice() }); document.body.classList.add('bnav'); }
       [...w.children].forEach(x => document.body.appendChild(x)); UI.syncPaint && UI.syncPaint(); try { UI.updPaint && UI.updPaint(); } catch (e) { } try { UI.inb && UI.inb.paint && UI.inb.paint(); } catch (e) { } } } catch (e) { console.warn('frame', e); }
   try { if (localStorage.getItem('sejul_vst_noen') === '1') document.body.classList.add('noen'); } catch (e) { }
-  try { await loadAll(); } catch (e) { $('#app').innerHTML = '<main><div class="issues">이 기기의 저장소를 열 수 없습니다 (사생활 보호 모드?): ' + esc(e.message || e) + '</div></main>'; return; }
+  try { await loadAll(); await autoMerge(); } catch (e) { $('#app').innerHTML = '<main><div class="issues">이 기기의 저장소를 열 수 없습니다 (사생활 보호 모드?): ' + esc(e.message || e) + '</div></main>'; return; }
   /* 올릴 사진 미리 불러오기 */
   for (const id of PEND.get()) { try { await photo(id); } catch (e) { } }
   render();
