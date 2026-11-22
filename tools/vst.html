@@ -22,6 +22,7 @@ button{cursor:pointer}
 .hd .tt{flex:1;min-width:0}
 .hd .tt b{display:block;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .hd .tt small{display:block;font-size:12px;opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hd .sy2{display:none}
 .hd .ib{background:rgba(255,255,255,.12);border:0;color:#fff;border-radius:10px;height:38px;min-width:38px;padding:0 10px;display:flex;align-items:center;gap:6px;font-size:14px}
 .sd{width:9px;height:9px;border-radius:50%;background:#8A94A6;display:inline-block}
 .sd.ok{background:#3DDC84}.sd.warn{background:var(--gold)}.sd.err{background:#FF6B6B}
@@ -164,6 +165,7 @@ body.bnav main{padding-bottom:calc(96px + env(safe-area-inset-bottom))}
  body.sjm-on .hd a.home img{display:none}body.sjm-on .hd a.home[href="../index.html"]{display:none}
  body.sjm-on .hd .tt b{font-size:18px;font-weight:800}body.sjm-on .hd .tt small{color:var(--mut);opacity:1}
  body.sjm-on .hd .ib{display:none}
+ body.sjm-on .hd .sy2{display:flex;align-items:center;gap:4px;margin-left:auto;flex:0 0 auto;background:#EEF3FB;color:#14244A;border:1px solid #D5DEEC;border-radius:10px;height:38px;padding:0 11px;font-size:13.5px;font-weight:700;font-family:inherit}.hd .sy2 .ic{display:inline-block}.hd .sy2.spin .ic{animation:sySp 1s linear infinite}.hd .sy2:disabled{opacity:.7}@keyframes sySp{to{transform:rotate(360deg)}}
  body.sjm-on .tabs{top:108px}html.sj-hasupd body.sjm-on .tabs{top:154px}
  body.sjm-on .pvbar{top:54px}
 }
@@ -463,7 +465,7 @@ addEventListener('hashchange', e => { try { const h = new URL(e.oldURL).hash || 
 
 function header(title, sub, back) {
   return `<header class="hd"><a class="home" href="${back || '../index.html'}" aria-label="뒤로">${back ? '‹' : `<img src="../logo.svg" width="22" height="21" alt="">`}</a>
-    <div class="tt"><b>${title}</b><small>${sub || ''}</small></div><button class="ib" id="syncB" title="서버 동기화"><span class="sd" id="sdot"></span><span id="stxt" style="max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span></button></header>`; }
+    <div class="tt"><b>${title}</b><small>${sub || ''}</small></div><button class="ib" id="syncB" title="서버 동기화"><span class="sd" id="sdot"></span><span id="stxt" style="max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span></button><button class="sy2" id="syncN" title="지금 동기화" aria-label="지금 동기화"><span class="ic">🔄</span><span>동기화</span></button></header>`; }
 
 function render() { countPub(); const r = route(); if (!['p', 'x', 'y'].includes(r.v)) document.title = '감독 방선 보고서 SMM-3C-01F | Sejul Ship Management'; $('#print').style.display = 'none'; $('#app').style.display = ''; $('#app').onclick = null;
   if (r.v === 'r' && rep(r.id)) return viewRep(rep(r.id), r.tab);
@@ -1380,6 +1382,7 @@ async function viewPrint(r, kind) { const xk = kind === 'x', yk = kind === 'y', 
 function syncInfo() { const C = window.SJCLOUD; if (!C || !C.me) return ['', '이 기기만']; const m = C.me(), s = C.state || {};
   if (!navigator.onLine) return ['warn', '오프라인']; if (!m || m.status === 'none') return ['', '서버 미등록']; if (m.status === 'pending') return ['warn', '승인 대기'];
   if (m.status !== 'approved') return ['err', '동기화 해제']; if (s.err) return ['err', '동기화 오류']; if (s.busy) return ['ok', '동기화 중…']; if (LS.get('sejul_cloud_vst_dirty')) return ['warn', '보낼 변경']; return ['ok', s.last ? '동기화됨' : '대기']; }
+document.addEventListener('click', async e => { const b = e.target.closest && e.target.closest('#syncN'); if (!b || b.disabled) return; b.disabled = true; b.classList.add('spin'); try { await syncNow(); } finally { const b2 = $('#syncN'); if (b2) { b2.disabled = false; b2.classList.remove('spin'); } } });   /* 휴대폰 제목 옆 동기화 버튼 */
 function paintSync() { const [c, t] = syncInfo(), d = $('#sdot'), x = $('#stxt'); if (d) d.className = 'sd ' + c; if (x) x.textContent = t; const b = $('#syncB'); if (b && !b.__s) { b.__s = 1; b.onclick = () => { const C = window.SJCLOUD, s = C && C.state; modal(`<h3>서버 동기화 <button class="x" data-x>✕</button></h3><p>${esc(syncInfo()[1])}${s && s.err ? '<br><span class="muted">' + esc(s.err) + '</span>' : ''}</p><p class="muted">감독들이 각자 쓴 파트는 서버를 거쳐 하나의 보고서로 합쳐집니다. 서버를 쓸 수 없으면 '확인·출력 › 파일로 내보내기'로 합칠 수 있습니다.</p><div class="row"><button class="btn sp" data-x>닫기</button><button class="btn p sp" id="sn2">지금 동기화</button></div>`, (m, close) => { $('#sn2', m).onclick = () => { close(); syncNow(); }; }); }; } }
 /* 삭제·합치기처럼 중요한 변경은 15초를 기다리지 않고 바로 서버로 */
 function pushNow() { try { const C = window.SJCLOUD; if (C && C.kick) C.kick(300); else if (C && C.sync && C.A) setTimeout(() => C.sync(C.A).then(paintSync).catch(() => { }), 300); } catch (e) { } }
