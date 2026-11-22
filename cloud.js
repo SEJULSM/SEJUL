@@ -37,7 +37,8 @@
     const m = C.me(), s = C.state; c.textContent = !m || m.status === 'none' ? '' : m.status !== 'approved' ? ' ☁⏳' : s.err ? ' ☁⚠' : s.busy ? ' ☁…' : s.last ? ' ☁✓' : ' ☁';
     b.title = '앱 홈 · App home' + (m && m.status === 'approved' ? `\n서버 동기화: ${s.err ? '오류 — ' + s.err : s.last ? new Date(s.last).toLocaleTimeString() + ' (올림 ' + s.up + ' · 받음 ' + s.down + ')' : '대기'}` : m && m.status === 'pending' ? '\n서버 동기화: 사무실 승인 대기' : ''); };
   /* 동기화 한 번: 올리기 → 받기 */
-  C.sync = async function (A, force) { if (!A || C.state.busy || !navigator.onLine) return 0; let m = C.me();
+  C.sync = async function (A, force) { if (A && C.state.busy) { C.state.again = A; return 0; }   /* 동기화 중이면 버리지 않고 끝난 뒤 한 번 더 */
+    if (!A || !navigator.onLine) return 0; let m = C.me();
     try { if (!m || !m.at || Date.now() - m.at > 10 * 60e3) m = await C.refresh(); } catch (e) { C.state.err = e.message; C.badge(); return 0; }
     if (!m || m.status !== 'approved') { C.badge(); return 0; }
     C.state.busy = true; C.badge(); let n = 0;
@@ -65,7 +66,9 @@
       C.state.last = Date.now(); C.state.err = '';
       setTimeout(() => C.sumPush().catch(() => {}), 2500); setTimeout(() => { try { C.noteFlush && C.noteFlush().catch(() => { }); C.teamPush && C.teamPush().catch(() => { }); } catch (e) { } }, 3500);
     } catch (e) { C.state.err = e.message; console.warn('cloud', e); }
-    C.state.busy = false; C.badge(); return n; };
+    C.state.busy = false; C.badge(); if (C.state.again) { const a2 = C.state.again; C.state.again = null; setTimeout(() => C.sync(a2), 300); } return n; };
+  /* 지금 동기화 (버튼): 다른 동기화가 돌고 있으면 끝날 때까지 기다렸다가 실행 */
+  C.syncWait = async function (A) { for (let i = 0; i < 100 && C.state.busy; i++) await new Promise(r => setTimeout(r, 300)); C.state.again = null; return C.sync(A); };
   /* 알림용 요약 올리기 — 선박: 자기 선박의 계획정비·위험성 요약 / 사무실: 선박별 DPA 결정 (바뀐 것만) */
   C.sumPush = async function () { const m = C.me(); if (!m || m.status !== 'approved' || !navigator.onLine || (m.user && m.user.perm === 'ceo')) return;
     const rd = k => { try { return JSON.parse(LS('sejul_sum_' + k) || 'null'); } catch (e) { return null; } }, sp = rd('pms'), sr = rd('rsk'), out = [];
@@ -104,8 +107,9 @@
   /* 도구 연결: 시작 5초 후 · 2분마다 · 저장 15초 후 · 창으로 돌아올 때 · 인터넷 연결될 때 */
   C.start = function (A) { if (!C.url || /__CLOUD/.test(C.url)) return; C.A = A; let t;
     const kick = (d) => { clearTimeout(t); t = setTimeout(() => C.sync(A), d); };
-    kick(5000); setInterval(() => C.sync(A), 2 * 60e3); addEventListener('online', () => kick(3000)); addEventListener('focus', () => kick(2000));
-    C.onSave = () => { try { if (!LS('sejul_cloud_' + A.tool + '_dirty')) LSS('sejul_cloud_' + A.tool + '_dirty', String(Date.now())); } catch (e) { } C.badge(); kick(15000); }; };
+    kick(A.tool === 'vst' ? 800 : 5000); setInterval(() => C.sync(A), 2 * 60e3); addEventListener('online', () => kick(3000)); addEventListener('focus', () => kick(2000));
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') kick(800); });   /* 앱을 다시 볼 때 바로 받기 */
+    C.kick = kick; C.onSave = (d) => { try { if (!LS('sejul_cloud_' + A.tool + '_dirty')) LSS('sejul_cloud_' + A.tool + '_dirty', String(Date.now())); } catch (e) { } C.badge(); kick(d || 15000); }; };
   /* 서버로 아직 안 보낸 변경이 있는지 (도구별 표시 시각) */
   C.dirty = () => ['pms', 'rsk', 'vst'].map(t => +LS('sejul_cloud_' + t + '_dirty') || 0).filter(Boolean).sort()[0] || 0;
 })();
