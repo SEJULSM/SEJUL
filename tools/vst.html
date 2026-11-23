@@ -226,7 +226,8 @@ body.bnav .pvbar{top:0}
  .pvbar{display:none!important}
  .pg{margin:0;box-shadow:none;break-after:page;width:210mm;min-height:297mm;height:auto}
  .pg:last-child{break-after:auto}
- .pv{zoom:1!important;padding:0;background:#fff}
+ .pv{zoom:1!important;padding:0;background:#fff;height:auto!important;overflow:visible!important}
+ .pv .doc{transform:none!important;width:auto!important;margin-left:0!important}
 }
 </style></head>
 <body>
@@ -1420,7 +1421,11 @@ async function viewPrint(r, kind) { const xk = kind === 'x', yk = kind === 'y', 
   $('#app').innerHTML = header(yk ? 'D.P.A 방선 보기' : xk ? '공무팀 특별 점검 보기' : '보고서 보기', `${esc(r.h.ship)} · ${dot(r.h.date)}`, back) + '<main><div class="empty">보고서를 만드는 중…</div></main>'; paintSync();
   const html = yk ? await docD(r) : xk ? await docX(r) : await docHTML(r), P = $('#print'); P.innerHTML = `<div class="pvbar"><a class="btn s" href="${back}">‹ 돌아가기</a><span class="sp"></span><button class="btn s p" id="prB">🖨 인쇄 · PDF 저장</button><button class="btn s" id="htB">💾 HTML 파일 저장</button></div><div class="pv" id="pvw">${html}</div>`;
   $('#app').style.display = 'none'; P.style.display = 'block'; window.scrollTo(0, 0);
-  const fit = () => { const w = P.clientWidth, k = Math.min(1, (w - 16) / 794); $('#pvw').style.zoom = k; }; fit(); addEventListener('resize', fit);
+  /* 화면 폭에 맞춰 축소: zoom 대신 transform — 아이폰(사파리)은 zoom으로 줄이면 1px 표 줄이 사라짐 */
+  const fit = () => { const pv = $('#pvw'), d = pv && pv.querySelector('.doc'); if (!d) return; const w = P.clientWidth, k = Math.min(1, (w - 16) / 794);
+    d.style.width = '794px'; d.style.transformOrigin = '0 0'; d.style.transform = k < 1 ? `scale(${k})` : ''; d.style.marginLeft = Math.max(0, (w - 794 * k) / 2) + 'px';
+    pv.style.height = (d.offsetHeight * k + 52) + 'px'; pv.style.overflow = 'hidden'; };
+  fit(); addEventListener('resize', fit); try { new ResizeObserver(fit).observe($('#pvw .doc')); } catch (e) { } $$('#pvw img').forEach(im => im.complete || im.addEventListener('load', fit));
   const miss = yk ? (sig(r.sg.vis) ? [] : ['방선자']) : xk ? (spDone(r) ? [] : ['공무 감독']) : PARTS.filter(p => !partStat(r, p.k).signed).map(p => p.ko);
   $('#prB').onclick = () => { if (miss.length) toast((xk || yk ? '서명 안 됨: ' : '서명 안 된 파트: ') + miss.join(', '), 3500); setTimeout(() => window.print(), miss.length ? 600 : 0); };
   $('#htB').onclick = async () => { const css = [...document.querySelectorAll('style')].map(s => s.textContent).join('\n').match(/\/\* =+ 출력[\s\S]*$/);
