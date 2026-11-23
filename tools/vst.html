@@ -196,6 +196,11 @@ body.bnav .pvbar{top:0}
 .doc .ph{height:52mm;text-align:center;color:#777}
 .doc .ph img{max-width:100%;max-height:50mm;object-fit:contain;display:block;margin:0 auto}
 .doc .cap{background:#F1F4F9;font-weight:700;font-size:10.5pt}
+.doc table.pa{width:auto;margin:0 auto 3.5mm;table-layout:fixed;break-inside:avoid}
+.doc .pai{padding:1mm 0;text-align:center;white-space:nowrap;font-size:0}
+.doc .pai img,.doc .pai .pae{display:inline-block;object-fit:cover;margin:0 1.2mm;vertical-align:middle}
+.doc .pai .pae{border:1px dashed #999;color:#777;font-size:10pt;line-height:1.2;display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box}
+.doc table.pa .cap{font-size:10pt;text-align:center}
 .doc tr{break-inside:avoid}
 /* 공무팀 특별 점검 사항 (별도 출력) */
 .doc .xh{width:100%;border-collapse:collapse;margin-bottom:5mm}
@@ -402,7 +407,7 @@ async function loadAll() { const a = await IDB.all('r'); R = {}; XS = {}; DP = {
   /* 예전 버전(보고서 안에 들어 있던 특별점검) → 따로 저장. id를 보고서 id로 정해 여러 기기에서 옮겨도 하나로 합쳐짐 */
   for (const r of Object.values(R)) { const o = r.sp || {}; if (!(Object.keys(o.items || {}).length || sig(o.sign) || sig(o.ce))) continue; const id = 'XS' + r.id; if (XS[id]) continue;
     const v = pv(r, 'T') || r.h; await save(normX({ id, kind: 'sp', cdev: r.cdev, ct: r.ct, h: { ship: r.h.ship, date: v.date || r.h.date, port: v.port || '', u: 1 }, sp: JSON.parse(JSON.stringify(o)), del: r.del }), true); } }
-async function save(r, silent) { setTimeout(() => { try { window.SJUI && SJUI.inb && SJUI.inb.paint(); } catch (e) { } }, 200); r.lu = now(); if (r.kind === 'sp') XS[r.id] = r; else if (r.kind === 'dp') DP[r.id] = r; else R[r.id] = r; await IDB.put('r', r); if (window.SJCLOUD) { try { SJCLOUD.onSave && SJCLOUD.onSave(8000); } catch (e) { }   /* 고친 뒤 8초 안에 서버로 */ try { if (r.kind === 'dp') SJCLOUD.dpNote && SJCLOUD.dpNote(r, true, true); else if (r.kind === 'sp') SJCLOUD.spNote && SJCLOUD.spNote(r, true, true); else SJCLOUD.vstNote && SJCLOUD.vstNote(r, true, true); } catch (e) { } } if (!silent) paintSync(); }
+async function save(r, silent) { setTimeout(() => { try { window.SJUI && SJUI.inb && SJUI.inb.paint(); } catch (e) { } }, 200); r.lu = now(); if (r.kind === 'sp') XS[r.id] = r; else if (r.kind === 'dp') DP[r.id] = r; else R[r.id] = r; await IDB.put('r', r); if (window.SJCLOUD) { try { SJCLOUD.onSave && SJCLOUD.onSave(1500); } catch (e) { }   /* 고친 뒤 1.5초 안에 서버로 */ try { if (r.kind === 'dp') SJCLOUD.dpNote && SJCLOUD.dpNote(r, true, true); else if (r.kind === 'sp') SJCLOUD.spNote && SJCLOUD.spNote(r, true, true); else SJCLOUD.vstNote && SJCLOUD.vstNote(r, true, true); } catch (e) { } } if (!silent) paintSync(); }
 const rep = id => R[id] && live(R[id]) ? R[id] : null;
 const xrec = id => XS[id] && live(XS[id]) ? XS[id] : null;
 
@@ -838,6 +843,31 @@ function dpK(x) { const m = $('#pm'), st = dpState(x), G = x.sg;
   const db = $('#delB', m); if (db) db.onclick = () => dpMenu(x); const cn = $('#cnB', m); if (cn) cn.onclick = () => dpMenu(x); }
 
 /* ---------- 출력: SMM-3C-03F R-4 서식 그대로 ---------- */
+/* ---------- 별지 사진 배치: 지적(항목)마다 한 칸 + 제목 1번, 사진 가로·세로 비율대로 크기 맞춤 ---------- */
+const ARC = new Map();
+async function arOf(src) { if (!src) return 4 / 3; if (ARC.has(src)) return ARC.get(src);
+  const a = await new Promise(res => { const im = new Image(); im.onload = () => res(im.naturalWidth && im.naturalHeight ? im.naturalWidth / im.naturalHeight : 4 / 3); im.onerror = () => res(4 / 3); im.src = src; });
+  const v = Math.max(0.45, Math.min(2.4, a)); ARC.set(src, v); return v; }
+/* groups: [{cap, srcs:[dataURL…], solo?}] → 쪽(page) 내용 배열. 한 줄 = 사진들의 높이를 같게 맞춰 폭을 꽉 채움 (세로 사진은 좁게, 가로 사진은 넓게) */
+async function photoAnnex(title, groups, o) { o = Object.assign({ W: 184, hMin: 40, hMax: 68, solo: false, budget: 256, empty: 2, emptyCap: '' }, o || {});
+  const G = []; for (const g of groups) { const a = []; for (const s of g.srcs) a.push(await arOf(s)); G.push({ cap: g.cap, srcs: g.srcs.slice(), a, solo: g.solo || o.solo }); }
+  if (!G.length) for (let i = 0; i < o.empty; i++) G.push({ cap: o.emptyCap, srcs: [], a: [], solo: false });
+  G.forEach(g => { if (!g.srcs.length) { g.srcs = [null]; g.a = [4 / 3]; } });
+  const capH = (t, w) => 6.5 + 4.4 * Math.max(0, Math.ceil(String(t).length / Math.max(8, (w - 3) / 2.9)) - 1);   /* 제목 줄 높이(mm) 대략 */
+  const lines = []; let L = [];
+  const hOf = segs => { const n = segs.reduce((k, s) => k + s.a.length, 0), A = segs.reduce((k, s) => k + s.a.reduce((x, y) => x + y, 0), 0); return A ? (o.W - 2.4 * n - 1.2 * segs.length) / A : o.hMax; };
+  const close = () => { if (L.length) lines.push(L); L = []; };
+  for (const g of G) { const fitsHere = hOf([...L, { a: g.a }]) >= o.hMin, fitsAlone = hOf([{ a: g.a }]) >= o.hMin;
+    if (L.length && (g.solo || L.some(s => s.solo) || (!fitsHere && fitsAlone))) close();   /* 지적 한 건은 되도록 한 줄에 (한 줄에 다 안 들어가는 큰 건만 나눔) */
+    let seg = { g, a: [], s: [], cont: false, solo: g.solo };
+    g.a.forEach((a, i) => { const t = { a: [...seg.a, a] }; if (seg.a.length && hOf([...L, t]) < o.hMin) { L.push(seg); close(); seg = { g, a: [], s: [], cont: true, solo: g.solo }; }
+      seg.a.push(a); seg.s.push(g.srcs[i]); });
+    L.push(seg); if (g.solo) close(); }
+  close();
+  const html = lines.map(segs => { const h = Math.min(o.hMax, hOf(segs)), ws = segs.map(s => s.a.reduce((x, y) => x + y * h + 2.4, 0) + 1.2), tw = ws.reduce((x, y) => x + y, 0), ch = Math.max(...segs.map((s, k) => capH(s.g.cap + (s.cont ? ' (계속 cont.)' : ''), ws[k])));
+    return { h: h + ch + 3.5, t: `<table class="pa" style="width:${Math.min(o.W, tw).toFixed(1)}mm"><colgroup>${ws.map(w => `<col style="width:${w.toFixed(1)}mm">`).join('')}</colgroup><tr>${segs.map(s => `<td class="pai" style="height:${(h + 2).toFixed(1)}mm">${s.s.map((src, i) => src ? `<img src="${src}" style="width:${(s.a[i] * h).toFixed(1)}mm;height:${h.toFixed(1)}mm" alt="">` : `<span class="pae" style="width:${(s.a[i] * h).toFixed(1)}mm;height:${h.toFixed(1)}mm">(사진 Photo)</span>`).join('')}</td>`).join('')}</tr><tr>${segs.map(s => `<td class="cap">${esc(s.g.cap)}${s.cont ? ' <span class="g">(계속 cont.)</span>' : ''}</td>`).join('')}</tr></table>` }; });
+  const pages = []; let cur = [], used = 0; html.forEach(x => { if (cur.length && used + x.h > o.budget) { pages.push(cur); cur = []; used = 0; } cur.push(x.t); used += x.h; }); if (cur.length) pages.push(cur);
+  return pages.map((c, i, A) => `<div class="sh">${title}${A.length > 1 ? ` (${i + 1}/${A.length})` : ''}</div>${c.join('')}`); }
 async function docD(x) { const ph = {}; for (const id of photoIds(x)) ph[id] = await photo(id);
   const F = findings(x), h = x.h, pg = inner => `<section class="pg">${inner}<div class="pf"><span>${FORMD.code}</span><span>${FORM.co}</span></div></section>`;
   const sgImg = s => sig(s) ? `<img src="${s.img}" alt="">` : '', er = (x.ext || {}).r || {}, O = x.own || {};
@@ -876,16 +906,14 @@ async function docD(x) { const ph = {}; for (const id of photoIds(x)) ph[id] = a
     <tr style="height:20mm"><td class="lb c">서명<small>Signature</small></td>${cols.map(([, , s]) => `<td class="sg c">${sgImg(s)}</td>`).join('')}</tr>
     <tr><td class="lb c">일자<small>Date</small></td>${cols.map(([, , s]) => `<td class="c">${sig(s) ? dot(ymd(s.at)) : ''}</td>`).join('')}</tr></table>
     <div class="g" style="font-size:9pt;margin-top:2px">* 방선자: D.P.A 직접 방선 시 D.P.A, 위임 방선 시 위임받은 감독. D.P.A 검토란은 위임 방선일 때만 서명합니다.</div>`));
-  /* 별지 1: A6 · A7 · A8 (위아래 세 칸) */
-  const a1 = DPI.filter(it => it[4]).map(it => { const ids = ((x.a[it[0]] || {}).ph || []).filter(id => ph[id]); return `<tr><td class="ph" style="height:66mm">${ids.length ? ids.slice(0, 2).map(id => `<img src="${ph[id]}" style="max-height:64mm;max-width:${ids.length > 1 ? 48 : 96}%">`).join(' ') : '(사진 Photo)'}</td></tr><tr><td class="cap"><b>${it[0]} ${esc(it[5])}</b> ${esc(it[6])}</td></tr>`; });
-  pages.push(pg(`<div class="sh">별지 1 – 점검항목 증빙사진 <span class="e">Annex 1 – Photo evidence for check items</span></div><table>${a1.join('')}</table>`));
-  /* 별지 2 · 3 (감독 방선 보고서와 같은 3칸 격자) */
-  const grid = (S2, hh) => { const rows = []; while (S2.length % 3) S2.push([null, '']); for (let i = 0; i < S2.length; i += 3) { const g = S2.slice(i, i + 3); rows.push(`<tr>${g.map(([s]) => `<td class="ph" style="height:${hh}mm">${s ? `<img src="${s}" style="max-height:${hh - 2}mm">` : '(사진 Photo)'}</td>`).join('')}</tr><tr>${g.map(([, l]) => `<td class="cap">${esc(l)}</td>`).join('')}</tr>`); } return rows; };
-  const chunk = (rows, n) => { const o = []; for (let i = 0; i < rows.length; i += n) o.push(rows.slice(i, i + n)); return o; };
-  const s2 = [], s3 = []; F.forEach((f, i) => { const tt = `지적 No.${i + 1}  제목: ${(f.desc || '').slice(0, 24)}`; (f.ph || []).filter(id => ph[id]).forEach(id => s2.push([ph[id], tt])); (f.cph || []).filter(id => ph[id]).forEach(id => s3.push([ph[id], `지적 No.${i + 1}  조치일: ${f.done ? dot(f.done) : ''}`])); });
-  while (s2.length < 6) s2.push([null, '지적 No.        제목 Title']); while (s3.length < 6) s3.push([null, '지적 No.        조치일 Date']);
-  chunk(grid(s2, 50), 8).forEach((rows, i, A) => pages.push(pg(`<div class="sh">별지 2 – 지적사항 사진 <span class="e">Annex 2 – Photos of non-conformities</span>${A.length > 1 ? ` (${i + 1}/${A.length})` : ''}</div><table>${rows.join('')}</table>`)));
-  chunk(grid(s3, 50), 8).forEach((rows, i, A) => pages.push(pg(`<div class="sh">별지 3 – 시정조치 결과 <span class="e">Annex 3 – Results of corrective actions</span>${A.length > 1 ? ` (${i + 1}/${A.length})` : ''}</div><table>${rows.join('')}</table>`)));
+  /* 별지 1: A6 · A7 · A8 (위아래로 한 칸씩, 사진 여러 장이면 한 칸에 함께) */
+  const g1 = DPI.filter(it => it[4]).map(it => ({ cap: `${it[0]} ${it[5]} ${it[6]}`, srcs: ((x.a[it[0]] || {}).ph || []).filter(id => ph[id]).map(id => ph[id]), solo: true }));
+  (await photoAnnex('별지 1 – 점검항목 증빙사진 <span class="e">Annex 1 – Photo evidence for check items</span>', g1, { hMax: 64, hMin: 40 })).forEach(c => pages.push(pg(c)));
+  /* 별지 2 · 3: 지적 1건 = 한 칸 */
+  const g2 = [], g3 = []; F.forEach((f, i) => { const a = (f.ph || []).filter(id => ph[id]), b = (f.cph || []).filter(id => ph[id]);
+    if (a.length) g2.push({ cap: `지적 No.${i + 1}  제목: ${(f.desc || '').slice(0, 24)}`, srcs: a.map(id => ph[id]) }); if (b.length) g3.push({ cap: `지적 No.${i + 1}  조치일: ${f.done ? dot(f.done) : ''}`, srcs: b.map(id => ph[id]) }); });
+  (await photoAnnex('별지 2 – 지적사항 사진 <span class="e">Annex 2 – Photos of non-conformities</span>', g2, { emptyCap: '지적 No.        제목 Title' })).forEach(c => pages.push(pg(c)));
+  (await photoAnnex('별지 3 – 시정조치 결과 <span class="e">Annex 3 – Results of corrective actions</span>', g3, { emptyCap: '지적 No.        조치일 Date' })).forEach(c => pages.push(pg(c)));
   return `<div class="doc">${pages.join('')}</div>`; }
 /* 선박에서 온 D.P.A 방선: 선장 서명 · 연장 사유·기한 · 시정조치 결과만 */
 function fromShipD(a, b) { if (!a || !b) return null; const o = cp(a); o.sg = o.sg || {}; o.sg.mas = mrg(a.sg && a.sg.mas, b.sg && b.sg.mas); o.ext = o.ext || {}; o.ext.r = mrg(a.ext && a.ext.r, b.ext && b.ext.r);
@@ -1365,26 +1393,15 @@ async function docHTML(r) { const ph = {}; for (const id of photoIds(r)) ph[id] 
     <table><tr>${FINAL.map(([k, a, b]) => `<th>${a}${b ? `<small>${b}</small>` : ''}</th>`).join('')}</tr>
     <tr style="height:22mm">${FINAL.map(([k]) => `<td class="sg c">${sgImg(r.fin[k])}</td>`).join('')}</tr>
     <tr>${FINAL.map(([k]) => { const s = r.fin[k]; return `<td style="font-size:10pt">성명: ${sig(s) ? esc(s.name) : ''}</td>`; }).join('')}</tr></table>`));
-  /* 별지 1 */
-  const slots = []; PARTS.forEach(p => p.items.forEach(it => { const x = r.parts[p.k].items[it.no] || {}, own = (x.ph || []).filter(i => ph[i]), ids = own.length ? own : itemPhotos(r, it.no).filter(i => ph[i]).slice(0, 1);
-    if (!it.ph && !ids.length) return; if (it.q && !r.h.q && !ids.length) return; const lab = `${it.no} ${it.sh || it.t.replace('[현장] ', '')}`;
-    if (!ids.length) slots.push([null, lab]); else ids.forEach((id, j) => slots.push([ph[id], lab + (ids.length > 1 ? ` (${j + 1})` : '')])); }));
-  const grid = (S2, h) => { const rows = []; while (S2.length % 3) S2.push([null, '']); for (let i = 0; i < S2.length; i += 3) { const g = S2.slice(i, i + 3);
-      rows.push(`<tr>${g.map(([s]) => `<td class="ph" style="height:${h}mm">${s ? `<img src="${s}" style="max-height:${h - 2}mm">` : '(사진 Photo)'}</td>`).join('')}</tr><tr>${g.map(([, l]) => `<td class="cap">${esc(l)}</td>`).join('')}</tr>`); } return rows; };
-  const chunk = (rows, n) => { const o = []; for (let i = 0; i < rows.length; i += n) o.push(rows.slice(i, i + n)); return o; };
-  const a1 = grid(slots, slots.length > 15 ? 36 : 44), A1 = chunk(a1, slots.length > 15 ? 12 : 10);
-  A1.forEach((rows, i) => pages.push(pg(`<div class="sh">별지 1 – 점검항목 증빙사진 <span class="e">Annex 1 – Photo evidence for check items</span>${A1.length > 1 ? ` (${i + 1}/${A1.length})` : ''}</div><table>${rows.join('')}</table>`)));
-  /* 별지 2 */
-  const s2 = [], s3 = []; F.forEach((f, i) => { const tt = `지적 No.${i + 1}  제목: ${f.title || (f.desc || '').slice(0, 24)}`;
-    (f.ph || []).filter(id => ph[id]).forEach(id => s2.push([ph[id], tt]));
-    (f.cph || []).filter(id => ph[id]).forEach(id => s3.push([ph[id], tt + (f.done ? `  (조치완료 ${dot(f.done)})` : '')])); });
-  while (s2.length < 6) s2.push([null, '지적 No.        제목:']);
-  const a2 = grid(s2, 50), A2 = chunk(a2, 8);
-  A2.forEach((rows, i) => pages.push(pg(`<div class="sh">별지 2 – 지적사항 사진 <span class="e">Annex 2 – Photos of findings</span>${A2.length > 1 ? ` (${i + 1}/${A2.length})` : ''}</div><table>${rows.join('')}</table>`)));
-  /* 별지 3 — 시정조치 결과 (시정조치 완료 사진) */
-  while (s3.length < 6) s3.push([null, '지적 No.        제목:']);
-  const A3 = chunk(grid(s3, 50), 8);
-  A3.forEach((rows, i) => pages.push(pg(`<div class="sh">별지 3 – 시정조치 결과 <span class="e">Appendix 3 – Results of Corrective Actions</span>${A3.length > 1 ? ` (${i + 1}/${A3.length})` : ''}</div><table>${rows.join('')}</table>`)));
+  /* 별지 1 — 항목마다 한 칸 (사진 여러 장이면 한 칸에 함께) */
+  const g1 = []; PARTS.forEach(p => p.items.forEach(it => { const x = r.parts[p.k].items[it.no] || {}, own = (x.ph || []).filter(i => ph[i]), ids = own.length ? own : itemPhotos(r, it.no).filter(i => ph[i]).slice(0, 1);
+    if (!it.ph && !ids.length) return; if (it.q && !r.h.q && !ids.length) return; g1.push({ cap: `${it.no} ${it.sh || it.t.replace('[현장] ', '')}`, srcs: ids.map(i => ph[i]) }); }));
+  (await photoAnnex('별지 1 – 점검항목 증빙사진 <span class="e">Annex 1 – Photo evidence for check items</span>', g1, { hMax: 56, hMin: 38 })).forEach(c => pages.push(pg(c)));
+  /* 별지 2 — 지적사항 사진 / 별지 3 — 시정조치 결과: 지적 1건 = 한 칸, 제목 1번 */
+  const g2 = [], g3 = []; F.forEach((f, i) => { const tt = `지적 No.${i + 1}  제목: ${f.title || (f.desc || '').slice(0, 24)}`, a = (f.ph || []).filter(id => ph[id]), b = (f.cph || []).filter(id => ph[id]);
+    if (a.length) g2.push({ cap: tt, srcs: a.map(id => ph[id]) }); if (b.length) g3.push({ cap: tt + (f.done ? `  (조치완료 ${dot(f.done)})` : ''), srcs: b.map(id => ph[id]) }); });
+  (await photoAnnex('별지 2 – 지적사항 사진 <span class="e">Annex 2 – Photos of findings</span>', g2, { emptyCap: '지적 No.        제목:' })).forEach(c => pages.push(pg(c)));
+  (await photoAnnex('별지 3 – 시정조치 결과 <span class="e">Appendix 3 – Results of Corrective Actions</span>', g3, { emptyCap: '지적 No.        제목:' })).forEach(c => pages.push(pg(c)));
   return `<div class="doc">${pages.join('')}</div>`; }
 
 async function viewPrint(r, kind) { const xk = kind === 'x', yk = kind === 'y', back = S.prevH && S.prevH !== '#' ? S.prevH : CEO() ? '#/' : yk ? '#/d/' + r.id + '/K' : xk ? '#/s/' + r.id : '#/r/' + r.id + '/C', ttl = yk ? '안전관리책임자 방선보고서' : xk ? '공무팀 특별 점검 사항' : '감독 방선 보고서', fn = yk ? 'DPA방선보고서' : xk ? '공무특별점검' : '감독방선보고서', base = `${(r.h.ship || '').trim()}_${fn}_${(r.h.date || '').replace(/-/g, '')}`;
@@ -1408,7 +1425,8 @@ document.addEventListener('click', async e => { const b = e.target.closest && e.
 function paintSync() { const [c, t] = syncInfo(), d = $('#sdot'), x = $('#stxt'); if (d) d.className = 'sd ' + c; if (x) x.textContent = t; const b = $('#syncB'); if (b && !b.__s) { b.__s = 1; b.title = '눌러서 지금 동기화'; b.onclick = async () => { if (b.disabled) return; b.disabled = true; const tx = $('#stxt'); if (tx) tx.textContent = '동기화 중…'; try { await syncNow(); } finally { b.disabled = false; paintSync(); } }; } }
 /* 삭제·합치기처럼 중요한 변경은 15초를 기다리지 않고 바로 서버로 */
 function pushNow() { try { const C = window.SJCLOUD; if (C && C.kick) C.kick(300); else if (C && C.sync && C.A) setTimeout(() => C.sync(C.A).then(paintSync).catch(() => { }), 300); } catch (e) { } }
-async function syncNow() { const C = window.SJCLOUD; if (!C || !C.sync || !C.A) return toast('서버 동기화를 쓸 수 없는 상태입니다 — 앱 홈 › 설정에서 기기를 등록하세요', 4000); paintSync(); const n = await (C.syncWait ? C.syncWait(C.A) : C.sync(C.A, false)); paintSync(); toast(C.state.err ? '동기화 오류: ' + C.state.err : n ? `받은 변경 ${n}건` : '최신 상태입니다', 3500); }
+async function syncNow() { const C = window.SJCLOUD; if (!C || !C.sync || !C.A) return toast('서버 동기화를 쓸 수 없는 상태입니다 — 앱 홈 › 설정에서 기기를 등록하세요', 4000); paintSync(); const n = await (C.syncWait ? C.syncWait(C.A) : C.sync(C.A, false)); paintSync(); toast(C.state.err ? '동기화 오류: ' + C.state.err : n ? `받은 변경 ${n}건` : '최신 상태입니다 — 다른 기기에서 방금 고친 내용은 잠시 뒤 자동으로 받습니다', 3500);
+  if (!n && !C.state.err) [6000, 15000, 30000].forEach(d => setTimeout(() => { if (document.visibilityState === 'visible') C.sync(C.A).then(k => { paintSync(); if (k) toast(`받은 변경 ${k}건`, 2500); }).catch(() => { }); }, d)); }   /* 상대 기기가 아직 못 올렸을 때: 6·15·30초 뒤 다시 확인 */
 const cp = o => JSON.parse(JSON.stringify(o));
 const fixRes = (a, b) => { if (!a || a.del || !b || b.del || (b.u || 0) <= (a.u || 0)) return a; return Object.assign({}, a, { cph: b.cph || [], done: b.done || '', u: b.u }); };
 function fromShipR(a, b) { if (!a || !b) return null; const o = cp(a); o.fin = o.fin || {}; const allP = repState(a).all; ['master', 'ce'].forEach(k => { const v = mrg(a.fin && a.fin[k], b.fin && b.fin[k]); o.fin[k] = allP || !sig(v) ? v : (a.fin || {})[k]; });   /* 감독 3개 파트가 끝나기 전 본선 서명은 받지 않음 */ o.ext = o.ext || {}; o.ext.r = mrg(a.ext && a.ext.r, b.ext && b.ext.r);   /* 조치기한 연장 사유·기한: 본선도 적음 (D.P 승인·종결 서명은 회사만) */

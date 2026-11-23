@@ -106,9 +106,9 @@
   C.pushTest = () => C.fn({ op: 'test', key: C.devKey() });
   /* 도구 연결: 시작 5초 후 · 2분마다 · 저장 15초 후 · 창으로 돌아올 때 · 인터넷 연결될 때 */
   C.start = function (A) { if (!C.url || /__CLOUD/.test(C.url)) return; C.A = A; let t;
-    const kick = (d) => { clearTimeout(t); t = setTimeout(() => C.sync(A), d); };
+    let due = 0; const kick = (d) => { const at = Date.now() + d; if (due && due > Date.now() && due <= at) return; clearTimeout(t); due = at; t = setTimeout(() => { due = 0; C.sync(A); }, d); };   /* 이미 더 빨리 잡힌 동기화가 있으면 미루지 않음 (계속 고쳐도 첫 저장 뒤 바로 올림) */
     kick(A.tool === 'vst' ? 800 : 5000); setInterval(() => C.sync(A), 2 * 60e3); addEventListener('online', () => kick(3000)); addEventListener('focus', () => kick(2000));
-    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') kick(800); });   /* 앱을 다시 볼 때 바로 받기 */
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') kick(800); else if (LS('sejul_cloud_' + A.tool + '_dirty')) C.sync(A); });   /* 다른 앱으로 넘어갈 때 안 올린 변경이 있으면 바로 올림 */   /* 앱을 다시 볼 때 바로 받기 */
     C.kick = kick; C.onSave = (d) => { try { if (!LS('sejul_cloud_' + A.tool + '_dirty')) LSS('sejul_cloud_' + A.tool + '_dirty', String(Date.now())); } catch (e) { } C.badge(); kick(d || 15000); }; };
   /* 서버로 아직 안 보낸 변경이 있는지 (도구별 표시 시각) */
   C.dirty = () => ['pms', 'rsk', 'vst'].map(t => +LS('sejul_cloud_' + t + '_dirty') || 0).filter(Boolean).sort()[0] || 0;
