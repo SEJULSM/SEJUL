@@ -214,6 +214,9 @@ body.bnav .pvbar{top:0}
 .doc .xp .im.k2 img,.doc .xp .im.k4 img{width:48%;max-width:48%;height:auto;min-width:0;flex:0 0 48%}
 .doc .xp .im.k4 img{max-height:calc(var(--h) / 2 - 1mm)}
 .doc .nil{border:1px solid #000;padding:8mm;text-align:center;font-size:12pt;margin-bottom:5mm}
+.doc .xq{text-align:center;color:#777;padding:1mm 0;vertical-align:middle}
+.doc .xq .xr{white-space:nowrap;font-size:0;margin:.75mm 0}
+.doc .xq .xr img{display:inline-block;margin:0 1.2mm;object-fit:cover;vertical-align:middle}
 .pg .pf.c{justify-content:center;font-style:normal}
 @media print{
  @page{size:A4;margin:0}
@@ -1232,22 +1235,30 @@ function spView(r) { const m = $('#pm'), SP = r.sp, L0 = spItems(r), locked = sp
 /* 출력: 공무팀 특별 점검 사항 (서식 그대로 · 쪽당 3칸) */
 async function docX(r) { const X = spItems(r), ph = {}; for (const x of X) for (const id of [...(x.ph || []), ...(x.cph || [])]) ph[id] = await photo(id);
   const sgImg = s => sig(s) ? `<img src="${s.img}" alt="">` : '';
-  const pics = (L, txt) => { const a = (L || []).filter(id => ph[id]).slice(0, 4); if (!a.length) return txt; return `<div class="im ${a.length === 1 ? '' : a.length === 2 ? 'k2' : 'k4'}">${a.map(id => `<img src="${ph[id]}" alt="">`).join('')}</div>`; };
+  const AR = {}; for (const id in ph) AR[id] = await arOf(ph[id]);
+  /* 칸 안 사진 배치: 장 수 제한 없이, 가로·세로 비율대로 한 줄씩 높이를 맞춰 칸 폭을 채움 → [html, 높이 mm] */
+  const pics = (L, txt, W, hMax) => { const a = (L || []).filter(id => ph[id]); if (!a.length) return [txt, 30]; const rows = []; let cur = [];
+    const hh = R => (W - 2.4 * R.length) / R.reduce((k, id) => k + AR[id], 0);
+    a.forEach(id => { if (cur.length && hh([...cur, id]) < 26) { rows.push(cur); cur = []; } cur.push(id); }); rows.push(cur);
+    let tot = 0; const html = rows.map(R => { const h = Math.min(hMax, hh(R)); tot += h + 1.5; return `<div class="xr">${R.map(id => `<img src="${ph[id]}" style="width:${(AR[id] * h).toFixed(1)}mm;height:${h.toFixed(1)}mm" alt="">`).join('')}</div>`; }).join('');
+    return [html, tot + 2]; };
   const head = `<h1>공무팀 특별 점검 사항</h1><div class="sub" style="margin:0">Technical Team Special Inspection Items</div><div class="c g" style="text-align:center;margin-bottom:4mm">감독 방선 보고서 별책 · Supplement to Supervisor's Visit Report</div>
     <table class="xh"><colgroup><col style="width:15%"><col style="width:30%"><col style="width:22%"><col style="width:33%"></colgroup>
     <tr style="height:10mm"><td class="lb">선 명<small>Ship's name</small></td><td>${esc(r.h.ship || '')}</td><td class="lb">방선 일자/항구<small>Date/Port</small></td><td>${dot(r.h.date)}${r.h.port ? ' / ' + esc(r.h.port) : ''}</td></tr></table>`;
   const blk = (x, i) => `<table class="xb"><colgroup><col style="width:9.8%"><col style="width:8.1%"><col style="width:11.6%"><col style="width:20.5%"><col style="width:20%"><col style="width:13.9%"><col style="width:16.1%"></colgroup>
     <tr style="height:10mm"><td class="lb c">지적 No.</td><td class="c" style="font-size:12pt;font-weight:700">${i + 1}</td><td class="lb c">제목<small>Title</small></td><td colspan="2">${esc(x.title || '')}</td><td class="lb c">조치기한<small>Due date</small></td><td class="c">${x.due ? dot(x.due) : ''}</td></tr>
     <tr class="hd2"><td colspan="4">지적 사진 <span class="e">Photo of finding</span></td><td colspan="3">시정조치 결과 (조치 후 입력) <span class="e">Result</span></td></tr>
-    <tr><td colspan="4" rowspan="2" class="xp big">${pics(x.ph, '(지적 사진 Photo)')}</td><td colspan="3" class="xp">${pics(x.cph, '(조치 완료 사진 Photo after action)')}</td></tr>
+    <tr><td colspan="4" rowspan="2" class="xq" style="height:${LY.get(x).h.toFixed(1)}mm">${LY.get(x).l}</td><td colspan="3" class="xq" style="height:${(LY.get(x).h - 9).toFixed(1)}mm">${LY.get(x).r}</td></tr>
     <tr style="height:9mm"><td class="lb c">조치 완료일<small>Date completed</small></td><td colspan="2" class="c">${x.done ? dot(x.done) : ''}</td></tr></table>`;
   const sigT = `<table style="margin-top:2mm"><colgroup><col style="width:25%"><col style="width:25%"><col style="width:25%"><col style="width:25%"></colgroup>
     <tr><th>확인 <small style="display:inline">Confirmation</small></th><th>성명 <small style="display:inline">Name</small></th><th>서명 <small style="display:inline">Sign</small></th><th>일자 <small style="display:inline">Date</small></th></tr>
     ${[['공무 감독 (점검)', 'Technical superintendent', r.sp.sign], ['기관장 (확인)', 'Chief Engineer', r.sp.ce], ['D.P.A (검토)', 'D.P.A review', r.sp.dpa]].map(([a, b, s]) => `<tr style="height:15mm"><td class="lb c">${a}<small>${b}</small></td><td class="c">${sig(s) ? esc(s.name) : ''}</td><td class="sg c">${sgImg(s)}</td><td class="c">${sig(s) ? dot(ymd(s.at)) : ''}</td></tr>`).join('')}</table>`;
-  const groups = []; for (let i = 0; i < X.length; i += 3) groups.push(X.slice(i, i + 3));
-  if (!groups.length) groups.push([]);
+  const LY = new Map(); X.forEach(x => { const [l, lh] = pics(x.ph, '(지적 사진 Photo)', 90, 48), [rr, rh] = pics(x.cph, '(조치 완료 사진 Photo after action)', 90, 40); LY.set(x, { l, r: rr, h: Math.max(40, lh, rh + 9) }); });
+  /* 쪽 나누기: 지적 칸 높이를 더해 한 쪽(약 262mm)에 들어가는 만큼 — 첫 쪽은 머리 표, 마지막 쪽은 서명 표 자리 */
+  const groups = []; let cur = [], used = 38; X.forEach(x => { const hgt = LY.get(x).h + 22; if (cur.length && used + hgt > 258) { groups.push(cur); cur = []; used = 0; } cur.push(x); used += hgt; });
+  if (cur.length || !groups.length) groups.push(cur); const SIGH = 72; if (used + SIGH > 258 && groups[groups.length - 1].length) groups.push([]);
   const N = groups.length;
-  const pages = groups.map((g, gi) => `<section class="pg">${gi === 0 ? head : ''}${g.length ? g.map((x, j) => blk(x, gi * 3 + j)).join('') : '<div class="nil">지적사항 없음 · No findings</div>'}${gi === N - 1 ? sigT : ''}<div class="pf c"><span>${gi + 1}/${N}</span></div></section>`);
+  const pages = groups.map((g, gi) => `<section class="pg">${gi === 0 ? head : ''}${g.length ? g.map(x => blk(x, X.indexOf(x))).join('') : !X.length ? '<div class="nil">지적사항 없음 · No findings</div>' : ''}${gi === N - 1 ? sigT : ''}<div class="pf c"><span>${gi + 1}/${N}</span></div></section>`);
   return `<div class="doc">${pages.join('')}</div>`; }
 
 /* ---------- 지적사항 (공통) ---------- */
