@@ -201,6 +201,7 @@ body.bnav .pvbar{top:0}
 .doc .pai img,.doc .pai .pae{display:inline-block;object-fit:cover;margin:0 1.2mm;vertical-align:middle}
 .doc .pai .pae{border:1px dashed #999;color:#777;font-size:10pt;line-height:1.2;display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box}
 .doc table.pa .cap{font-size:10pt;text-align:center}
+.doc table.pp{margin-bottom:4mm;break-inside:avoid}.doc table.pp .cap{font-size:10pt}.doc table.pp .ppd{float:right;font-weight:400;color:#333}.doc table.pp .hd2 td{text-align:center}
 .doc tr{break-inside:avoid}
 /* 공무팀 특별 점검 사항 (별도 출력) */
 .doc .xh{width:100%;border-collapse:collapse;margin-bottom:5mm}
@@ -777,12 +778,12 @@ function dpD(x) { const verOk = !SHIP() && !CEO(),   /* 현장확인일: 모든 
     <div class="hn"><span class="no" style="background:${f.done ? 'var(--ok)' : 'var(--err)'}">No.${no(f.id)}</span>${f.item ? `<span class="chip">${esc(f.item)}</span>` : ''}${f.ver ? '<span class="chip ok">현장 확인</span>' : ''}<span class="sp"></span>${lk ? '' : '<button class="btn s" data-a="edit">✏ 수정</button>'}</div>
     <div style="margin-top:8px;white-space:pre-wrap;font-weight:600">${esc(f.desc || '(내용 없음)')}</div>
     <div class="muted" style="font-size:13px;margin-top:2px">조치기한 ${f.due ? dot(f.due) : '—'}${!f.done && f.due && f.due < t0 ? ' · <b style="color:var(--err)">기한 지남</b>' : ''}</div>
-    <div class="spg"><div class="spb"><div class="sph">지적 사진<small>별지 2</small></div><div class="th">${(f.ph || []).map(id => thumb(id, false)).join('') || '<span class="muted" style="font-size:13px">사진 없음</span>'}</div></div>
-      <div class="spb r"><div class="sph">시정조치 결과<small>별지 3 · 조치 후 입력</small></div><div class="th">${(f.cph || []).map(id => thumb(id, res)).join('') || '<span class="muted" style="font-size:13px">조치 완료 사진</span>'}</div>
+    <div class="spg"><div class="spb"><div class="sph">지적 사진<small>별지 2 · 조치 전</small></div><div class="th">${(f.ph || []).map(id => thumb(id, false)).join('') || '<span class="muted" style="font-size:13px">사진 없음</span>'}</div></div>
+      <div class="spb r"><div class="sph">시정조치 결과<small>별지 2 · 조치 후 입력</small></div><div class="th">${(f.cph || []).map(id => thumb(id, res)).join('') || '<span class="muted" style="font-size:13px">조치 완료 사진</span>'}</div>
         ${res ? '<div class="act"><button class="btn s" data-a="cam">📷 촬영</button><button class="btn s" data-a="alb">🖼 앨범</button></div>' : ''}
         <label class="f" style="font-size:13px">조치완료일 Done</label><input class="i" type="date" data-k="done" value="${esc(f.done || '')}" ${res ? '' : 'disabled'}><label class="f" style="font-size:13px">현장확인일 Verified <span class="muted" style="font-weight:400">— 감독이 현장에서 확인</span></label>${!verOk ? `<div style="font-weight:700;padding:4px 2px">${f.ver ? dot(f.ver) : f.done ? '— 감독 확인 전' : '— 조치 완료 후 감독이 확인'}</div>` : `<input class="i" type="date" data-k="ver" value="${esc(f.ver || '')}" ${f.done || f.ver ? '' : 'disabled title="본선이 조치완료일을 넣은 뒤 입력합니다"'}>${f.done || f.ver ? '' : '<div class="muted" style="font-size:12px;margin-top:3px">본선 조치완료일 입력 후 입력할 수 있습니다</div>'}`}</div></div></div>`;
   const E = x.ext || {}, er = E.r || {}, O = x.own || {}, dpa = CAN('dpa') && !SHIP() && !CEO(), hasExt = !!(EXTR.some(([k]) => er[k]) || (er.other || '').trim()) && !!er.to, canR = SHIP() || dpCanEdit(x);
-  m.innerHTML = `${dpLockNote(x)}<h2>D. ${L('부적합 사항 및 시정조치', 'Non-Conformity & Corrective Action')}${hp('지적 사진은 별지 2, 조치 완료 사진은 별지 3으로 출력됩니다. 본선은 조치 사진과 조치완료일을 입력합니다.')}</h2>
+  m.innerHTML = `${dpLockNote(x)}<h2>D. ${L('부적합 사항 및 시정조치', 'Non-Conformity & Corrective Action')}${hp('지적 사진(조치 전)과 조치 완료 사진(조치 후)은 별지 2에 나란히 출력됩니다. 본선은 조치 사진과 조치완료일을 입력합니다.')}</h2>
     ${F.length ? open.map(card).join('') + done.map(card).join('') : '<div class="empty">부적합 사항이 없습니다.</div>'}
     ${lk ? '' : '<button class="btn p w" id="fadd" style="margin:8px 0 14px">＋ 부적합 추가 <span class="en" style="color:#C9D6EE">Add</span></button>'}
     <details class="card" id="extD" ${hasExt || sig(E.a) || sig(E.c) || S.extOpen === x.id ? 'open' : ''}><summary style="font-weight:700;cursor:pointer">조치기한 연장 <span class="muted" style="font-weight:400;font-size:13px">— 필요할 때만</span></summary>
@@ -816,7 +817,7 @@ function dpFindEdit(x, fid, item0) { if (!dpCanEdit(x) || sig(x.sg.vis)) return 
     <label class="f">관련 항목 Item</label><select class="i" id="fi"><option value="">기타 (항목 없음)</option>${DPI.map(it => `<option value="${it[0]}" ${f.item === it[0] ? 'selected' : ''}>${it[0]} ${esc(it[1])}</option>`).join('')}</select>
     <label class="f">부적합 내용 Description</label><textarea class="i" id="fdsc" placeholder="무엇이, 어디서, 어떻게">${esc(f.desc)}</textarea>
     <label class="f">조치기한 Due date</label><input class="i" type="date" id="fdue" value="${esc(f.due)}">
-    <label class="f">지적 사진 Photo <span class="muted">(별지 2)</span></label><div class="row"><button class="btn s" id="fcam">📷 촬영</button><button class="btn s" id="falb">🖼 앨범</button></div><div class="th" id="fth"></div>
+    <label class="f">지적 사진 Photo <span class="muted">(별지 2 · 조치 전)</span></label><div class="row"><button class="btn s" id="fcam">📷 촬영</button><button class="btn s" id="falb">🖼 앨범</button></div><div class="th" id="fth"></div>
     <label class="f">현장확인일 Verified</label><input class="i" type="date" id="fver" value="${esc(f.ver)}">
     <div class="row" style="margin-top:14px">${fid ? '<button class="btn r" id="fdel">삭제</button>' : ''}<span class="sp"></span><button class="btn" data-x>취소</button><button class="btn p" id="fok">저장</button></div>`, (m, close) => {
     const th = () => { $('#fth', m).innerHTML = ph.map(id => thumb(id, true)).join(''); fillThumbs($('#fth', m)); }; th();
@@ -872,6 +873,18 @@ async function photoAnnex(title, groups, o) { o = Object.assign({ W: 184, hMin: 
     return { h: h + ch + 3.5, t: `<table class="pa" style="width:${Math.min(o.W, tw).toFixed(1)}mm"><colgroup>${ws.map(w => `<col style="width:${w.toFixed(1)}mm">`).join('')}</colgroup><tr>${segs.map(s => `<td class="pai" style="height:${(h + 2).toFixed(1)}mm">${s.s.map((src, i) => src ? `<img src="${src}" style="width:${(s.a[i] * h).toFixed(1)}mm;height:${h.toFixed(1)}mm" alt="">` : `<span class="pae" style="width:${(s.a[i] * h).toFixed(1)}mm;height:${h.toFixed(1)}mm">(사진 Photo)</span>`).join('')}</td>`).join('')}</tr><tr>${segs.map(s => `<td class="cap">${esc(s.g.cap)}${s.cont ? ' <span class="g">(계속 cont.)</span>' : ''}</td>`).join('')}</tr></table>` }; });
   const pages = []; let cur = [], used = 0; html.forEach(x => { if (cur.length && used + x.h > o.budget) { pages.push(cur); cur = []; used = 0; } cur.push(x.t); used += x.h; }); if (cur.length) pages.push(cur);
   return pages.map((c, i, A) => `<div class="sh">${title}${A.length > 1 ? ` (${i + 1}/${A.length})` : ''}</div>${c.join('')}`); }
+/* 별지 2: 지적 1건 = 한 칸, 왼쪽 조치 전(지적 사진) · 오른쪽 조치 후(시정조치 사진) 나란히 */
+async function pairAnnex(title, rows, o) { o = Object.assign({ W: 90, hMax: 54, hMin: 26, budget: 256 }, o || {});
+  const AR = new Map(); for (const r of rows) for (const s of [...r.a, ...r.b]) AR.set(s, await arOf(s));
+  const pics = (L, txt) => { if (!L.length) return [`<span class="g">${txt}</span>`, 34]; const rr = []; let cur = []; const hh = R => (o.W - 2.4 * R.length) / R.reduce((k, s) => k + AR.get(s), 0);
+    L.forEach(s => { if (cur.length && hh([...cur, s]) < o.hMin) { rr.push(cur); cur = []; } cur.push(s); }); rr.push(cur); let tot = 0;
+    return [rr.map(R => { const h = Math.min(o.hMax, hh(R)); tot += h + 1.5; return `<div class="xr">${R.map(s => `<img src="${s}" style="width:${(AR.get(s) * h).toFixed(1)}mm;height:${h.toFixed(1)}mm" alt="">`).join('')}</div>`; }).join(''), tot + 2]; };
+  if (!rows.length) rows = [{ cap: o.emptyCap || '지적 No.        제목:', a: [], b: [], sub: '' }, { cap: o.emptyCap || '지적 No.        제목:', a: [], b: [], sub: '' }];
+  const bl = rows.map(r => { const [l, lh] = pics(r.a, '(조치 전 사진 Photo)'), [rt, rh] = pics(r.b, '(조치 후 사진 Photo)'), h = Math.max(lh, rh);
+    return { h: h + 22, t: `<table class="pp"><colgroup><col style="width:50%"><col style="width:50%"></colgroup><tr><td colspan="2" class="cap" style="text-align:left">${esc(r.cap)}${r.sub ? `<span class="ppd">${esc(r.sub)}</span>` : ''}</td></tr>
+      <tr class="hd2"><td>조치 전 <span class="e">Before</span></td><td>조치 후 <span class="e">After</span></td></tr><tr><td class="xq" style="height:${h.toFixed(1)}mm">${l}</td><td class="xq" style="height:${h.toFixed(1)}mm">${rt}</td></tr></table>` }; });
+  const pages = []; let cur = [], used = 0; bl.forEach(x => { if (cur.length && used + x.h > o.budget) { pages.push(cur); cur = []; used = 0; } cur.push(x.t); used += x.h; }); if (cur.length) pages.push(cur);
+  return pages.map((c, i, A) => `<div class="sh">${title}${A.length > 1 ? ` (${i + 1}/${A.length})` : ''}</div>${c.join('')}`); }
 async function docD(x) { const ph = {}; for (const id of photoIds(x)) ph[id] = await photo(id);
   const F = findings(x), h = x.h, pg = inner => `<section class="pg">${inner}<div class="pf"><span>${FORMD.code}</span><span>${FORM.co}</span></div></section>`;
   const sgImg = s => sig(s) ? `<img src="${s.img}" alt="">` : '', er = (x.ext || {}).r || {}, O = x.own || {};
@@ -913,11 +926,10 @@ async function docD(x) { const ph = {}; for (const id of photoIds(x)) ph[id] = a
   /* 별지 1: A6 · A7 · A8 (위아래로 한 칸씩, 사진 여러 장이면 한 칸에 함께) */
   const g1 = DPI.filter(it => it[4]).map(it => ({ cap: `${it[0]} ${it[5]} ${it[6]}`, srcs: ((x.a[it[0]] || {}).ph || []).filter(id => ph[id]).map(id => ph[id]), solo: true }));
   (await photoAnnex('별지 1 – 점검항목 증빙사진 <span class="e">Annex 1 – Photo evidence for check items</span>', g1, { hMax: 64, hMin: 40 })).forEach(c => pages.push(pg(c)));
-  /* 별지 2 · 3: 지적 1건 = 한 칸 */
-  const g2 = [], g3 = []; F.forEach((f, i) => { const a = (f.ph || []).filter(id => ph[id]), b = (f.cph || []).filter(id => ph[id]);
-    if (a.length) g2.push({ cap: `지적 No.${i + 1}  제목: ${(f.desc || '').slice(0, 24)}`, srcs: a.map(id => ph[id]) }); if (b.length) g3.push({ cap: `지적 No.${i + 1}  조치일: ${f.done ? dot(f.done) : ''}`, srcs: b.map(id => ph[id]) }); });
-  (await photoAnnex('별지 2 – 지적사항 사진 <span class="e">Annex 2 – Photos of non-conformities</span>', g2, { emptyCap: '지적 No.        제목 Title' })).forEach(c => pages.push(pg(c)));
-  (await photoAnnex('별지 3 – 시정조치 결과 <span class="e">Annex 3 – Results of corrective actions</span>', g3, { emptyCap: '지적 No.        조치일 Date' })).forEach(c => pages.push(pg(c)));
+  /* 별지 2: 부적합 조치 전·후 사진 (지적 1건 = 한 칸) */
+  const g2 = []; F.forEach((f, i) => { const a = (f.ph || []).filter(id => ph[id]).map(id => ph[id]), b = (f.cph || []).filter(id => ph[id]).map(id => ph[id]);
+    if (a.length || b.length) g2.push({ cap: `지적 No.${i + 1}  ${(f.desc || '').slice(0, 34)}`, sub: `조치기한 ${f.due ? dot(f.due) : '—'} · 조치완료 ${f.done ? dot(f.done) : '—'}`, a, b }); });
+  (await pairAnnex('별지 2 – 부적합 조치 전·후 사진 <span class="e">Annex 2 – Non-conformities: before / after corrective action</span>', g2)).forEach(c => pages.push(pg(c)));
   return `<div class="doc">${pages.join('')}</div>`; }
 /* 선박에서 온 D.P.A 방선: 선장 서명 · 연장 사유·기한 · 시정조치 결과만 */
 function fromShipD(a, b) { if (!a || !b) return null; const o = cp(a); o.sg = o.sg || {}; o.sg.mas = mrg(a.sg && a.sg.mas, b.sg && b.sg.mas); o.ext = o.ext || {}; o.ext.r = mrg(a.ext && a.ext.r, b.ext && b.ext.r);
@@ -1298,10 +1310,10 @@ function findEdit(r, fid, item0) { if (CEO()) return; if (SHIP() && !fid) return
     <label class="f">관련 항목 Item No.</label><select class="i" id="fi" ${dis}><option value="">기타 (항목 없음)</option>${opts}</select>
     <label class="f">지적 내용 Description</label><textarea class="i" id="fdsc" ${dis} placeholder="무엇이, 어디서, 어떻게 — 부적합 내용">${esc(f.desc)}</textarea>
     <label class="f">조치기한 Due date</label><input class="i" type="date" id="fdue" value="${esc(f.due)}" ${dis}>
-    <label class="f">지적 사진 Photo <span class="muted">(별지 2 · 지적 당시 — 관련 항목 증빙사진으로도 쓰임)</span></label>${ro ? '' : '<div class="row"><button class="btn s" id="fcam">📷 촬영</button><button class="btn s" id="falb">🖼 앨범</button></div>'}<div class="th" id="fth"></div>
+    <label class="f">지적 사진 Photo <span class="muted">(별지 2 조치 전 · 관련 항목 증빙사진으로도 쓰임)</span></label>${ro ? '' : '<div class="row"><button class="btn s" id="fcam">📷 촬영</button><button class="btn s" id="falb">🖼 앨범</button></div>'}<div class="th" id="fth"></div>
     <label class="f">사진 제목 Title</label><input class="i" id="ftt" value="${esc(f.title)}" ${dis} placeholder="별지 2에 표시될 제목 (비우면 내용 앞부분)">
     <details style="margin-top:12px"${ro || f.done || f.ver || (f.cph || []).length ? ' open' : ''}><summary style="font-weight:700">시정조치 결과 (조치 후 입력) <span class="en">Corrective action</span></summary>
-      <label class="f">시정조치 완료 사진 <span class="muted">(별지 3 · 시정조치 결과)</span></label><div class="row"><button class="btn s" id="ccam">📷 촬영</button><button class="btn s" id="calb">🖼 앨범</button></div><div class="th" id="cth"></div>
+      <label class="f">시정조치 완료 사진 <span class="muted">(별지 2 조치 후)</span></label><div class="row"><button class="btn s" id="ccam">📷 촬영</button><button class="btn s" id="calb">🖼 앨범</button></div><div class="th" id="cth"></div>
       <label class="f">조치완료일 Done</label><input class="i" type="date" id="fdone" value="${esc(f.done)}">
       <label class="f">현장확인일 Verified</label><input class="i" type="date" id="fver" value="${esc(f.ver)}" ${dis}></details>
     <div class="row" style="margin-top:14px">${fid && !ro ? '<button class="btn r" id="fdel">삭제</button>' : ''}<span class="sp"></span><button class="btn" data-x>취소</button><button class="btn p" id="fok">저장</button></div>`, (m, close) => {
@@ -1409,11 +1421,10 @@ async function docHTML(r) { const ph = {}; for (const id of photoIds(r)) ph[id] 
   const g1 = []; PARTS.forEach(p => p.items.forEach(it => { const x = r.parts[p.k].items[it.no] || {}, own = (x.ph || []).filter(i => ph[i]), ids = own.length ? own : itemPhotos(r, it.no).filter(i => ph[i]).slice(0, 1);
     if (!it.ph && !ids.length) return; if (it.q && !r.h.q && !ids.length) return; g1.push({ cap: `${it.no} ${it.sh || it.t.replace('[현장] ', '')}`, srcs: ids.map(i => ph[i]) }); }));
   (await photoAnnex('별지 1 – 점검항목 증빙사진 <span class="e">Annex 1 – Photo evidence for check items</span>', g1, { hMax: 56, hMin: 38 })).forEach(c => pages.push(pg(c)));
-  /* 별지 2 — 지적사항 사진 / 별지 3 — 시정조치 결과: 지적 1건 = 한 칸, 제목 1번 */
-  const g2 = [], g3 = []; F.forEach((f, i) => { const tt = `지적 No.${i + 1}  제목: ${f.title || (f.desc || '').slice(0, 24)}`, a = (f.ph || []).filter(id => ph[id]), b = (f.cph || []).filter(id => ph[id]);
-    if (a.length) g2.push({ cap: tt, srcs: a.map(id => ph[id]) }); if (b.length) g3.push({ cap: tt + (f.done ? `  (조치완료 ${dot(f.done)})` : ''), srcs: b.map(id => ph[id]) }); });
-  (await photoAnnex('별지 2 – 지적사항 사진 <span class="e">Annex 2 – Photos of findings</span>', g2, { emptyCap: '지적 No.        제목:' })).forEach(c => pages.push(pg(c)));
-  (await photoAnnex('별지 3 – 시정조치 결과 <span class="e">Appendix 3 – Results of Corrective Actions</span>', g3, { emptyCap: '지적 No.        제목:' })).forEach(c => pages.push(pg(c)));
+  /* 별지 2 — 지적사항 조치 전·후 사진: 지적 1건 = 한 칸 (왼쪽 지적 사진 · 오른쪽 시정조치 사진) */
+  const g2 = []; F.forEach((f, i) => { const a = (f.ph || []).filter(id => ph[id]).map(id => ph[id]), b = (f.cph || []).filter(id => ph[id]).map(id => ph[id]);
+    if (a.length || b.length) g2.push({ cap: `지적 No.${i + 1}  제목: ${f.title || (f.desc || '').slice(0, 30)}`, sub: `조치기한 ${f.due ? dot(f.due) : '—'} · 조치완료 ${f.done ? dot(f.done) : '—'}`, a, b }); });
+  (await pairAnnex('별지 2 – 지적사항 조치 전·후 사진 <span class="e">Annex 2 – Findings: before / after corrective action</span>', g2)).forEach(c => pages.push(pg(c)));
   return `<div class="doc">${pages.join('')}</div>`; }
 
 async function viewPrint(r, kind) { const xk = kind === 'x', yk = kind === 'y', back = S.prevH && S.prevH !== '#' ? S.prevH : CEO() ? '#/' : yk ? '#/d/' + r.id + '/K' : xk ? '#/s/' + r.id : '#/r/' + r.id + '/C', ttl = yk ? '안전관리책임자 방선보고서' : xk ? '공무팀 특별 점검 사항' : '감독 방선 보고서', fn = yk ? 'DPA방선보고서' : xk ? '공무특별점검' : '감독방선보고서', base = `${(r.h.ship || '').trim()}_${fn}_${(r.h.date || '').replace(/-/g, '')}`;
