@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="ko"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#14244A"><link rel="manifest" href="../manifest.webmanifest"><link rel="icon" href="../sj2-favicon.png">
+<title>통계·분석 | Sejul Ship Management</title>
+<script src="../common.js"></script><script>if (window.SJAPP) SJAPP.shell = true; window.SJ_VST = window.SJ_VST || { stat: 1 }; /* 서버 연결은 숨은 방선 화면이 맡음 */</script>
+<script src="../ui.js"></script><script src="../cloud.js"></script>
+<style>
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+@font-face{font-family:'Pretendard';src:url(../fonts/Pretendard-Regular.subset.woff2) format('woff2');font-weight:400}
+@font-face{font-family:'Pretendard';src:url(../fonts/Pretendard-Bold.subset.woff2) format('woff2');font-weight:700}
+:root{--navy:#14244A;--gold:#E0A100;--bg:#F4F6FA;--card:#fff;--ink:#1A2233;--mut:#5B6578;--line:#DDE3EC;--grid:#E9EDF3;--blu:#1F64B8;--bluBg:#E8F0FB;
+ --ok:#2FA36B;--okBg:#E6F5EC;--warn:#E0A100;--warnBg:#FFF6D6;--err:#D93636;--errBg:#FDECEC;--na:#8A94A6;
+ --s1:#257de0;--s2:#f47230;--s3:#00b894}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;overflow-x:clip;background:var(--bg);color:var(--ink);font:15px/1.5 'Pretendard','Noto Sans KR','Malgun Gothic','Apple SD Gothic Neo',system-ui,sans-serif}
+button,input,select{font:inherit;color:inherit}button{cursor:pointer}
+.en{color:var(--mut);font-size:.82em;font-weight:400;margin-left:.3em}
+.hd{position:sticky;top:0;z-index:50;background:var(--navy);color:#fff;padding:10px 14px;padding-top:calc(10px + env(safe-area-inset-top));display:flex;align-items:center;gap:10px}
+.hd .tt{flex:1;min-width:0}.hd .tt b{display:block;font-size:17px}.hd .tt small{display:block;font-size:12px;opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hd .ib{background:rgba(255,255,255,.12);border:0;color:#fff;border-radius:10px;height:38px;padding:0 12px;display:flex;align-items:center;gap:6px;font-size:14px;font-weight:700;white-space:nowrap}
+.tabs{position:sticky;top:calc(58px + env(safe-area-inset-top));z-index:40;background:#fff;border-bottom:1px solid var(--line);display:flex;overflow-x:auto}
+.tabs button{flex:0 0 auto;border:0;background:none;padding:13px 18px;font-weight:700;color:var(--mut);border-bottom:3px solid transparent;white-space:nowrap}
+.tabs button.on{color:var(--navy);border-bottom-color:var(--gold)}.tabs button:disabled{opacity:.45;cursor:default}.tabs button small{font-weight:400;font-size:11px;margin-left:4px}
+main{max-width:1280px;margin:0 auto;padding:14px}
+.flt{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin-bottom:12px}
+.flt label{font-size:12.5px;color:var(--mut);font-weight:700;margin-right:-6px}
+.seg{display:inline-flex;border:1px solid #C9D1DD;border-radius:10px;overflow:hidden;background:#fff}
+.seg button{border:0;background:#fff;padding:7px 12px;font-weight:700;font-size:13.5px}.seg button+button{border-left:1px solid #E1E6EE}.seg button.on{background:var(--navy);color:#fff}
+select{border:1px solid #C9D1DD;border-radius:10px;padding:7px 10px;background:#fff;font-weight:700;font-size:13.5px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:12px}
+.card h2{font-size:16px;margin:0 0 2px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}.card h2 .sp{flex:1}
+.card .sub{font-size:12.5px;color:var(--mut);margin:0 0 10px}
+.kpi{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:12px}
+.kp{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.kp .l{font-size:12.5px;color:var(--mut);font-weight:700}.kp .v{font-size:26px;font-weight:800;line-height:1.25;font-variant-numeric:tabular-nums}.kp .v small{font-size:14px;font-weight:700;color:var(--mut);margin-left:2px}
+.kp .s{font-size:12px;color:var(--mut)}.kp.err .v{color:var(--err)}.kp.ok .v{color:#1E7A4E}
+.g2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}.card,.kp,main{min-width:0}.g2>.card{margin-bottom:0}.g2+.card,.g2+.g2{margin-top:12px}
+.tw{overflow-x:auto}
+table.t{border-collapse:collapse;width:100%;font-size:13.5px;font-variant-numeric:tabular-nums}
+table.t th{text-align:left;font-size:12px;color:var(--mut);font-weight:700;border-bottom:1px solid var(--line);padding:6px 8px;white-space:nowrap}
+table.t td{border-bottom:1px solid var(--grid);padding:7px 8px;vertical-align:middle}
+table.t td.n,table.t th.n{text-align:right;white-space:nowrap}table.t tr:last-child td{border-bottom:0}
+table.t td:first-child b{white-space:nowrap}table.t.sm td:first-child{white-space:nowrap}table.t tr[data-go]{cursor:pointer}table.t tr[data-go]:hover td{background:#F7F9FC}
+.bx{display:flex;align-items:center;gap:6px;min-width:120px}.bx i{display:block;height:10px;border-radius:0 4px 4px 0;background:var(--s1);min-width:2px}.bx span{font-size:12.5px;white-space:nowrap}
+.tag{display:inline-block;border-radius:7px;padding:0 6px;font-size:11.5px;font-weight:700;background:#EEF1F5;color:var(--mut);margin-right:3px;white-space:nowrap}
+.tag.f{background:var(--bluBg);color:var(--blu)}.tag.err{background:var(--errBg);color:var(--err)}.tag.ok{background:var(--okBg);color:#1E7A4E}.tag.warn{background:var(--warnBg);color:#8A6400}
+.no{font-weight:800;color:var(--navy);margin-right:4px}
+.mut{color:var(--mut)}.small{font-size:12.5px}
+.empty{padding:24px;text-align:center;color:var(--mut)}
+.lg{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--mut);margin:2px 0 6px}.lg span{display:inline-flex;align-items:center;gap:5px}.lg i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.chart{position:relative}.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.tip{position:fixed;z-index:200;pointer-events:none;background:#1A2233;color:#fff;border-radius:8px;padding:7px 10px;font-size:12.5px;line-height:1.5;box-shadow:0 4px 14px rgba(0,0,0,.18);display:none;max-width:260px}
+.tip b{display:block;margin-bottom:2px}.tip .r{display:flex;align-items:center;gap:6px}.tip .r i{width:8px;height:8px;border-radius:2px;display:inline-block}
+.lnk{border:0;background:none;color:var(--blu);font-weight:700;padding:0;font-size:12.5px}
+.note{background:var(--warnBg);border:1px solid #F0D98A;border-radius:12px;padding:10px 12px;font-size:13px;margin-bottom:12px}
+.note.i{background:var(--bluBg);border-color:#C9DBF3}
+.sc{font-weight:800;font-size:18px;font-variant-numeric:tabular-nums}.sc.g{color:#1E7A4E}.sc.y{color:#8A6400}.sc.r{color:var(--err)}
+.ph{color:#A0A8B8;font-size:12px}
+.load{display:flex;align-items:center;gap:10px;justify-content:center;padding:50px 10px;color:var(--mut)}
+.spin{width:22px;height:22px;border:3px solid #DDE3EC;border-top-color:var(--navy);border-radius:50%;animation:sp 0.9s linear infinite}@keyframes sp{to{transform:rotate(360deg)}}
+.pr-only{display:none}
+@media(min-width:900px){body.rail{padding-left:var(--sjr-w,248px)}}
+@media(max-width:1100px){.kpi{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:899px){
+ body.sjm-on{padding-top:54px}html.sj-hasupd body.sjm-on{padding-top:100px}
+ html.sj-phone,html.sj-phone body{overflow-x:clip!important}
+ body.sjm-on main{padding-bottom:calc(96px + env(safe-area-inset-bottom))}
+ body.sjm-on .hd{top:54px;background:#fff;color:var(--ink);border-bottom:1px solid var(--line);padding:8px 12px}
+ html.sj-hasupd body.sjm-on .hd{top:100px}
+ body.sjm-on .hd .tt b{font-size:18px;font-weight:800}body.sjm-on .hd .tt small{color:var(--mut);opacity:1}
+ body.sjm-on .hd .ib{background:#EEF3FB;color:var(--navy);border:1px solid #D5DEEC}
+ body.sjm-on .tabs{top:108px}html.sj-hasupd body.sjm-on .tabs{top:154px}
+ .g2{grid-template-columns:minmax(0,1fr)}.hd .ib .tx{display:none}
+ .tw{margin:0 -16px;padding:0 16px}.tw table.t{min-width:640px}.tw table.t.sm{min-width:0}
+ main{padding:10px}
+}
+@media(max-width:560px){.kpi{grid-template-columns:repeat(2,1fr)}.kp .v{font-size:22px}.hide-s{display:none}}
+.sjb a,.sjr a{text-decoration:none}
+@media print{
+ @page{size:A4 landscape;margin:10mm}
+ body{background:#fff;padding:0!important;font-size:11pt}
+ .sjr,.sjmob,.sjb,.hd,.tabs,.flt,.noprint,.lnk{display:none!important}
+ .pr-only{display:block}
+ main{max-width:none;padding:0}
+ .card,.kp{break-inside:avoid;border-color:#BFC7D3}
+ .kpi{grid-template-columns:repeat(6,1fr)}
+ .g2{grid-template-columns:1fr 1fr}
+ .pgb{break-before:page}
+ *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+</style></head>
+<body>
+<div class="hd"><div class="tt"><b>📊 통계·분석 <span class="en" style="color:inherit;opacity:.7">Analytics</span></b><small id="hsub">자료를 불러오는 중…</small></div>
+ <button class="ib" id="bRe" title="최신 자료 다시 읽기">🔄<span class="tx"> 새로 고침</span></button>
+ <button class="ib" id="bXl" title="엑셀로 저장">📥<span class="tx"> 엑셀</span></button>
+ <button class="ib" id="bPr" title="출력·PDF">🖨<span class="tx"> 출력</span></button></div>
+<div class="tabs" id="tabs"></div>
+<main id="app"><div class="load"><div class="spin"></div>방선 자료를 불러오는 중…</div></main>
+<div class="tip" id="tip"></div>
+<iframe id="src" title="" style="position:absolute;width:1px;height:1px;border:0;left:-9999px;top:0" aria-hidden="true" tabindex="-1"></iframe>
+<script>
+'use strict';
+/* =====================================================================
+   통계·분석 (사무실 전용) — 2026.11.26 1차
+   · 부적합 탭: 감독 방선 보고서(내항·외항)의 판정·지적사항 통계
+   · 종합 탭: 선박별 점수판 (현재 방선 자료만 · 결함·계획정비·NC는 해당 도구 완성 후 추가)
+   · 자료: 방선 보고서 화면을 숨은 창(vst.html?statdata=1)으로 열어 이 기기 자료를 받음 → 그 창이 서버와 동기화하면 다시 받음
+   ===================================================================== */
+const UI = window.SJUI || null, APP = window.SJAPP || { get: () => null };
+const $ = (s, el) => (el || document).querySelector(s), $$ = (s, el) => [...(el || document).querySelectorAll(s)];
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const pad = n => String(n).padStart(2, '0');
+const ymd = (d = new Date()) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const dot = s => String(s || '').replace(/-/g, '.');
+const VES0 = ['KTS GOLD', 'KTS SILVER', 'KTS RED', 'KTS WHITE', 'KTS GREEN', 'KTS BLUE', 'SKY ROYAL', 'SUNNY QUEEN'];
+const VES = () => (UI && UI.VES && UI.VES.length ? UI.VES : VES0);
+const FOREIGN = ['SUNNY QUEEN', 'KTS WHITE'], isFV = v => FOREIGN.includes(String(v || '').toUpperCase().trim());
+const TEAM = { S: ['안품', 'SQOT', 'var(--s1)'], T: ['공무', 'TST', 'var(--s2)'], M: ['해무', 'MAT', 'var(--s3)'] };
+const TEAMF = { S: 'Marine (안품)', T: 'Technical (공무)' };
+const role = () => (UI && UI.role ? UI.role() : (APP.get('role') || ''));
+const LS = { get: k => { try { return localStorage.getItem(k); } catch (e) { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch (e) { } } };
+const days = (a, b) => Math.round((Date.parse(b) - Date.parse(a)) / 864e5);
+const pct = (a, b) => b ? Math.round(a / b * 1000) / 10 : null;
+const fmtP = v => v == null ? '—' : v + '%';
+
+let DATA = null, ERR = '';
+const S = { tab: LS.get('sejul_stat_tab') || 'nc', per: LS.get('sejul_stat_per') || '6', kind: LS.get('sejul_stat_kind') || 'all', ship: '' };
+
+/* ---------- 자료 받기 ---------- */
+function loadSrc() { ERR = ''; const f = $('#src'); f.src = 'vst.html?statdata=1&t=' + Date.now(); clearTimeout(loadSrc.t); loadSrc.t = setTimeout(() => { if (!DATA) { ERR = '방선 자료를 받지 못했습니다. 방선 보고서를 한 번 연 뒤 다시 시도하세요.'; render(); } }, 20000); }
+addEventListener('message', e => { if (e.origin !== location.origin) return; const d = e.data; if (!d || d.kind !== 'SEJUL-STAT-VST') return; if (d.err) { ERR = d.err; render(); return; }
+  const first = !DATA; DATA = d; paintSub(); if (first || !document.activeElement || !/SELECT/.test(document.activeElement.tagName)) render(); });
+function paintSub() { const n = DATA ? DATA.reps.length : 0, t = DATA ? new Date(DATA.at) : null; $('#hsub').textContent = DATA ? `방선 보고서 ${n}건 · ${pad(t.getHours())}:${pad(t.getMinutes())} 기준 · 사무실 전용` : '자료를 불러오는 중…'; }
+
+/* ---------- 기간·필터 ---------- */
+const PER = [['3', '최근 3개월'], ['6', '최근 6개월'], ['12', '최근 12개월'], ['y', '올해'], ['all', '전체']];
+function months() { const now = new Date(), cur = `${now.getFullYear()}-${pad(now.getMonth() + 1)}`; let start;
+  if (S.per === 'y') start = `${now.getFullYear()}-01`;
+  else if (S.per === 'all') { const ds = (DATA ? DATA.reps : []).map(r => r.date).filter(Boolean).sort(); start = ds.length ? ds[0].slice(0, 7) : cur; }
+  else { const d = new Date(now.getFullYear(), now.getMonth() - (+S.per - 1), 1); start = `${d.getFullYear()}-${pad(d.getMonth() + 1)}`; }
+  const out = []; let [y, m] = start.split('-').map(Number); for (let i = 0; i < 240; i++) { const k = `${y}-${pad(m)}`; out.push(k); if (k >= cur) break; m++; if (m > 12) { m = 1; y++; } } return out; }
+function reps() { if (!DATA) return []; const M = months(), a = M[0], b = M[M.length - 1];
+  return DATA.reps.filter(r => r.date && r.date.slice(0, 7) >= a && r.date.slice(0, 7) <= b && (S.kind === 'all' || (S.kind === 'f') === !!r.f) && (!S.ship || r.ship === S.ship)); }
+function ships() { const L = VES().filter(v => S.kind === 'all' || (S.kind === 'f') === isFV(v)); return S.ship ? L.filter(v => v === S.ship) : L; }
+/* 지적 1건 = 보고서 정보 + 지적 */
+function finds(R) { const out = []; R.forEach(r => r.fnd.forEach((f, i) => out.push(Object.assign({ r, i, ship: r.ship, date: r.date, fx: r.f, ym: r.date.slice(0, 7) }, f)))); return out; }
+function teamLabel(k, fx) { return fx ? (TEAMF[k] || k) : ((TEAM[k] || [k])[0]); }
+
+/* ---------- 계산 ---------- */
+function calc(R) { const F = finds(R), t0 = ymd();
+  let y = 0, n = 0; R.forEach(r => r.parts.forEach(p => { y += p.y; n += p.no; }));
+  const done = F.filter(f => f.done), dd = done.map(f => days(f.date, f.done)).filter(x => x >= 0), ontime = done.filter(f => !f.due || f.done <= f.due).length, lateOpen = F.filter(f => !f.done && f.due && f.due < t0).length;
+  return { R, F, nRep: R.length, nDone: R.filter(r => r.done).length, y, n, rate: pct(n, y + n), nF: F.length, open: F.filter(f => !f.done).length, over: F.filter(f => !f.done && f.due && f.due < t0).length,
+    avg: dd.length ? Math.round(dd.reduce((a, b) => a + b, 0) / dd.length * 10) / 10 : null, ontime: pct(ontime, done.length + lateOpen), nDoneF: done.length }; }
+function repeatTop(F) { const M = new Map(); F.forEach(f => { const key = (f.fx ? 'F:' : 'D:') + (f.item || ('A' + f.area) || 'x'); if (!f.item && !f.area) return;
+    const o = M.get(key) || { key, fx: f.fx, item: f.item, area: f.area, nm: f.item ? (f.it || f.item) : `구역 ${f.area} ${f.at || ''}`, part: f.part, n: 0, ships: new Set(), last: '' }; o.n++; o.ships.add(f.ship); if (f.date > o.last) o.last = f.date; M.set(key, o); });
+  return [...M.values()].sort((a, b) => b.n - a.n || b.ships.size - a.ships.size || (b.last > a.last ? 1 : -1)); }
+function byShip(R) { return ships().map(v => { const Rv = R.filter(r => r.ship === v), c = calc(Rv); return Object.assign({ ship: v, fx: isFV(v) }, c); }); }
+/* 방선 이행: 내항 = 매월 1회 (방선한 달 수 ÷ 기간 개월 수) · 외항 = 6개월마다 1회 */
+function compliance(v, R) { const M = months(), Rv = R.filter(r => r.ship === v); if (isFV(v)) { const need = Math.max(1, Math.ceil(M.length / 6)), got = Rv.length; return { got, need, p: Math.min(100, Math.round(got / need * 100)) }; }
+  const got = new Set(Rv.map(r => r.date.slice(0, 7))).size; return { got, need: M.length, p: Math.min(100, Math.round(got / M.length * 100)) }; }
+
+/* ---------- 그림: 월별 지적 (팀별 누적 막대) ---------- */
+function trendSVG(F) { const M = months(), keys = ['S', 'T', 'M'].filter(k => S.kind !== 'f' || k !== 'M');
+  const data = M.map(m => { const o = { m }; keys.forEach(k => o[k] = F.filter(f => f.ym === m && f.part === k).length); o.x = F.filter(f => f.ym === m && !keys.includes(f.part)).length; o.t = keys.reduce((a, k) => a + o[k], 0) + o.x; return o; });
+  const max = Math.max(4, ...data.map(d => d.t)), step = max <= 5 ? 1 : max <= 10 ? 2 : max <= 25 ? 5 : 10, top = Math.ceil(max / step) * step;
+  const W = 640, H = 220, L = 30, B = 26, T = 8, w = (W - L) / data.length, bw = Math.min(34, w * 0.6), sy = v => H - B - v / top * (H - B - T);
+  let g = ''; for (let v = 0; v <= top; v += step) g += `<line x1="${L}" x2="${W}" y1="${sy(v)}" y2="${sy(v)}" stroke="var(--grid)" stroke-width="1"/><text x="${L - 6}" y="${sy(v) + 4}" text-anchor="end" font-size="11" fill="var(--mut)">${v}</text>`;
+  let bars = ''; data.forEach((d, i) => { const x = L + i * w + (w - bw) / 2; let y0 = H - B; const segs = [...keys.map(k => [k, d[k]]), ['x', d.x]].filter(s => s[1] > 0);
+    segs.forEach(([k, v], j) => { const h = v / top * (H - B - T), y = y0 - h, last = j === segs.length - 1, col = k === 'x' ? 'var(--na)' : TEAM[k][2];
+      bars += last ? `<path d="M${x},${y0}V${y + Math.min(4, h)}Q${x},${y} ${x + Math.min(4, h)},${y}H${x + bw - Math.min(4, h)}Q${x + bw},${y} ${x + bw},${y + Math.min(4, h)}V${y0}Z" fill="${col}"/>` : `<rect x="${x}" y="${y}" width="${bw}" height="${Math.max(0, h - 2)}" fill="${col}"/>`; y0 = y; });
+    if (d.t) bars += `<text x="${x + bw / 2}" y="${y0 - 4}" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink)">${d.t}</text>`;
+    const lab = M.length > 12 ? (i % 3 === 0 ? d.m.slice(2).replace('-', '.') : '') : d.m.slice(5) + '월';
+    bars += `<text x="${x + bw / 2}" y="${H - 8}" text-anchor="middle" font-size="11" fill="var(--mut)">${lab}</text><rect x="${L + i * w}" y="${T}" width="${w}" height="${H - B - T}" fill="transparent" data-tip="${i}"/>`; });
+  const lg = keys.map(k => `<span><i style="background:${TEAM[k][2]}"></i>${S.kind === 'f' ? TEAMF[k] : TEAM[k][0] + (S.kind === 'all' && k !== 'M' ? ' / ' + TEAMF[k].split(' ')[0] : '')}</span>`).join('') + (data.some(d => d.x) ? '<span><i style="background:var(--na)"></i>기타</span>' : '');
+  trendSVG.data = data; trendSVG.keys = keys;
+  return `<div class="lg">${lg}</div><div class="chart" id="trend"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="월별 지적 건수">${g}<line x1="${L}" x2="${W}" y1="${H - B}" y2="${H - B}" stroke="#C9D1DD"/>${bars}</svg></div>`; }
+function bindTrend() { const el = $('#trend'), tip = $('#tip'); if (!el) return; const show = (e, i) => { const d = trendSVG.data[i]; if (!d) return;
+    tip.innerHTML = `<b>${d.m.replace('-', '.')} · 지적 ${d.t}건</b>` + trendSVG.keys.map(k => `<div class="r"><i style="background:${TEAM[k][2]}"></i>${S.kind === 'f' ? TEAMF[k] : TEAM[k][0]} ${d[k]}</div>`).join('') + (d.x ? `<div class="r"><i style="background:var(--na)"></i>기타 ${d.x}</div>` : '');
+    tip.style.display = 'block'; const x = Math.min(innerWidth - 200, e.clientX + 14), y = Math.max(8, e.clientY - 20); tip.style.left = x + 'px'; tip.style.top = y + 'px'; };
+  $$('[data-tip]', el).forEach(r => { r.addEventListener('mousemove', e => show(e, +r.dataset.tip)); r.addEventListener('mouseleave', () => tip.style.display = 'none'); r.addEventListener('touchstart', e => { const t = e.touches[0]; show(t, +r.dataset.tip); setTimeout(() => tip.style.display = 'none', 2500); }, { passive: true }); }); }
+
+/* ---------- 화면 ---------- */
+function tabsHTML() { const T = [['nc', '부적합', '방선 지적'], ['df', '결함', '준비 중', 1], ['pm', '계획정비', '준비 중', 1], ['all', '종합', '선박 점수판']];
+  return T.map(([k, a, b, dis]) => `<button data-tab="${k}" class="${S.tab === k ? 'on' : ''}" ${dis ? 'disabled title="해당 도구 완성 후 추가됩니다"' : ''}>${a}<small>${b}</small></button>`).join(''); }
+function fltHTML() { const sh = VES().filter(v => S.kind === 'all' || (S.kind === 'f') === isFV(v));
+  return `<div class="flt"><label>기간</label><div class="seg">${PER.map(([k, l]) => `<button data-per="${k}" class="${S.per === k ? 'on' : ''}">${l}</button>`).join('')}</div>
+    <label>구분</label><div class="seg">${[['all', '전체'], ['d', '내항선'], ['f', '외항선']].map(([k, l]) => `<button data-kind="${k}" class="${S.kind === k ? 'on' : ''}">${l}</button>`).join('')}</div>
+    <label>선박</label><select id="fship"><option value="">전체 선박</option>${sh.map(v => `<option ${S.ship === v ? 'selected' : ''}>${esc(v)}</option>`).join('')}</select></div>`; }
+function prHead(title) { const M = months(); return `<div class="pr-only" style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #14244A;padding-bottom:4px"><b style="font-size:16pt">${title}</b><span class="small">SEJUL SHIP MANAGEMENT CO., LTD. · 출력 ${dot(ymd())}</span></div>
+  <div class="small" style="margin-top:4px">기간 ${M[0].replace('-', '.')} ~ ${M[M.length - 1].replace('-', '.')} · 구분 ${{ all: '전체', d: '내항선', f: '외항선' }[S.kind]} · 선박 ${S.ship || '전체'} · 자료: 감독 방선 보고서</div></div>`; }
+const kp = (l, v, s, cls) => `<div class="kp ${cls || ''}"><div class="l">${l}</div><div class="v">${v}</div><div class="s">${s || '&nbsp;'}</div></div>`;
+const goRep = id => `data-go="${esc(id)}"`;
+
+function viewNC() { const R = reps(), c = calc(R), F = c.F, M = months();
+  if (!R.length) return prHead('방선 부적합 통계') + `<div class="card empty">이 기간·조건에 방선 보고서가 없습니다.<br><span class="small">기간을 늘리거나 구분·선박을 바꿔 보세요.</span></div>`;
+  let h = prHead('방선 부적합 통계 · Visit findings');
+  h += `<div class="kpi">${kp('방선 보고서', c.nRep + '<small>건</small>', `완료 ${c.nDone} · 진행 ${c.nRep - c.nDone}`)}${kp('점검 판정 부적합률', fmtP(c.rate), `부적합 ${c.n} / 판정 ${c.y + c.n} (해당없음 제외)`)}${kp('지적사항', c.nF + '<small>건</small>', `방선 1회당 ${c.nRep ? Math.round(c.nF / c.nRep * 10) / 10 : 0}건`)}
+    ${kp('미조치', c.open + '<small>건</small>', c.over ? `기한 초과 ${c.over}건` : '기한 초과 없음', c.over ? 'err' : '')}${kp('평균 조치 기간', c.avg == null ? '—' : c.avg + '<small>일</small>', `조치 완료 ${c.nDoneF}건 기준 (방선일→조치완료일)`)}${kp('기한 내 조치율', fmtP(c.ontime), '기한 안에 완료 ÷ (완료 + 기한 초과 미조치)', c.ontime != null && c.ontime >= 90 ? 'ok' : '')}</div>`;
+  /* 추세 + 팀별 */
+  const keys = ['S', 'T', 'M'].filter(k => S.kind !== 'f' || k !== 'M');
+  const team = keys.map(k => { let y = 0, n = 0; R.forEach(r => r.parts.filter(p => p.k === k).forEach(p => { y += p.y; n += p.no; })); const Fk = F.filter(f => f.part === k); return { k, y, n, rate: pct(n, y + n), nF: Fk.length, open: Fk.filter(f => !f.done).length }; });
+  const tmax = Math.max(1, ...team.map(t => t.nF));
+  h += `<div class="g2"><div class="card"><h2>월별 지적 건수 <span class="en">Findings by month</span></h2><p class="sub">방선일 기준 · 팀(파트)별 누적 · 막대에 손가락·마우스를 대면 숫자가 나옵니다</p>${trendSVG(F)}</div>
+    <div class="card"><h2>팀(파트)별 <span class="en">By team</span></h2><p class="sub">${S.kind === 'all' ? '외항선은 Marine = 안품, Technical = 공무로 합산' : S.kind === 'f' ? '외항선 Marine(안품) · Technical(공무)' : '내항선 안품·공무·해무'}</p>
+    <div class="tw"><table class="t sm"><tr><th>팀</th><th class="n">판정 부적합률</th><th>지적</th><th class="n">미조치</th></tr>${team.map(t => `<tr><td><span class="tag" style="background:none;padding:0"><i style="display:inline-block;width:10px;height:10px;border-radius:3px;background:${TEAM[t.k][2]};margin-right:5px"></i></span><b>${S.kind === 'f' ? TEAMF[t.k] : TEAM[t.k][0]}</b> <span class="mut small hide-s">${TEAM[t.k][1]}</span></td><td class="n">${fmtP(t.rate)} <span class="mut small">(${t.n}/${t.y + t.n})</span></td><td><div class="bx"><i style="width:${t.nF / tmax * 100}%;background:${TEAM[t.k][2]}"></i><span>${t.nF}</span></div></td><td class="n">${t.open || '<span class="mut">0</span>'}</td></tr>`).join('')}</table></div></div></div>`;
+  /* 반복 지적 */
+  const top = repeatTop(F).slice(0, 10), rmax = Math.max(1, ...top.map(t => t.n));
+  h += `<div class="card" style="margin-top:12px"><h2>반복 지적 Top 10 <span class="en">Recurring findings</span></h2><p class="sub">같은 점검항목(외항선은 항목·구역)에서 나온 지적 수 — 여러 선박에서 반복되면 선대 전파·교육 대상</p>
+    ${top.length ? `<div class="tw"><table class="t"><tr><th>순위</th><th>점검항목</th><th>팀</th><th style="min-width:140px">지적</th><th class="n">선박 수</th><th class="hide-s">선박</th><th class="n">최근</th></tr>${top.map((t, i) => `<tr><td>${i + 1}</td><td><span class="no">${esc(t.item || '구역 ' + t.area)}</span>${t.fx ? '<span class="tag f">외항</span>' : ''}${esc(t.item ? t.nm : (t.nm || '').replace(/^구역 \d+ /, ''))}</td><td class="small">${t.part ? teamLabel(t.part, t.fx) : '—'}</td><td><div class="bx"><i style="width:${t.n / rmax * 100}%"></i><span>${t.n}건</span></div></td><td class="n">${t.ships.size}${t.ships.size >= 2 ? ' <span class="tag warn">반복</span>' : ''}</td><td class="small hide-s">${[...t.ships].map(esc).join(', ')}</td><td class="n small">${dot(t.last).slice(2)}</td></tr>`).join('')}</table></div>` : '<div class="empty">지적사항이 없습니다.</div>'}</div>`;
+  /* 선박 비교 */
+  const B = byShip(R), bmax = Math.max(1, ...B.map(b => b.nF));
+  h += `<div class="card"><h2>선박 비교 <span class="en">By vessel</span></h2><p class="sub">줄을 누르면 그 선박만 봅니다 · 판정 부적합률 = 부적합 ÷ (적합 + 부적합)</p><div class="tw"><table class="t"><tr><th>선박</th><th class="n">방선</th><th class="n">판정 부적합률</th><th style="min-width:130px">지적</th><th class="n">방선당</th><th class="n">미조치</th><th class="n">기한 초과</th><th class="n">평균 조치</th><th class="n">기한 내 조치율</th></tr>
+    ${B.map(b => `<tr data-ship="${esc(b.ship)}" style="cursor:pointer"><td><b>${esc(b.ship)}</b> ${b.fx ? '<span class="tag f">외항</span>' : ''}</td><td class="n">${b.nRep ? `${b.nRep} <span class="mut small">(완료 ${b.nDone})</span>` : '<span class="mut">0</span>'}</td><td class="n">${fmtP(b.rate)}</td><td><div class="bx"><i style="width:${b.nF / bmax * 100}%"></i><span>${b.nF}</span></div></td><td class="n">${b.nRep ? Math.round(b.nF / b.nRep * 10) / 10 : '—'}</td><td class="n">${b.open ? `<b>${b.open}</b>` : '<span class="mut">0</span>'}</td><td class="n">${b.over ? `<span class="tag err">${b.over}</span>` : '<span class="mut">0</span>'}</td><td class="n">${b.avg == null ? '—' : b.avg + '일'}</td><td class="n">${fmtP(b.ontime)}</td></tr>`).join('')}</table></div></div>`;
+  /* 외항선 */
+  const FF = F.filter(f => f.fx), RF = R.filter(r => r.f);
+  if (RF.length) { const nc = FF.filter(f => f.ty === 'NC').length, df = FF.filter(f => f.ty === 'DF').length, nrn = FF.filter(f => f.ty && !f.rno).length;
+    const AR = new Map(); RF.forEach(r => r.parts.forEach(p => (p.ar || []).forEach(([n, t, v]) => { const o = AR.get(n) || { n, t, P: 0, F: 0, G: 0, N: 0 }; if (v === 'P') o.P++; else if (v === 'F') o.F++; else if (v === 'G') o.G++; else if (v === 'N') o.N++; AR.set(n, o); })));
+    const AL = [...AR.values()].filter(a => a.P || a.F).sort((a, b) => b.P - a.P || b.F - a.F).slice(0, 8);
+    h += `<div class="g2"><div class="card"><h2>외항선 지적 구분 <span class="en">NC / Defect</span></h2><p class="sub">외항선 방선 ${RF.length}건 · 지적 ${FF.length}건</p>
+      <div class="kpi" style="grid-template-columns:repeat(3,1fr);margin:0">${kp('절차 부적합 NC', nc + '<small>건</small>', 'NC REPORT 대상')}${kp('설비 결함 Defect', df + '<small>건</small>', '결함 보고서(PMS) 대상')}${kp('보고서 번호 미기재', nrn + '<small>건</small>', 'NC·결함 번호를 적어야 함', nrn ? 'err' : 'ok')}</div>
+      ${FF.length - nc - df ? `<p class="small mut" style="margin:8px 0 0">구분 미선택 ${FF.length - nc - df}건</p>` : ''}</div>
+      <div class="card"><h2>구역 순회 — 보통·불량 <span class="en">Area round</span></h2><p class="sub">외항선 구역 순회에서 보통(Fair)·불량(Poor)이 나온 구역</p>
+      ${AL.length ? `<div class="tw"><table class="t sm"><tr><th>구역</th><th class="n">불량</th><th class="n">보통</th><th class="n">양호</th></tr>${AL.map(a => `<tr><td><span class="no">${a.n}</span>${esc(a.t)}</td><td class="n">${a.P ? `<span class="tag err">${a.P}</span>` : '0'}</td><td class="n">${a.F ? `<span class="tag warn">${a.F}</span>` : '0'}</td><td class="n mut">${a.G}</td></tr>`).join('')}</table></div>` : '<div class="empty">보통·불량 구역이 없습니다.</div>'}</div></div>`; }
+  /* 미조치 목록 */
+  const O = F.filter(f => !f.done).sort((a, b) => (a.due || '9') < (b.due || '9') ? -1 : 1), t0 = ymd();
+  h += `<div class="card ${RF.length ? '' : ''}" style="margin-top:12px"><h2>미조치 지적 <span class="en">Open findings</span><span class="sp"></span><span class="small mut">${O.length}건</span></h2><p class="sub">조치기한 순 · 줄을 누르면 방선 보고서가 열립니다 (D.P 승인된 연장기한 반영)</p>
+    ${O.length ? `<div class="tw"><table class="t"><tr><th>선박</th><th class="n">방선일</th><th>항목</th><th>지적 내용</th><th class="n">조치기한</th><th class="n">경과</th></tr>${O.slice(0, 60).map(f => { const od = f.due && f.due < t0 ? days(f.due, t0) : 0;
+      return `<tr ${goRep(f.r.id)}><td><b>${esc(f.ship)}</b>${f.fx && f.ty ? ` <span class="tag ${f.ty === 'NC' ? 'err' : 'warn'}">${f.ty === 'NC' ? 'NC' : 'Defect'}</span>` : ''}</td><td class="n small">${dot(f.date).slice(2)}</td><td class="small">${f.item ? `<span class="no">${esc(f.item)}</span>${esc(f.it)}` : f.area ? `구역 ${esc(f.area)} ${esc(f.at)}` : '—'}</td><td class="small">${esc(f.title || f.desc || '').slice(0, 80)}</td><td class="n small">${f.due ? dot(f.due).slice(2) : '—'}</td><td class="n">${od ? `<span class="tag err">+${od}일</span>` : '<span class="mut small">기한 전</span>'}</td></tr>`; }).join('')}</table></div>${O.length > 60 ? `<p class="small mut">외 ${O.length - 60}건 — 엑셀로 전체 목록을 받으세요</p>` : ''}` : '<div class="empty">미조치 지적이 없습니다 👍</div>'}</div>`;
+  return h; }
+
+function viewAll() { const R = reps(), B = byShip(R);
+  let h = prHead('선박별 종합 점수판 · Fleet scorecard');
+  h += `<div class="note i noprint">지금은 <b>감독 방선 자료만</b> 반영합니다. 결함·계획정비·부적합(NC)은 해당 도구를 만든 뒤 이 표에 열이 추가됩니다.</div>`;
+  const row = b => { const cp = compliance(b.ship, R), okr = b.rate == null ? null : Math.round((100 - b.rate) * 10) / 10, ot = b.ontime;
+    const parts = [[cp.p, 0.3], [okr, 0.3], [ot, 0.4]].filter(x => x[0] != null), w = parts.reduce((a, x) => a + x[1], 0), sc = b.nRep && w ? Math.round(parts.reduce((a, x) => a + x[0] * x[1], 0) / w) : null;
+    const cls = sc == null ? '' : sc >= 90 ? 'g' : sc >= 75 ? 'y' : 'r';
+    return { b, cp, okr, ot, sc, cls }; };
+  const L = B.map(row).sort((a, b) => (b.sc == null ? -1 : b.sc) - (a.sc == null ? -1 : a.sc));
+  h += `<div class="card"><h2>선박별 점수판 <span class="en">Scorecard</span></h2><p class="sub">방선 점수 = 방선 이행률 30% + 판정 적합률 30% + 기한 내 조치율 40% (자료가 없는 항목은 빼고 계산) · 90 이상 양호, 75 미만 주의</p>
+    <div class="tw"><table class="t"><tr><th>선박</th><th class="n">방선 점수</th><th class="n">방선 이행</th><th class="n">판정 적합률</th><th class="n">기한 내 조치율</th><th class="n">미조치</th><th class="n">기한 초과</th><th class="n ph">결함</th><th class="n ph">계획정비</th><th class="n ph">NC</th></tr>
+    ${L.map(({ b, cp, okr, ot, sc, cls }) => `<tr data-ship="${esc(b.ship)}" style="cursor:pointer"><td><b>${esc(b.ship)}</b> ${b.fx ? '<span class="tag f">외항</span>' : '<span class="tag">내항</span>'}</td><td class="n"><span class="sc ${cls}">${sc == null ? '—' : sc}</span></td>
+      <td class="n">${cp.p}% <span class="mut small">(${cp.got}/${cp.need}${b.fx ? '회' : '개월'})</span></td><td class="n">${fmtP(okr)}</td><td class="n">${fmtP(ot)}</td><td class="n">${b.open || '<span class="mut">0</span>'}</td><td class="n">${b.over ? `<span class="tag err">${b.over}</span>` : '<span class="mut">0</span>'}</td><td class="n ph">준비 중</td><td class="n ph">준비 중</td><td class="n ph">준비 중</td></tr>`).join('')}</table></div>
+    <p class="small mut" style="margin:8px 0 0">방선 이행: 내항선은 매월 방선(방선한 달 ÷ 기간 개월 수), 외항선은 6개월마다 정식 방선(방선 수 ÷ 필요 횟수). 판정 적합률 = 100 − 판정 부적합률. 기한 내 조치율 = 기한 안에 조치 완료 ÷ (조치 완료 + 기한 지난 미조치) — 기한을 넘긴 미조치도 감점됩니다.</p></div>`;
+  /* 경영검토 요약 */
+  const c = calc(R), top = repeatTop(c.F).filter(t => t.ships.size >= 2).slice(0, 5), worst = L.filter(x => x.sc != null && x.sc < 75).map(x => x.b.ship);
+  h += `<div class="card"><h2>경영검토 요약 <span class="en">Management review</span></h2><p class="sub">출력해서 경영검토·선대 회의 자료로 쓸 수 있습니다</p>
+    <ul style="margin:4px 0 0;padding-left:20px;line-height:1.9">
+    <li>기간 중 감독 방선 <b>${c.nRep}건</b> (완료 ${c.nDone}), 지적 <b>${c.nF}건</b> — 방선 1회당 ${c.nRep ? Math.round(c.nF / c.nRep * 10) / 10 : 0}건, 판정 부적합률 ${fmtP(c.rate)}</li>
+    <li>미조치 <b>${c.open}건</b>${c.over ? `, 그중 기한 초과 <b style="color:var(--err)">${c.over}건</b>` : ' (기한 초과 없음)'} · 기한 내 조치율 ${fmtP(c.ontime)} · 평균 조치 ${c.avg == null ? '—' : c.avg + '일'}</li>
+    <li>여러 선박에서 반복된 지적: ${top.length ? top.map(t => `<b>${esc(t.item || '구역 ' + t.area)}</b> ${esc(t.item ? t.nm : '')} (${t.ships.size}척·${t.n}건)`).join(', ') : '없음'}</li>
+    <li>방선 점수 75점 미만 선박: ${worst.length ? worst.map(v => `<b>${esc(v)}</b>`).join(', ') : '없음'}</li></ul></div>`;
+  return h; }
+
+function render() { $('#tabs').innerHTML = tabsHTML();
+  if (role() && role() !== 'office') { $('#app').innerHTML = `<div class="card empty">통계·분석은 <b>사무실 전용</b>입니다.</div>`; return; }
+  if (!DATA) { $('#app').innerHTML = ERR ? `<div class="card empty">${esc(ERR)}<br><br><button class="lnk" id="bTry">다시 시도</button></div>` : `<div class="load"><div class="spin"></div>방선 자료를 불러오는 중…</div>`; const b = $('#bTry'); if (b) b.onclick = () => { $('#app').innerHTML = '<div class="load"><div class="spin"></div>다시 불러오는 중…</div>'; loadSrc(); }; return; }
+  if (!['nc', 'all'].includes(S.tab)) S.tab = 'nc';
+  $('#app').innerHTML = fltHTML() + (S.tab === 'all' ? viewAll() : viewNC());
+  bind(); }
+function bind() { $$('[data-tab]').forEach(b => b.onclick = () => { if (b.disabled) return; S.tab = b.dataset.tab; LS.set('sejul_stat_tab', S.tab); render(); scrollTo(0, 0); });
+  $$('[data-per]').forEach(b => b.onclick = () => { S.per = b.dataset.per; LS.set('sejul_stat_per', S.per); render(); });
+  $$('[data-kind]').forEach(b => b.onclick = () => { S.kind = b.dataset.kind; LS.set('sejul_stat_kind', S.kind); if (S.ship && (S.kind === 'f') !== isFV(S.ship) && S.kind !== 'all') S.ship = ''; render(); });
+  const fs = $('#fship'); if (fs) fs.onchange = () => { S.ship = fs.value; render(); };
+  $$('[data-ship]').forEach(r => r.onclick = () => { S.ship = S.ship === r.dataset.ship ? '' : r.dataset.ship; render(); scrollTo(0, 0); });
+  $$('[data-go]').forEach(r => r.onclick = () => { location.href = 'vst.html#/r/' + r.dataset.go; });
+  bindTrend(); }
+
+/* ---------- 엑셀 (저장 위치 고르기) ---------- */
+function loadXLSX() { return window.XLSX ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = '../lib/xlsx.full.min.js'; s.onload = res; s.onerror = () => rej(new Error('엑셀 모듈을 불러오지 못했습니다')); document.head.appendChild(s); }); }
+async function saveFile(blob, name) {
+  if (window.showSaveFilePicker) { try { const h = await showSaveFilePicker({ suggestedName: name, types: [{ description: 'Excel', accept: { 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'] } }] }); const w = await h.createWritable(); await w.write(blob); await w.close(); toast('저장했습니다 · Saved'); return; } catch (e) { if (e && e.name === 'AbortError') return; } }
+  try { const f = new File([blob], name, { type: blob.type }); if (navigator.canShare && navigator.canShare({ files: [f] })) { await navigator.share({ files: [f], title: name }); return; } } catch (e) { if (e && e.name === 'AbortError') return; }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000); toast('다운로드 폴더에 저장했습니다'); }
+async function exportXL() { if (!DATA) return; try { await loadXLSX(); } catch (e) { toast(e.message); return; }
+  const R = reps(), c = calc(R), M = months(), wb = XLSX.utils.book_new(), add = (n, rows) => XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), n);
+  add('조건', [['세줄선박관리 통계·분석 — 감독 방선'], ['기간', `${M[0]} ~ ${M[M.length - 1]}`], ['구분', { all: '전체', d: '내항선', f: '외항선' }[S.kind]], ['선박', S.ship || '전체'], ['만든 날', ymd()], [], ['방선 보고서', c.nRep], ['판정 부적합률(%)', c.rate], ['지적', c.nF], ['미조치', c.open], ['기한 초과', c.over], ['평균 조치(일)', c.avg], ['기한 내 조치율(%)', c.ontime]]);
+  add('지적 목록', [['선박', '구분', '방선일', '팀', '항목', '항목명', '구역', 'NC/Defect', '보고서 번호', '지적 제목', '지적 내용', '조치기한', '조치완료일', '확인일', '상태'], ...c.F.map(f => [f.ship, f.fx ? '외항' : '내항', f.date, f.part ? teamLabel(f.part, f.fx) : '', f.item, f.it, f.area ? `${f.area} ${f.at}` : '', f.ty === 'DF' ? 'Defect' : f.ty, f.rno, f.title, f.desc, f.due, f.done, f.ver, f.done ? '조치 완료' : f.over ? '기한 초과' : '미조치'])]);
+  add('선박 비교', [['선박', '구분', '방선', '완료', '판정 부적합률(%)', '지적', '미조치', '기한 초과', '평균 조치(일)', '기한 내 조치율(%)', '방선 이행(%)'], ...byShip(R).map(b => [b.ship, b.fx ? '외항' : '내항', b.nRep, b.nDone, b.rate, b.nF, b.open, b.over, b.avg, b.ontime, compliance(b.ship, R).p])]);
+  add('반복 지적', [['항목', '항목명', '구분', '팀', '지적 수', '선박 수', '선박', '최근'], ...repeatTop(c.F).map(t => [t.item || '구역 ' + t.area, t.nm, t.fx ? '외항' : '내항', t.part ? teamLabel(t.part, t.fx) : '', t.n, t.ships.size, [...t.ships].join(', '), t.last])]);
+  const keys = ['S', 'T', 'M']; add('월별', [['월', ...keys.map(k => TEAM[k][0]), '합계'], ...M.map(m => { const v = keys.map(k => c.F.filter(f => f.ym === m && f.part === k).length); return [m, ...v, c.F.filter(f => f.ym === m).length]; })]);
+  const out = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+  await saveFile(new Blob([out], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), `방선통계_${S.ship ? S.ship.replace(/\s+/g, '') + '_' : ''}${ymd().replace(/-/g, '')}.xlsx`); }
+function toast(m) { let t = $('.toast'); if (!t) { t = document.createElement('div'); t.className = 'toast'; t.style.cssText = 'position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#1A2233;color:#fff;padding:10px 16px;border-radius:12px;z-index:300;font-weight:700;font-size:14px'; document.body.appendChild(t); } t.textContent = m; t.style.display = 'block'; clearTimeout(toast.t); toast.t = setTimeout(() => t.style.display = 'none', 2500); }
+
+/* ---------- 시작 ---------- */
+(function boot() {
+  try { if (UI && UI.css) { const st = document.createElement('style'); st.textContent = UI.css; document.head.appendChild(st); const w = document.createElement('div');
+      if (UI.rail) { w.innerHTML = UI.rail('stat', '../'); document.body.classList.add('rail', 'sjm-on'); }
+      [...w.children].forEach(x => document.body.appendChild(x)); UI.syncPaint && UI.syncPaint(); try { UI.updPaint && UI.updPaint(); } catch (e) { } try { UI.inb && UI.inb.paint && UI.inb.paint(); } catch (e) { } } } catch (e) { console.warn('frame', e); }
+  $('#bRe').onclick = () => { DATA = null; render(); loadSrc(); };
+  $('#bXl').onclick = exportXL; $('#bPr').onclick = () => print();
+  render(); if (!role() || role() === 'office') loadSrc();
+})();
+</script>
+</body></html>

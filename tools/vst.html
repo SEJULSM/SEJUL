@@ -1705,11 +1705,28 @@ window.SJ_VST = {
       if (o.kind === 'SEJUL-VSX' && o.sp && XS[o.sp.id] && o.perm === 'user') o = Object.assign({}, o, { sp: (z => { { const a = XS[o.sp.id]; if (!(o.uid && a.cuid === o.uid && noSignX(a) && z.del && z.del.cancel)) z.del = a.del; } z.sp = z.sp || {}; z.sp.dpa = XS[o.sp.id].sp.dpa; return z; })(cp(o.sp)) }); }
     if (o.role === 'ship' && !SHIP()) { if (o.kind === 'SEJUL-VST' && o.rep) o = Object.assign({}, o, { rep: fromShipR(R[o.rep.id], o.rep) }); if (o.kind === 'SEJUL-VSX' && o.sp) o = Object.assign({}, o, { sp: fromShipX(XS[o.sp.id], o.sp) }); if ((o.kind === 'SEJUL-VST' && !o.rep) || (o.kind === 'SEJUL-VSX' && !o.sp)) return 0; }
     if (o.kind === 'SEJUL-VST' && o.rep) { const n = await applyRep(o.rep); if (n && R[o.rep.id]) try { SJCLOUD.vstNote && SJCLOUD.vstNote(R[o.rep.id]); } catch (e) { } return n; } if (o.kind === 'SEJUL-VSX' && o.sp && o.sp.id) { const n = await applyX(o.sp); if (n && XS[o.sp.id]) try { SJCLOUD.spNote && SJCLOUD.spNote(XS[o.sp.id]); } catch (e) { } return n; } if (o.kind === 'SEJUL-VSTP' && o.id && o.data) { if (PHK.has(o.id)) return 0; await photoPut(o.id, o.data, o.rid, false); return 1; } return 0; },
-  async after(n) { if (n) await autoMerge(); const typing = document.activeElement && /INPUT|TEXTAREA/.test(document.activeElement.tagName); if (!$('.mb') && !typing && !['p', 'x', 'y'].includes(route().v)) render(); toast('🔄 다른 감독의 내용을 받았습니다', 2500); paintSync(); }
+  async after(n) { if (n) await autoMerge(); if (STATQ) { statPost(); return; } const typing = document.activeElement && /INPUT|TEXTAREA/.test(document.activeElement.tagName); if (!$('.mb') && !typing && !['p', 'x', 'y'].includes(route().v)) render(); toast('🔄 다른 감독의 내용을 받았습니다', 2500); paintSync(); }
 };
+
+/* ---------- 통계·분석 도구(stat.html)용 자료 내보내기 ----------
+   stat.html 이 이 화면을 숨은 창(?statdata=1)으로 열면 → 이 기기 보고서를 정리해서 넘겨줌 (화면은 그리지 않음) */
+const STATQ = /[?&]statdata\b/.test(location.search);
+function statData() { const t0 = ymd();
+  const reps = Object.values(R).filter(live).map(r => { const st = repState(r), E = r.ext || {}, er = E.r || {}, xto = er.to && sig(E.a) ? er.to : '';
+    const parts = PS(r).map((p, i) => { const P = r.parts[p.k] || { items: {} }, its = itemsOf(r, p.k); let y = 0, n = 0, na = 0; const bad = [];
+      its.forEach(it => { const v = (P.items[it.no] || {}).r; if (v === 'Y') y++; else if (v === 'N') { n++; bad.push(it.no); } else if (v === 'NA') na++; });
+      const ar = areasOf(r, p.k).map(a => [a.n, a.t, ((P.ar || {})[a.n] || {}).r || '']); const v = pv(r, p.k) || {};
+      return { k: p.k, nm: p.ko, date: v.date || '', port: v.port || '', sg: !!(st.sp[i] && st.sp[i].signed), n: its.length, y, no: n, na, bad, ar }; });
+    const fnd = findings(r).map(f => { const it = f.item ? IT(r, f.item) : null, a = f.area ? AREAF.find(x => String(x.n) === String(f.area)) : null, due = xto && (!f.due || xto > f.due) ? xto : (f.due || '');
+      return { item: f.item || '', it: it ? (it.sh || it.t) : '', ite: it ? (it.te || '') : '', b: it ? (it.b || '') : '', part: it ? it.part : (a ? a.k : ''), area: f.area || '', at: a ? a.t : '', title: f.title || '', desc: f.desc || '', due, due0: f.due || '', done: f.done || '', ver: f.ver || '', ty: f.ty || '', rno: f.rno || '', at0: f.at || 0, over: !f.done && due && due < t0 }; });
+    return { id: r.id, ship: r.h.ship || '', date: r.h.date || '', port: portsOf(r).join(' / '), f: isF(r), q: !!r.h.q, done: st.done, all: st.all, fin: st.fin, parts, fnd }; });
+  return { kind: 'SEJUL-STAT-VST', at: Date.now(), dev: DEV, reps }; }
+function statPost() { try { parent.postMessage(statData(), location.origin); } catch (e) { console.warn('stat', e); } }
 
 /* ---------- 시작 ---------- */
 (async function boot() {
+  if (STATQ) { try { await loadAll(); await autoMerge(); } catch (e) { try { parent.postMessage({ kind: 'SEJUL-STAT-VST', err: String(e.message || e) }, location.origin); } catch (x) { } return; }
+    statPost(); try { if (window.SJCLOUD && SJCLOUD.start) SJCLOUD.start(window.SJ_VST); } catch (e) { } return; }
   /* PC 넓은 화면: 앱 공통 왼쪽 메뉴 */
   try { if (UI && UI.css) { const st = document.createElement('style'); st.textContent = UI.css; document.head.appendChild(st); const w = document.createElement('div');
       /* 다른 도구와 같은 틀: PC = 왼쪽 메뉴, 휴대폰·태블릿(900px 미만) = 위 공통 머리줄(선대·알림·설정·동기화) + 아래 탭 */
