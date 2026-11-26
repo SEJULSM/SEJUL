@@ -405,6 +405,27 @@ html.sj-railmin .sjr .sj-vtg{display:none}html.sj-railmin .sjr .sj-flr{margin-to
  .sjs-h{display:flex;align-items:center;justify-content:space-between;padding:10px 6px 8px;font-size:18px;color:var(--sj-tx,#1A2233)}.sjs-h button{border:0;background:var(--sj-sf2,#F7F9FC);border-radius:50%;width:34px;height:34px;font-size:16px;cursor:pointer}
  .sjs-r{display:flex;align-items:center;gap:12px;padding:13px 12px;border-radius:12px;color:var(--sj-tx,#1A2233);font-size:16px;font-weight:700;border-bottom:1px solid var(--sj-bd,#E1E6EE)}.sjs-r.on{background:var(--sj-blu-bg,#E8F0FB);box-shadow:inset 4px 0 0 var(--sj-amb,#E0A100)}.sjs-r small{font-weight:500;color:var(--sj-tx2,#4A5568);font-size:13px}.sjs-r .sj-vn{flex:1;min-width:0}.sjs-r small.od{color:var(--sj-red-fg,#C62828);font-weight:700}.sjs-r .sj-bd{background:var(--sj-amb,#E0A100);color:var(--sj-tx,#1A2233);border-radius:10px;padding:1px 8px;font-size:12px}
  .sjs-r .sj-dt{width:11px;height:11px;border-radius:50%;background:var(--sj-bd2,#C9D1DD);flex:none}.sjs-r .sj-dt.r{background:var(--sj-red,#D93636)}.sjs-r .sj-dt.y{background:var(--sj-amb,#E0A100)}.sjs-r .sj-dt.g{background:var(--sj-grn,#2FA36B)}.sjs-r .sj-dt.b{width:auto;height:auto;background:none;color:var(--sj-blu-fg,#1D5FAE);display:flex}
+}
+/* ===== 도구 위쪽 탭 줄 (PC) — 방선 보고서·통계·분석도 계획정비·위험성 관리와 같은 모양 (.hd.sjt) ===== */
+.sjt-id,.sjt-p{display:none}
+@media(min-width:900px){
+ body.rail .hd.sjt{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:6px;background:var(--sj-sf,#FFFFFF);color:var(--sj-tx,#1A2233);border-bottom:1px solid var(--sj-bd,#E1E6EE);box-shadow:0 2px 8px rgba(15,23,42,.06);padding:8px 14px;min-height:52px}
+ body.rail .hd.sjt a.home{display:none}
+ body.rail .hd.sjt.sub a.home{display:inline-flex;align-items:center;justify-content:center;width:auto;height:auto;background:transparent;color:var(--sj-tx,#1A2233);border:1px solid var(--sj-bd,#E1E6EE);border-radius:9px;padding:6px 12px;font-size:14px;font-weight:700;text-decoration:none}
+ body.rail .hd.sjt.sub a.home::after{content:'목록';margin-left:4px}
+ body.rail .hd.sjt .sjt-id{display:inline-flex;align-items:center;gap:8px;padding:4px 14px 4px 2px;margin-right:6px;border-right:1px solid var(--sj-bd,#E1E6EE);font-weight:800;font-size:16px;color:var(--sj-tx,#1A2233);white-space:nowrap;flex:none}
+ body.rail .hd.sjt .sjt-id i{width:28px;height:28px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-style:normal}
+ body.rail .hd.sjt .sjt-id.vst i{background:#E6F4EE;color:#1E7A52}body.rail .hd.sjt .sjt-id.stat i{background:var(--sj-pur-bg,#F1ECFB);color:var(--sj-pur-fg,#6A3FB5)}
+ body.rail .hd.sjt .sjt-p{display:flex;align-items:center;gap:4px;flex-wrap:nowrap;overflow-x:auto}
+ body.rail .hd.sjt .sjt-p button{display:inline-flex;align-items:center;gap:6px;flex:0 0 auto;white-space:nowrap;color:var(--sj-tx,#1A2233);background:transparent;border:0;border-radius:9px;padding:8px 12px;font-size:14px;font-weight:600;line-height:1.2;cursor:pointer;font-family:inherit}
+ body.rail .hd.sjt .sjt-p button:hover{background:var(--sj-sf2,#F7F9FC)}
+ body.rail .hd.sjt .sjt-p button.on{background:var(--sj-navy,#14244A);color:var(--sj-on,#FFFFFF);font-weight:800}
+ body.rail .hd.sjt .sjt-p button:disabled{opacity:.45;cursor:default}body.rail .hd.sjt .sjt-p button small{font-weight:400;font-size:11.5px;opacity:.8}
+ body.rail .hd.sjt .tt{flex:1;min-width:0}body.rail .hd.sjt.home .tt{visibility:hidden}
+ body.rail .hd.sjt .tt b{font-size:15px;font-weight:800;color:var(--sj-tx,#1A2233)}body.rail .hd.sjt .tt small{color:var(--sj-tx3,#6B7588);opacity:1;font-size:12px}
+ body.rail .hd.sjt .ib{background:var(--sj-sf2,#F7F9FC);color:var(--sj-tx,#1A2233);border:1px solid var(--sj-bd,#E1E6EE);border-radius:9px;height:36px;padding:0 12px;font-size:13.5px;font-weight:700}
+ body.rail .hd.sjt .sy2{display:none!important}
+ body.rail .sjt-hide{display:none!important}
 }`;
   /* 왼쪽 메뉴 HTML. act = home|pms|rsk|devices|settings, base = 앱 홈 기준 경로 ('' 또는 '../') */
   /* 도구 목록 (왼쪽 메뉴·휴대폰 탭·검색·알림이 같이 씀) — 재고·구매, 증서·검사는 계획정비와 같은 자료를 씀 */
@@ -417,8 +438,8 @@ html.sj-railmin .sjr .sj-vtg{display:none}html.sj-railmin .sjr .sj-flr{margin-to
   U.vstHome = () => { try { const h = localStorage.getItem('sejul_vst_home'); return h === 'sp' && U.canSp() ? 'sp' : h === 'dp' && U.role() === 'office' ? 'dp' : 'rep'; } catch (e) { return 'rep'; } };
   const IC_DP = 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10zM9 12l2 2 4-4';
   /* 통계·분석 (사무실 전용 · tools/stat.html) */
-  const IC_ST = 'M3 3v18h18M8 17V11M13 17V7M18 17v-4'; U.IC_ST = IC_ST;
-  const IC_SP = 'M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z', IC_APV = 'M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11';
+  const IC_ST = 'M3 3v18h18M8 17V11M13 17V7M18 17v-4'; U.IC_ST = IC_ST; U.IC_DP = IC_DP;
+  const IC_SP = 'M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z', IC_APV = 'M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11'; U.IC_SP = IC_SP;
   /* 방선 전용 아래 탭 (휴대폰·태블릿): 사무실 = 방선 · 특별점검 · 승인 · 설정 / 선박 = 방선 · 할 일 · 설정 */
   U.liteNav = (act, base, cls) => { const T = U.T, off = U.role() === 'office', h = act === 'vst' ? U.vstHome() : '', vu = base + 'tools/vst.html';
     const t = (on, attrs, label, ic, bd) => `<a class="${on ? 'on' : ''}" ${attrs}>${U.ic(ic, 22)}<span>${label}</span>${bd || ''}</a>`;

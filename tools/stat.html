@@ -60,7 +60,7 @@ table.t td:first-child b{white-space:nowrap}table.t.sm td:first-child{white-spac
 .load{display:flex;align-items:center;gap:10px;justify-content:center;padding:50px 10px;color:var(--mut)}
 .spin{width:22px;height:22px;border:3px solid #DDE3EC;border-top-color:var(--navy);border-radius:50%;animation:sp 0.9s linear infinite}@keyframes sp{to{transform:rotate(360deg)}}
 .pr-only{display:none}
-@media(min-width:900px){body.rail{padding-left:var(--sjr-w,248px)}}
+@media(min-width:900px){body.rail{padding-left:var(--sjr-w,248px)}body.rail .hd.sjt .tt{text-align:right}body.rail .hd.sjt .tt b{display:none}}
 @media(max-width:1100px){.kpi{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:899px){
  body.sjm-on{padding-top:54px}html.sj-hasupd body.sjm-on{padding-top:100px}
@@ -76,6 +76,13 @@ table.t td:first-child b{white-space:nowrap}table.t.sm td:first-child{white-spac
  main{padding:10px}
 }
 @media(max-width:560px){.kpi{grid-template-columns:repeat(2,1fr)}.kp .v{font-size:22px}.hide-s{display:none}}
+/* 휴대폰: 간단히 보기 (요약·반복 지적·선박·미조치만) */
+@media(max-width:759px){#bXl,#bPr{display:none!important}.tabs button:disabled{display:none}.tabs button{padding:12px 16px}}
+.fm{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:10px}.fm select{width:100%;padding:8px 6px;font-size:13.5px}
+.ml{list-style:none;margin:0;padding:0}.ml li{display:flex;align-items:center;gap:10px;padding:10px 2px;border-bottom:1px solid var(--grid)}.ml li:last-child{border-bottom:0}
+.ml .nm{flex:1;min-width:0;font-weight:700;font-size:14.5px}.ml .nm small{display:block;font-weight:400;color:var(--mut);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ml .ct{font-weight:800;font-size:16px;font-variant-numeric:tabular-nums;white-space:nowrap}.ml .rk{width:22px;height:22px;border-radius:50%;background:var(--bluBg);color:var(--blu);font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center;flex:none}
+.pcnote{font-size:12.5px;color:var(--mut);text-align:center;padding:6px 0 14px}
 .sjb a,.sjr a{text-decoration:none}
 @media print{
  @page{size:A4 landscape;margin:10mm}
@@ -91,11 +98,11 @@ table.t td:first-child b{white-space:nowrap}table.t.sm td:first-child{white-spac
 }
 </style></head>
 <body>
-<div class="hd"><div class="tt"><b>📊 통계·분석 <span class="en" style="color:inherit;opacity:.7">Analytics</span></b><small id="hsub">자료를 불러오는 중…</small></div>
+<div class="hd sjt"><span class="sjt-id stat" id="sjtId"><i>📊</i>통계·분석</span><nav class="sjt-p" id="ptabs"></nav><div class="tt"><b>📊 통계·분석 <span class="en" style="color:inherit;opacity:.7">Analytics</span></b><small id="hsub">자료를 불러오는 중…</small></div>
  <button class="ib" id="bRe" title="최신 자료 다시 읽기">🔄<span class="tx"> 새로 고침</span></button>
  <button class="ib" id="bXl" title="엑셀로 저장">📥<span class="tx"> 엑셀</span></button>
  <button class="ib" id="bPr" title="출력·PDF">🖨<span class="tx"> 출력</span></button></div>
-<div class="tabs" id="tabs"></div>
+<div class="tabs sjt-hide" id="tabs"></div>
 <main id="app"><div class="load"><div class="spin"></div>방선 자료를 불러오는 중…</div></main>
 <div class="tip" id="tip"></div>
 <iframe id="src" title="" style="position:absolute;width:1px;height:1px;border:0;left:-9999px;top:0" aria-hidden="true" tabindex="-1"></iframe>
@@ -193,6 +200,22 @@ function prHead(title) { const M = months(); return `<div class="pr-only" style=
 const kp = (l, v, s, cls) => `<div class="kp ${cls || ''}"><div class="l">${l}</div><div class="v">${v}</div><div class="s">${s || '&nbsp;'}</div></div>`;
 const goRep = id => `data-go="${esc(id)}"`;
 
+const PH = () => innerWidth < 760;
+function fltPhone() { const sh = VES().filter(v => S.kind === 'all' || (S.kind === 'f') === isFV(v));
+  return `<div class="fm"><select id="fper">${PER.map(([k, l]) => `<option value="${k}" ${S.per === k ? 'selected' : ''}>${l}</option>`).join('')}</select><select id="fkind">${[['all', '내항+외항'], ['d', '내항선'], ['f', '외항선']].map(([k, l]) => `<option value="${k}" ${S.kind === k ? 'selected' : ''}>${l}</option>`).join('')}</select><select id="fship"><option value="">전체 선박</option>${sh.map(v => `<option ${S.ship === v ? 'selected' : ''}>${esc(v)}</option>`).join('')}</select></div>`; }
+function viewNCm() { const R = reps(), c = calc(R), t0 = ymd();
+  if (!R.length) return `<div class="card empty">이 기간에 방선 보고서가 없습니다.</div>`;
+  let h = `<div class="kpi">${kp('방선', c.nRep + '<small>건</small>', `완료 ${c.nDone}`)}${kp('지적', c.nF + '<small>건</small>', `방선당 ${c.nRep ? Math.round(c.nF / c.nRep * 10) / 10 : 0}건`)}${kp('미조치', c.open + '<small>건</small>', c.over ? `기한 초과 ${c.over}` : '기한 초과 없음', c.over ? 'err' : '')}${kp('기한 내 조치율', fmtP(c.ontime), c.avg == null ? '' : `평균 ${c.avg}일`, c.ontime != null && c.ontime >= 90 ? 'ok' : '')}</div>`;
+  const top = repeatTop(c.F).slice(0, 5);
+  h += `<div class="card"><h2>반복 지적 Top 5</h2>${top.length ? `<ul class="ml">${top.map((t, i) => `<li><span class="rk">${i + 1}</span><span class="nm"><span class="no">${esc(t.item || '구역 ' + t.area)}</span>${esc(t.item ? t.nm : (t.nm || '').replace(/^구역 \d+ /, ''))}<small>${[...t.ships].map(esc).join(', ')}</small></span><span class="ct">${t.n}<small class="mut" style="font-size:12px;font-weight:600">건</small></span></li>`).join('')}</ul>` : '<div class="empty">지적이 없습니다.</div>'}</div>`;
+  const B = byShip(R).filter(b => b.nRep);
+  h += `<div class="card"><h2>선박별</h2><ul class="ml">${B.map(b => `<li data-ship="${esc(b.ship)}"><span class="nm">${esc(b.ship)} ${b.fx ? '<span class="tag f">외항</span>' : ''}<small>방선 ${b.nRep} · 지적 ${b.nF} · 조치율 ${fmtP(b.ontime)}</small></span>${b.over ? `<span class="tag err">초과 ${b.over}</span>` : ''}<span class="ct">${b.open}<small class="mut" style="font-size:12px;font-weight:600"> 미조치</small></span></li>`).join('')}</ul></div>`;
+  const O = c.F.filter(f => !f.done).sort((a, b) => (a.due || '9') < (b.due || '9') ? -1 : 1).slice(0, 10);
+  h += `<div class="card"><h2>미조치 지적 <span class="sp"></span><span class="small mut">${c.open}건</span></h2>${O.length ? `<ul class="ml">${O.map(f => { const od = f.due && f.due < t0 ? days(f.due, t0) : 0;
+    return `<li data-go="${esc(f.r.id)}"><span class="nm">${esc(f.ship)} · ${f.item ? `<span class="no">${esc(f.item)}</span>${esc(f.it)}` : esc(f.title || '')}<small>${esc(f.title || f.desc || '')}</small></span>${od ? `<span class="tag err">+${od}일</span>` : `<span class="small mut">${f.due ? dot(f.due).slice(5) : ''}</span>`}</li>`; }).join('')}</ul>` : '<div class="empty">미조치 지적이 없습니다 👍</div>'}</div>`;
+  return h + `<div class="pcnote">그래프·전체 표·엑셀·출력은 PC에서 볼 수 있습니다</div>`; }
+function viewAllm() { const R = reps(), L = byShip(R).map(b => { const cp = compliance(b.ship, R), okr = b.rate == null ? null : 100 - b.rate, parts = [[cp.p, 0.3], [okr, 0.3], [b.ontime, 0.4]].filter(x => x[0] != null), w = parts.reduce((a, x) => a + x[1], 0), sc = b.nRep && w ? Math.round(parts.reduce((a, x) => a + x[0] * x[1], 0) / w) : null; return { b, cp, sc }; }).sort((a, b) => (b.sc == null ? -1 : b.sc) - (a.sc == null ? -1 : a.sc));
+  return `<div class="card"><h2>선박별 방선 점수</h2><p class="sub">이행 30% + 판정 적합률 30% + 기한 내 조치율 40% · 결함·정비는 준비 중</p><ul class="ml">${L.map(({ b, cp, sc }) => `<li data-ship="${esc(b.ship)}"><span class="nm">${esc(b.ship)} ${b.fx ? '<span class="tag f">외항</span>' : ''}<small>이행 ${cp.p}% · 조치율 ${fmtP(b.ontime)} · 미조치 ${b.open}${b.over ? ` (초과 ${b.over})` : ''}</small></span><span class="sc ${sc == null ? '' : sc >= 90 ? 'g' : sc >= 75 ? 'y' : 'r'}">${sc == null ? '—' : sc}</span></li>`).join('')}</ul></div><div class="pcnote">경영검토 요약·출력은 PC에서 볼 수 있습니다</div>`; }
 function viewNC() { const R = reps(), c = calc(R), F = c.F, M = months();
   if (!R.length) return prHead('방선 부적합 통계') + `<div class="card empty">이 기간·조건에 방선 보고서가 없습니다.<br><span class="small">기간을 늘리거나 구분·선박을 바꿔 보세요.</span></div>`;
   let h = prHead('방선 부적합 통계 · Visit findings');
@@ -253,16 +276,18 @@ function viewAll() { const R = reps(), B = byShip(R);
     <li>방선 점수 75점 미만 선박: ${worst.length ? worst.map(v => `<b>${esc(v)}</b>`).join(', ') : '없음'}</li></ul></div>`;
   return h; }
 
-function render() { $('#tabs').innerHTML = tabsHTML();
+function render() { $('#tabs').innerHTML = tabsHTML(); $('#ptabs').innerHTML = tabsHTML();
   if (role() && role() !== 'office') { $('#app').innerHTML = `<div class="card empty">통계·분석은 <b>사무실 전용</b>입니다.</div>`; return; }
   if (!DATA) { $('#app').innerHTML = ERR ? `<div class="card empty">${esc(ERR)}<br><br><button class="lnk" id="bTry">다시 시도</button></div>` : `<div class="load"><div class="spin"></div>방선 자료를 불러오는 중…</div>`; const b = $('#bTry'); if (b) b.onclick = () => { $('#app').innerHTML = '<div class="load"><div class="spin"></div>다시 불러오는 중…</div>'; loadSrc(); }; return; }
   if (!['nc', 'all'].includes(S.tab)) S.tab = 'nc';
-  $('#app').innerHTML = fltHTML() + (S.tab === 'all' ? viewAll() : viewNC());
+  $('#app').innerHTML = PH() ? fltPhone() + (S.tab === 'all' ? viewAllm() : viewNCm()) : fltHTML() + (S.tab === 'all' ? viewAll() : viewNC());
   bind(); }
 function bind() { $$('[data-tab]').forEach(b => b.onclick = () => { if (b.disabled) return; S.tab = b.dataset.tab; LS.set('sejul_stat_tab', S.tab); render(); scrollTo(0, 0); });
   $$('[data-per]').forEach(b => b.onclick = () => { S.per = b.dataset.per; LS.set('sejul_stat_per', S.per); render(); });
   $$('[data-kind]').forEach(b => b.onclick = () => { S.kind = b.dataset.kind; LS.set('sejul_stat_kind', S.kind); if (S.ship && (S.kind === 'f') !== isFV(S.ship) && S.kind !== 'all') S.ship = ''; render(); });
   const fs = $('#fship'); if (fs) fs.onchange = () => { S.ship = fs.value; render(); };
+  const fp = $('#fper'); if (fp) fp.onchange = () => { S.per = fp.value; LS.set('sejul_stat_per', S.per); render(); };
+  const fk = $('#fkind'); if (fk) fk.onchange = () => { S.kind = fk.value; LS.set('sejul_stat_kind', S.kind); if (S.ship && S.kind !== 'all' && (S.kind === 'f') !== isFV(S.ship)) S.ship = ''; render(); };
   $$('[data-ship]').forEach(r => r.onclick = () => { S.ship = S.ship === r.dataset.ship ? '' : r.dataset.ship; render(); scrollTo(0, 0); });
   $$('[data-go]').forEach(r => r.onclick = () => { location.href = 'vst.html#/r/' + r.dataset.go; });
   bindTrend(); }
@@ -289,9 +314,11 @@ function toast(m) { let t = $('.toast'); if (!t) { t = document.createElement('d
   try { if (UI && UI.css) { const st = document.createElement('style'); st.textContent = UI.css; document.head.appendChild(st); const w = document.createElement('div');
       if (UI.rail) { w.innerHTML = UI.rail('stat', '../'); document.body.classList.add('rail', 'sjm-on'); }
       [...w.children].forEach(x => document.body.appendChild(x)); UI.syncPaint && UI.syncPaint(); try { UI.updPaint && UI.updPaint(); } catch (e) { } try { UI.inb && UI.inb.paint && UI.inb.paint(); } catch (e) { } } } catch (e) { console.warn('frame', e); }
+  try { if (UI && UI.ic && UI.IC_ST) $('#sjtId i').innerHTML = UI.ic(UI.IC_ST, 17); } catch (e) { }
   $('#bRe').onclick = () => { DATA = null; render(); loadSrc(); };
   $('#bXl').onclick = exportXL; $('#bPr').onclick = () => print();
   render(); if (!role() || role() === 'office') loadSrc();
+  let pw = PH(); addEventListener('resize', () => { if (PH() !== pw) { pw = PH(); render(); } });
 })();
 </script>
 </body></html>

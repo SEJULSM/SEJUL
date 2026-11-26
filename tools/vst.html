@@ -153,7 +153,7 @@ canvas.pad{width:100%;height:220px;border:2px dashed #C9D1DD;border-radius:12px;
 .kv{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:14px}
 .kv b{color:var(--mut);font-weight:600}
 /* PC: 왼쪽 메뉴 */
-@media(min-width:900px){body.rail{padding-left:var(--sjr-w,248px)}body.rail .bar{left:var(--sjr-w,248px)}}
+@media(min-width:900px){body.rail{padding-left:var(--sjr-w,248px)}body.rail .bar{left:var(--sjr-w,248px)}body.rail .tabs{top:53px}}
 body.bnav main{padding-bottom:calc(96px + env(safe-area-inset-bottom))}
 /* 휴대폰·태블릿: 앱 공통 머리줄(54px) 아래에 이 화면 제목줄 — 다른 도구와 같은 모양 */
 @media(max-width:899px){
@@ -574,8 +574,11 @@ function route() { const h = location.hash.replace(/^#\/?/, '').split('/'); retu
 function go(h) { location.hash = h; }
 addEventListener('hashchange', e => { try { const h = new URL(e.oldURL).hash || '#/'; if (!/^#\/(p|x|y)\//.test(h)) S.prevH = h; } catch (x) { } render(); });   /* 보기·출력에서 ‹ 돌아가기 = 들어오기 전 화면으로 */
 
-function header(title, sub, back) {
-  return `<header class="hd"><a class="home" href="${back || '../index.html'}" aria-label="뒤로">${back ? '‹' : `<img src="../logo.svg" width="22" height="21" alt="">`}</a>
+/* 위쪽 줄: 휴대폰 = 제목줄 / PC = 다른 도구와 같은 탭 줄 (도구 이름 + 알약 탭 · 앱 공통 CSS .hd.sjt) */
+const homePills = () => homeSeg().replace(/^<div class="seg sjt-hide" style="margin-bottom:12px">/, '').replace(/<\/div>$/, '');
+const sjtId = () => `<span class="sjt-id vst"><i>${UI && UI.ic && UI.TOOLS ? UI.ic(UI.TOOLS()[4][2], 17) : '📋'}</i>방선 보고서</span>`;
+function header(title, sub, back, home) { const P = home ? homePills() : '';
+  return `<header class="hd sjt ${back ? 'sub' : 'home'}"><a class="home" href="${back || '../index.html'}" aria-label="뒤로">${back ? '‹' : `<img src="../logo.svg" width="22" height="21" alt="">`}</a>${sjtId()}${P ? `<nav class="sjt-p">${P}</nav>` : ''}
     <div class="tt"><b>${title}</b><small>${sub || ''}</small></div><button class="ib" id="syncB" title="서버 동기화"><span class="sd" id="sdot"></span><span id="stxt" style="max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span></button><button class="sy2" id="syncN" title="지금 동기화" aria-label="지금 동기화"><span class="ic">🔄</span><span>동기화</span></button></header>`; }
 
 function render() { countPub(); const r = route(); if (!['p', 'x', 'y'].includes(r.v)) document.title = '감독 방선 보고서 SMM-3C-01F | Sejul Ship Management'; $('#print').style.display = 'none'; $('#app').style.display = ''; $('#app').onclick = null;
@@ -596,7 +599,8 @@ function repCard(x) { const st = repState(x), F = findings(x), VP = visParts(), 
   return `<div class="card rep rc" data-open="${x.id}" style="cursor:pointer"><div class="r1"><span class="nm">${esc(x.h.ship || '선박 미지정')}</span><span class="dt">${dot(x.h.date).slice(5)}</span><span class="sp"></span>${CEO() ? `${!sig(x.fin.ceo) && ceoReady(x) ? `<button class="btn s p ib2" data-cs="${x.id}">✍ 서명</button>` : ''}<button class="btn s ${sig(x.fin.ceo) || !ceoReady(x) ? 'p' : ''} ib2" data-pv="${x.id}">📄 보기 · 출력</button>` : `<button class="btn s p ib2" data-go2="#/r/${x.id}" title="보고서 열기">📂 열기</button><button class="btn s ib2" data-pv="${x.id}" title="보고서 보기 · 출력">📄</button><button class="btn s ib2" data-menu="${x.id}" aria-label="메뉴">⋯</button>`}</div>
     <div class="r2"><span class="mc ${x.h.q || isF(x) ? 'q' : ''}">${isF(x) ? '🌐 외항 6개월' : x.h.q ? '분기' : '월간'}${portTxt(x) ? ' · ' + portTxt(x) : ''}</span>${c}<span class="mc ${open ? 'err' : F.length ? 'ok' : ''}">지적 ${F.length}${open ? ` · 미조치 ${open}` : ''}</span><span class="mc ${st.fin === 4 ? 'ok' : ''}">확인 ${st.fin}/4</span></div></div>`; }
 /* ---------- 홈: [방선 보고서] [공무 특별점검] ---------- */
-const homeSeg = () => canSp() && !LITE() && isOffice() ? `<div class="seg" style="margin-bottom:12px"><button data-home="rep" class="${S.home !== 'sp' ? 'on' : ''}">📄 방선 보고서</button><button data-home="sp" class="${S.home === 'sp' ? 'on' : ''}">🔧 공무 특별점검 <span style="font-weight:400;font-size:12px">사내용</span></button><button data-home="dp" class="${S.home === 'dp' ? 'on' : ''}">🛡 D.P.A 방선</button></div>` : !LITE() && isOffice() ? `<div class="seg" style="margin-bottom:12px"><button data-home="rep" class="${S.home !== 'dp' ? 'on' : ''}">📄 방선 보고서</button><button data-home="dp" class="${S.home === 'dp' ? 'on' : ''}">🛡 D.P.A 방선</button></div>` : '';
+const hIc = k => UI && UI.ic ? `<span style="display:inline-flex;opacity:.85">${UI.ic(k === 'rep' ? UI.TOOLS()[4][2] : k === 'sp' ? UI.IC_SP : UI.IC_DP, 16)}</span>` : { rep: '📄', sp: '🔧', dp: '🛡' }[k];
+const homeSeg = () => canSp() && !LITE() && isOffice() ? `<div class="seg sjt-hide" style="margin-bottom:12px"><button data-home="rep" class="${S.home !== 'sp' ? 'on' : ''}">${hIc('rep')} 방선 보고서</button><button data-home="sp" class="${S.home === 'sp' ? 'on' : ''}">${hIc('sp')} 공무 특별점검 <span style="font-weight:400;font-size:12px">사내용</span></button><button data-home="dp" class="${S.home === 'dp' ? 'on' : ''}">${hIc('dp')} D.P.A 방선</button></div>` : !LITE() && isOffice() ? `<div class="seg sjt-hide" style="margin-bottom:12px"><button data-home="rep" class="${S.home !== 'dp' ? 'on' : ''}">${hIc('rep')} 방선 보고서</button><button data-home="dp" class="${S.home === 'dp' ? 'on' : ''}">${hIc('dp')} D.P.A 방선</button></div>` : '';
 function setHome(v) { S.home = v; LS.set('sejul_vst_home', v); S.mon = S.mon || ''; try { UI.vstHomePaint && UI.vstHomePaint(); } catch (e) { } if (route().v) { go('#/'); } else render(); window.scrollTo(0, 0); }
 window.SJ_VSTHOME = v => setHome(v === 'sp' && canSp() ? 'sp' : v === 'dp' && isOffice() ? 'dp' : 'rep');   /* 왼쪽 메뉴·아래 탭에서 */
 function spCard(x) { const st = spState(x);
@@ -611,7 +615,7 @@ function viewListSp() { const ms = myShip(); let list = Object.values(XS).filter
     if (x) { const st = spState(x); if (st.ok) { cls = 'ok'; t = '완료'; } else if (st.sg1) { cls = 'warn'; t = st.done < st.n ? `조치 대기 ${st.n - st.done}` : !st.sg2 ? '기관장 확인 대기' : 'D.P.A 검토 대기'; } else { cls = 'warn'; t = `작성 중 · ${st.n}건`; } }
     return `<button class="vs ${cls}" ${x ? `data-sopen="${x.id}"` : mon === cur && !RO() ? `data-snew="${esc(v)}"` : 'disabled'}><b>${esc(v)}</b><small>${x ? dot(x.h.date).slice(5) + ' ' : ''}${x ? (cls === 'ok' ? '✓ ' : '◐ ') : mon === cur && !RO() ? '＋ ' : ''}${t}</small></button>`; };
   const ym = m => `${m.slice(0, 4) !== cur.slice(0, 4) ? m.slice(0, 4) + '년 ' : ''}${+m.slice(5)}월`;
-  $('#app').innerHTML = header('공무 특별점검', `사내용 · ${WHO()}`) + `<main>
+  $('#app').innerHTML = header('공무 특별점검', `사내용 · ${WHO()}`, '', 1) + `<main>
     <style>.vg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}@media(min-width:640px){.vg{grid-template-columns:repeat(4,minmax(0,1fr))}}.vs{text-align:left;border:1px solid var(--line);background:#fff;border-radius:10px;padding:6px 9px;min-width:0}.vs b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vs small{display:block;font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vs.no{background:#F7F9FC}.vs.no b{color:var(--mut);font-weight:600}.vs.ok{border-color:#BFE5CF;background:var(--okBg)}.vs.warn{border-color:#F0C46A;background:var(--warnBg)}.sec{display:flex;align-items:center;gap:8px;margin:18px 0 8px}.sec h3{margin:0;white-space:nowrap}</style>
     ${homeSeg()}
     ${todoHTML()}
@@ -736,7 +740,7 @@ function viewListDp() { const ms = myShip(), cur = String(new Date().getFullYear
     const go2 = s.prog ? `data-dopen="${s.prog.id}"` : y ? `data-dopen="${y.id}"` : yr === cur && CAN('dpa') && !SHIP() && !CEO() ? `data-dnew="${esc(v)}"` : 'disabled';
     return `<button class="vs ${cls}" ${go2}><b>${esc(v)}</b><small>${t}</small></button>`; };
   const nOk = ships.filter(v => !isForeign(v) && (list.some(o => o.h.ship === v && (o.h.date || '').startsWith(yr) && sig(o.sg.vis)) || (DPL()[v] || '').startsWith(yr))).length;
-  $('#app').innerHTML = header('D.P.A 연간 방선', `SMM-3C-03F · ${WHO()}`) + `<main>
+  $('#app').innerHTML = header('D.P.A 연간 방선', `SMM-3C-03F · ${WHO()}`, '', 1) + `<main>
     <style>.vg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}@media(min-width:640px){.vg{grid-template-columns:repeat(4,minmax(0,1fr))}}.vs{text-align:left;border:1px solid var(--line);background:#fff;border-radius:10px;padding:6px 9px;min-width:0}.vs b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vs small{display:block;font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vs.no{background:#F7F9FC}.vs.no b{color:var(--mut);font-weight:600}.vs.ok{border-color:#BFE5CF;background:var(--okBg)}.vs.warn{border-color:#F0C46A;background:var(--warnBg)}.sec{display:flex;align-items:center;gap:8px;margin:18px 0 8px}.sec h3{margin:0;white-space:nowrap}</style>
     <style>.vs.bad{border-color:#F3B4B4;background:var(--errBg,#FDECEC)}.vs.bad small{color:var(--err)}</style>
     ${homeSeg()}${todoHTML()}
@@ -1112,7 +1116,7 @@ function viewList() { if (S.home === 'dp' && !SHIP()) return viewListDp(); if (c
     const x = L[0]; let cls = 'no', t = '방선 없음';
     if (x) { const st = repState(x), my = mp ? st.sp[PS(x).findIndex(p => p.k === mp)] : null; const ns = st.sp.filter(z => z.signed).length; if (st.done) { cls = 'ok'; t = '완료'; } else if (my && my.signed) { cls = 'ok'; t = `우리 ✓ · ${ns}/3`; } else { cls = 'warn'; t = (mp && my ? '우리 ✗' : '진행') + ` · ${ns}/3`; } }
     return `<button class="vs ${cls}" ${L.length > 1 ? `data-pick="${esc(v)}"` : x ? `data-open="${x.id}"` : mon === cur && !RO() ? `data-newv="${esc(v)}"` : 'disabled'}><b>${esc(v)}${L.length > 1 ? ` <span class="chip q" style="font-size:11px;padding:0 6px">${L.length}건</span>` : ''}</b><small>${x ? dot(x.h.date).slice(5) + ' ' : ''}${x ? (cls === 'ok' ? '✓ ' : '◐ ') : mon === cur && !RO() ? '＋ ' : ''}${t}</small></button>`; };
-  $('#app').innerHTML = header('감독 방선 보고서', `${ms && isForeign(ms) ? 'SBM-07P-09F 외항선' : 'SMM-3C-01F'} · ${WHO()}`) + `<main>
+  $('#app').innerHTML = header('감독 방선 보고서', `${ms && isForeign(ms) ? 'SBM-07P-09F 외항선' : 'SMM-3C-01F'} · ${WHO()}`, '', 1) + `<main>
     <style>.vg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}@media(min-width:640px){.vg{grid-template-columns:repeat(4,minmax(0,1fr))}}.vs{text-align:left;border:1px solid var(--line);background:#fff;border-radius:10px;padding:6px 9px;min-width:0}.vs b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vs small{display:block;font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vs.no{background:#F7F9FC}.vs.no b{color:var(--mut);font-weight:600}.vs.ok{border-color:#BFE5CF;background:var(--okBg)}.vs.warn{border-color:#F0C46A;background:var(--warnBg)}.sec{display:flex;align-items:center;gap:8px;margin:18px 0 8px}.sec h3{margin:0;white-space:nowrap}</style>
     ${homeSeg()}
     ${todoHTML()}
