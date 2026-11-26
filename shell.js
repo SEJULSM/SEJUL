@@ -222,6 +222,7 @@ html body .sjx-hid,html body header.top #nav>button.sjx-hid,html body #nav butto
       const sp = (U.sum('pms') || {}).ships || {}, s = sp[v] || {}, r = ((U.sum('rsk') || {}).v || {})[v] || {};
       const CNT = pms ? { jobs: [s.od, ''], defects: [s.def, s.defA ? '' : 'y'], spares: [s.low, 'y'] } : { raList: [(r.wait || 0) + (r.stop || 0), r.stop ? '' : 'y'], ptwList: [r.act, 'b'], dpa: [r.wait, 'y'] };
       if (!nav.querySelector('.sjtb-id')) nav.insertAdjacentHTML('afterbegin', `<span class="sjtb-id ${SUB}"><i>${U.ic((U.TOOLS().find(x => x[0] === SUB) || [])[2] || SUB, 17)}</i>${SUBN()}</span>`);
+      if (!nav.querySelector('.sjt-sw') && U.topSync) { nav.insertAdjacentHTML('beforeend', '<span class="sjt-gap"></span><span class="sjt-sw">' + U.topSync() + '</span>'); try { U.topSyncPaint(); } catch (e) { } }   /* 오른쪽 끝 동기화 버튼 — 방선 보고서와 같은 모양 */
       const btns = [...nav.querySelectorAll(':scope>button, :scope>.sjtb-more .sjtb-mm>button')];
       /* 사무실 DPA·회사 승인 탭 → 승인함(🔔)과 공통 결정 창으로 대체 — 탭 숨김 */
       if (!pms && off) btns.forEach(b => { if (key(b) === 'dpa') b.classList.add('sjx-hid'); });

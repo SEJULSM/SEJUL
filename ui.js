@@ -415,7 +415,7 @@ html.sj-railmin .sjr .sj-vtg{display:none}html.sj-railmin .sjr .sj-flr{margin-to
  body.rail .hd.sjt.sub a.home::after{content:'목록';margin-left:4px}
  body.rail .hd.sjt .sjt-id{display:inline-flex;align-items:center;gap:8px;padding:4px 14px 4px 2px;margin-right:6px;border-right:1px solid var(--sj-bd,#E1E6EE);font-weight:800;font-size:16px;color:var(--sj-tx,#1A2233);white-space:nowrap;flex:none}
  body.rail .hd.sjt .sjt-id i{width:28px;height:28px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-style:normal}
- body.rail .hd.sjt .sjt-id.vst i{background:#E6F4EE;color:#1E7A52}body.rail .hd.sjt .sjt-id.stat i{background:var(--sj-pur-bg,#F1ECFB);color:var(--sj-pur-fg,#6A3FB5)}
+ body.rail .hd.sjt .sjt-id.vst i{background:#E6F4EE;color:#1E7A52}body.rail .hd.sjt .sjt-id.stat i{background:#E3F4F6;color:#0E6F7A}
  body.rail .hd.sjt .sjt-p{display:flex;align-items:center;gap:4px;flex-wrap:nowrap;overflow-x:auto}
  body.rail .hd.sjt .sjt-p button{display:inline-flex;align-items:center;gap:6px;flex:0 0 auto;white-space:nowrap;color:var(--sj-tx,#1A2233);background:transparent;border:0;border-radius:9px;padding:8px 12px;font-size:14px;font-weight:600;line-height:1.2;cursor:pointer;font-family:inherit}
  body.rail .hd.sjt .sjt-p button:hover{background:var(--sj-sf2,#F7F9FC)}
@@ -426,6 +426,19 @@ html.sj-railmin .sjr .sj-vtg{display:none}html.sj-railmin .sjr .sj-flr{margin-to
  body.rail .hd.sjt .ib{background:var(--sj-sf2,#F7F9FC);color:var(--sj-tx,#1A2233);border:1px solid var(--sj-bd,#E1E6EE);border-radius:9px;height:36px;padding:0 12px;font-size:13.5px;font-weight:700}
  body.rail .hd.sjt .sy2{display:none!important}
  body.rail .sjt-hide{display:none!important}
+}
+/* 위쪽 줄 오른쪽 동기화 버튼 — 모든 도구 같은 모양 (PC만 · 휴대폰은 앱 머리줄의 점) */
+.sjt-sync,.sjt-gap,.sjt-sw{display:none}
+@media(min-width:900px){html body header.top #nav>button{min-height:0!important;height:auto!important}}
+/* 모든 도구 본문 가로 폭 통일: PC에서는 왼쪽 메뉴 옆 화면 폭을 다 씀 (도구마다 최대 폭이 달라 오른쪽에 흰 여백이 남던 것) */
+@media(min-width:900px){html body main#main,html body main.two,html body main#app,html body .sjh{max-width:none!important;margin-left:0!important;margin-right:0!important}}
+.sjtb-id.inv i{background:var(--sj-pur-bg,#F1ECFB)!important;color:var(--sj-pur-fg,#6A3FB5)!important}.sjtb-id.cert i{background:#FFF6D6!important;color:#8A6400!important}
+@media(min-width:900px){
+ body .sjt-gap{display:block;flex:1 1 auto;min-width:8px}body .sjt-sw{display:inline-flex;flex:none;margin-left:auto;padding-left:6px}
+ body .sjt-sync{display:inline-flex!important;align-items:center;gap:7px;flex:none;height:36px!important;min-height:0!important;width:auto!important;line-height:1!important;padding:0 12px!important;margin:0 0 0 auto!important;border:1px solid var(--sj-bd,#E1E6EE)!important;border-radius:9px!important;background:var(--sj-sf2,#F7F9FC)!important;color:var(--sj-tx,#1A2233)!important;font:700 13.5px 'Pretendard','Noto Sans KR','Malgun Gothic',system-ui,sans-serif!important;cursor:pointer;white-space:nowrap;box-shadow:none!important}
+ body .sjt-sync:hover{background:var(--sj-sf3,#EEF1F6)!important}body .sjt-sync:disabled{opacity:.7}
+ body .sjt-sync .sjd{position:static!important;transform:none!important;width:9px!important;height:9px!important;min-width:0!important;border-radius:50%!important;background:#8A94A6;display:inline-block!important;padding:0!important;margin:0!important;flex:none}body .sjt-sync .sjd.ok{background:#2FA36B}body .sjt-sync .sjd.warn{background:#E0A100}body .sjt-sync .sjd.err{background:#D93636}
+ body .sjt-sync .tx{max-width:120px;overflow:hidden;text-overflow:ellipsis}
 }`;
   /* 왼쪽 메뉴 HTML. act = home|pms|rsk|devices|settings, base = 앱 홈 기준 경로 ('' 또는 '../') */
   /* 도구 목록 (왼쪽 메뉴·휴대폰 탭·검색·알림이 같이 씀) — 재고·구매, 증서·검사는 계획정비와 같은 자료를 씀 */
@@ -633,7 +646,17 @@ html.sj-railmin .sjr .sj-vtg{display:none}html.sj-railmin .sjr .sj-flr{margin-to
     else if (s.busy) { c = 'ok'; t = T('동기화 중…', 'Syncing…'); }
     else { c = 'ok'; const at = s.last; t = at ? T('동기화', 'Synced') + ' · ' + U.ago(at) : T('서버 연결됨', 'Connected'); }
     document.querySelectorAll('.sjm-sy .sj-d').forEach(d => { d.className = 'sj-d ' + c; d.parentNode.title = t; });
-    el.querySelector('.sj-d').className = 'sj-d ' + c; el.querySelector('.sj-t').textContent = t; el.title = s.err ? s.err : ''; };
+    el.querySelector('.sj-d').className = 'sj-d ' + c; el.querySelector('.sj-t').textContent = t; el.title = s.err ? s.err : ''; try { U.topSyncPaint(); } catch (e) { } };
+  /* 위쪽 줄 동기화 버튼 (모든 도구 공통) — 방선 보고서의 [● 동기화됨]과 같은 모양·같은 동작 */
+  U.topSync = () => `<button type="button" class="sjt-sync" data-sjtsync title="${U.T('눌러서 지금 동기화', 'Tap to sync now')}"><i class="sjd"></i><span class="tx">${U.T('대기', 'Idle')}</span></button>`;
+  U.topCloud = () => (typeof window.SJ_TOPCLOUD === 'function' ? window.SJ_TOPCLOUD() : null) || window.SJCLOUD || null;
+  U.topSyncInfo = () => { const T = U.T, Cl = U.topCloud(), m = U.me(); if (!navigator.onLine) return ['warn', T('오프라인', 'Offline')]; if (!m || m.status === 'none') return ['', T('서버 미등록', 'Not registered')]; if (m.status === 'pending') return ['warn', T('승인 대기', 'Pending')]; if (m.status !== 'approved') return ['err', T('동기화 해제', 'Revoked')];
+    const s = (Cl && Cl.state) || {}, dirty = window.SJCLOUD && SJCLOUD.dirty ? SJCLOUD.dirty() : 0; if (s.err) return ['err', T('동기화 오류', 'Sync error')]; if (s.busy) return ['ok', T('동기화 중…', 'Syncing…')]; if (dirty) return ['warn', T('보낼 변경', 'Pending changes')]; return ['ok', s.last ? T('동기화됨', 'Synced') : T('대기', 'Idle')]; };
+  U.topSyncPaint = () => { const L = document.querySelectorAll('.sjt-sync'); if (!L.length) return; const [c, t] = U.topSyncInfo(); L.forEach(b => { if (b.dataset.busy) return; const d = b.querySelector('.sjd'), x = b.querySelector('.tx'); if (d) d.className = 'sjd ' + c; if (x) x.textContent = t; }); };
+  document.addEventListener('click', async e => { const b = e.target.closest && e.target.closest('[data-sjtsync]'); if (!b || b.disabled) return; e.preventDefault(); const T = U.T; b.disabled = true; b.dataset.busy = '1'; const x = b.querySelector('.tx'), d = b.querySelector('.sjd'); if (x) x.textContent = T('동기화 중…', 'Syncing…'); if (d) d.className = 'sjd ok';
+    let n = 0, err = ''; try { if (typeof window.SJ_TOPSYNC === 'function') n = await window.SJ_TOPSYNC(); else { const Cl = window.SJCLOUD; if (!Cl || !Cl.sync || !Cl.A) err = T('서버 동기화를 쓸 수 없는 상태입니다 — 설정에서 기기를 등록하세요', 'Server sync not available'); else { n = await (Cl.syncWait ? Cl.syncWait(Cl.A) : Cl.sync(Cl.A, false)); err = (Cl.state && Cl.state.err) || ''; } } } catch (x2) { err = String(x2 && x2.message || x2); }
+    b.disabled = false; delete b.dataset.busy; U.topSyncPaint(); try { U.syncPaint(); } catch (x3) { } if (U.toast) U.toast(err ? T('동기화 오류: ', 'Sync error: ') + err : n ? T(`받은 변경 ${n}건`, `${n} change(s) received`) : T('최신 상태입니다', 'Up to date'), 3000); });
+  setInterval(() => { try { U.topSyncPaint(); } catch (e) { } }, 4000);
   /* 업데이트 표시 (왼쪽 메뉴) */
   U.updPaint = function (msg) { const H = !!(C.updHas || C.updAvail); document.querySelectorAll('.sjm-up').forEach(x => x.hidden = !H); const a = document.querySelector('.sjr [data-sjupd]'); if (!a) return; const has = H; a.classList.toggle('has', has); const sm = a.querySelector('small'); if (sm) sm.textContent = has ? U.T('⬆ 새 버전 — 눌러서 업데이트', '⬆ New version — tap to update') : (msg || U.T('업데이트 확인', 'Check for updates')); };
   document.addEventListener('click', async e => { const a = e.target.closest && e.target.closest('[data-sjupd]'); if (!a) return; e.preventDefault();

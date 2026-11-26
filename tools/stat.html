@@ -60,7 +60,7 @@ table.t td:first-child b{white-space:nowrap}table.t.sm td:first-child{white-spac
 .load{display:flex;align-items:center;gap:10px;justify-content:center;padding:50px 10px;color:var(--mut)}
 .spin{width:22px;height:22px;border:3px solid #DDE3EC;border-top-color:var(--navy);border-radius:50%;animation:sp 0.9s linear infinite}@keyframes sp{to{transform:rotate(360deg)}}
 .pr-only{display:none}
-@media(min-width:900px){body.rail{padding-left:var(--sjr-w,248px)}body.rail .hd.sjt .tt{text-align:right}body.rail .hd.sjt .tt b{display:none}}
+@media(min-width:900px){body.rail .ib.noPC{display:none}body.rail{padding-left:var(--sjr-w,248px)}body.rail .hd.sjt .tt{text-align:right}body.rail .hd.sjt .tt b{display:none}}
 @media(max-width:1100px){.kpi{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:899px){
  body.sjm-on{padding-top:54px}html.sj-hasupd body.sjm-on{padding-top:100px}
@@ -99,7 +99,7 @@ table.t td:first-child b{white-space:nowrap}table.t.sm td:first-child{white-spac
 </style></head>
 <body>
 <div class="hd sjt"><span class="sjt-id stat" id="sjtId"><i>📊</i>통계·분석</span><nav class="sjt-p" id="ptabs"></nav><div class="tt"><b>📊 통계·분석 <span class="en" style="color:inherit;opacity:.7">Analytics</span></b><small id="hsub">자료를 불러오는 중…</small></div>
- <button class="ib" id="bRe" title="최신 자료 다시 읽기">🔄<span class="tx"> 새로 고침</span></button>
+ <span id="syncSlot"></span><button class="ib" id="bRe" data-sjtsync title="서버와 지금 동기화하고 다시 계산">🔄<span class="tx"> 새로 고침</span></button>
  <button class="ib" id="bXl" title="엑셀로 저장">📥<span class="tx"> 엑셀</span></button>
  <button class="ib" id="bPr" title="출력·PDF">🖨<span class="tx"> 출력</span></button></div>
 <div class="tabs sjt-hide" id="tabs"></div>
@@ -315,7 +315,11 @@ function toast(m) { let t = $('.toast'); if (!t) { t = document.createElement('d
       if (UI.rail) { w.innerHTML = UI.rail('stat', '../'); document.body.classList.add('rail', 'sjm-on'); }
       [...w.children].forEach(x => document.body.appendChild(x)); UI.syncPaint && UI.syncPaint(); try { UI.updPaint && UI.updPaint(); } catch (e) { } try { UI.inb && UI.inb.paint && UI.inb.paint(); } catch (e) { } } } catch (e) { console.warn('frame', e); }
   try { if (UI && UI.ic && UI.IC_ST) $('#sjtId i').innerHTML = UI.ic(UI.IC_ST, 17); } catch (e) { }
-  $('#bRe').onclick = () => { DATA = null; render(); loadSrc(); };
+  /* PC: 다른 도구와 같은 [● 동기화됨] 버튼 — 숨은 방선 화면의 서버 연결로 지금 동기화 → 새 자료로 다시 계산 */
+  if (UI && UI.topSync) { $('#syncSlot').outerHTML = UI.topSync(); $('#bRe').classList.add('noPC'); }
+  const SRC = () => { try { return $('#src').contentWindow; } catch (e) { return null; } };
+  window.SJ_TOPCLOUD = () => { const w = SRC(); return w && w.SJCLOUD && w.SJCLOUD.A ? w.SJCLOUD : null; };
+  window.SJ_TOPSYNC = async () => { const w = SRC(), Cl = w && w.SJCLOUD; if (!Cl || !Cl.A) { DATA = null; render(); loadSrc(); return 0; } const n = await (Cl.syncWait ? Cl.syncWait(Cl.A) : Cl.sync(Cl.A, false)); try { w.statPost && w.statPost(); } catch (e) { } return n || 0; };
   $('#bXl').onclick = exportXL; $('#bPr').onclick = () => print();
   render(); if (!role() || role() === 'office') loadSrc();
   let pw = PH(); addEventListener('resize', () => { if (PH() !== pw) { pw = PH(); render(); } });
