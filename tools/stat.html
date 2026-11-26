@@ -28,7 +28,7 @@ main{max-width:1280px;margin:0 auto;padding:14px}
 .seg{display:inline-flex;border:1px solid #C9D1DD;border-radius:10px;overflow:hidden;background:#fff}
 .seg button{border:0;background:#fff;padding:7px 12px;font-weight:700;font-size:13.5px}.seg button+button{border-left:1px solid #E1E6EE}.seg button.on{background:var(--navy);color:#fff}
 select{border:1px solid #C9D1DD;border-radius:10px;padding:7px 10px;background:#fff;font-weight:700;font-size:13.5px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:12px}
+.card{scroll-margin-top:120px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:12px}
 .card h2{font-size:16px;margin:0 0 2px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}.card h2 .sp{flex:1}
 .card .sub{font-size:12.5px;color:var(--mut);margin:0 0 10px}
 .kpi{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:12px}
@@ -132,7 +132,7 @@ const pct = (a, b) => b ? Math.round(a / b * 1000) / 10 : null;
 const fmtP = v => v == null ? '—' : v + '%';
 
 let DATA = null, ERR = '';
-const S = { tab: LS.get('sejul_stat_tab') || 'nc', per: LS.get('sejul_stat_per') || '6', kind: LS.get('sejul_stat_kind') || 'all', ship: '' };
+const S = { tab: 'nc',   /* 들어올 때는 항상 첫 탭(부적합) */ per: LS.get('sejul_stat_per') || '6', kind: LS.get('sejul_stat_kind') || 'all', ship: '' };
 
 /* ---------- 자료 받기 ---------- */
 function loadSrc() { ERR = ''; const f = $('#src'); f.src = 'vst.html?statdata=1&t=' + Date.now(); clearTimeout(loadSrc.t); loadSrc.t = setTimeout(() => { if (!DATA) { ERR = '방선 자료를 받지 못했습니다. 방선 보고서를 한 번 연 뒤 다시 시도하세요.'; render(); } }, 20000); }
@@ -197,7 +197,7 @@ function fltHTML() { const sh = VES().filter(v => S.kind === 'all' || (S.kind ==
     <label>선박</label><select id="fship"><option value="">전체 선박</option>${sh.map(v => `<option ${S.ship === v ? 'selected' : ''}>${esc(v)}</option>`).join('')}</select></div>`; }
 function prHead(title) { const M = months(); return `<div class="pr-only" style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #14244A;padding-bottom:4px"><b style="font-size:16pt">${title}</b><span class="small">SEJUL SHIP MANAGEMENT CO., LTD. · 출력 ${dot(ymd())}</span></div>
   <div class="small" style="margin-top:4px">기간 ${M[0].replace('-', '.')} ~ ${M[M.length - 1].replace('-', '.')} · 구분 ${{ all: '전체', d: '내항선', f: '외항선' }[S.kind]} · 선박 ${S.ship || '전체'} · 자료: 감독 방선 보고서</div></div>`; }
-const kp = (l, v, s, cls) => `<div class="kp ${cls || ''}"><div class="l">${l}</div><div class="v">${v}</div><div class="s">${s || '&nbsp;'}</div></div>`;
+const kp = (l, v, s, cls, j) => `<div class="kp ${cls || ''}" ${j ? `data-jump="${j}" role="button" tabindex="0" title="눌러서 자세히 보기"` : ''}><div class="l">${l}</div><div class="v">${v}</div><div class="s">${s || '&nbsp;'}</div></div>`;
 const goRep = id => `data-go="${esc(id)}"`;
 
 const PH = () => innerWidth < 760;
@@ -205,13 +205,13 @@ function fltPhone() { const sh = VES().filter(v => S.kind === 'all' || (S.kind =
   return `<div class="fm"><select id="fper">${PER.map(([k, l]) => `<option value="${k}" ${S.per === k ? 'selected' : ''}>${l}</option>`).join('')}</select><select id="fkind">${[['all', '내항+외항'], ['d', '내항선'], ['f', '외항선']].map(([k, l]) => `<option value="${k}" ${S.kind === k ? 'selected' : ''}>${l}</option>`).join('')}</select><select id="fship"><option value="">전체 선박</option>${sh.map(v => `<option ${S.ship === v ? 'selected' : ''}>${esc(v)}</option>`).join('')}</select></div>`; }
 function viewNCm() { const R = reps(), c = calc(R), t0 = ymd();
   if (!R.length) return `<div class="card empty">이 기간에 방선 보고서가 없습니다.</div>`;
-  let h = `<div class="kpi">${kp('방선', c.nRep + '<small>건</small>', `완료 ${c.nDone}`)}${kp('지적', c.nF + '<small>건</small>', `방선당 ${c.nRep ? Math.round(c.nF / c.nRep * 10) / 10 : 0}건`)}${kp('미조치', c.open + '<small>건</small>', c.over ? `기한 초과 ${c.over}` : '기한 초과 없음', c.over ? 'err' : '')}${kp('기한 내 조치율', fmtP(c.ontime), c.avg == null ? '' : `평균 ${c.avg}일`, c.ontime != null && c.ontime >= 90 ? 'ok' : '')}</div>`;
+  let h = `<div class="kpi">${kp('방선', c.nRep + '<small>건</small>', `완료 ${c.nDone}`, '', 'msec-ship')}${kp('지적', c.nF + '<small>건</small>', `방선당 ${c.nRep ? Math.round(c.nF / c.nRep * 10) / 10 : 0}건`, '', 'msec-rep')}${kp('미조치', c.open + '<small>건</small>', c.over ? `기한 초과 ${c.over}` : '기한 초과 없음', c.over ? 'err' : '', 'msec-open')}${kp('기한 내 조치율', fmtP(c.ontime), c.avg == null ? '' : `평균 ${c.avg}일`, c.ontime != null && c.ontime >= 90 ? 'ok' : '', 'msec-ship')}</div>`;
   const top = repeatTop(c.F).slice(0, 5);
-  h += `<div class="card"><h2>반복 지적 Top 5</h2>${top.length ? `<ul class="ml">${top.map((t, i) => `<li><span class="rk">${i + 1}</span><span class="nm"><span class="no">${esc(t.item || '구역 ' + t.area)}</span>${esc(t.item ? t.nm : (t.nm || '').replace(/^구역 \d+ /, ''))}<small>${[...t.ships].map(esc).join(', ')}</small></span><span class="ct">${t.n}<small class="mut" style="font-size:12px;font-weight:600">건</small></span></li>`).join('')}</ul>` : '<div class="empty">지적이 없습니다.</div>'}</div>`;
+  h += `<div class="card" id="msec-rep"><h2>반복 지적 Top 5</h2>${top.length ? `<ul class="ml">${top.map((t, i) => `<li><span class="rk">${i + 1}</span><span class="nm"><span class="no">${esc(t.item || '구역 ' + t.area)}</span>${esc(t.item ? t.nm : (t.nm || '').replace(/^구역 \d+ /, ''))}<small>${[...t.ships].map(esc).join(', ')}</small></span><span class="ct">${t.n}<small class="mut" style="font-size:12px;font-weight:600">건</small></span></li>`).join('')}</ul>` : '<div class="empty">지적이 없습니다.</div>'}</div>`;
   const B = byShip(R).filter(b => b.nRep);
-  h += `<div class="card"><h2>선박별</h2><ul class="ml">${B.map(b => `<li data-ship="${esc(b.ship)}"><span class="nm">${esc(b.ship)} ${b.fx ? '<span class="tag f">외항</span>' : ''}<small>방선 ${b.nRep} · 지적 ${b.nF} · 조치율 ${fmtP(b.ontime)}</small></span>${b.over ? `<span class="tag err">초과 ${b.over}</span>` : ''}<span class="ct">${b.open}<small class="mut" style="font-size:12px;font-weight:600"> 미조치</small></span></li>`).join('')}</ul></div>`;
+  h += `<div class="card" id="msec-ship"><h2>선박별</h2><ul class="ml">${B.map(b => `<li data-ship="${esc(b.ship)}"><span class="nm">${esc(b.ship)} ${b.fx ? '<span class="tag f">외항</span>' : ''}<small>방선 ${b.nRep} · 지적 ${b.nF} · 조치율 ${fmtP(b.ontime)}</small></span>${b.over ? `<span class="tag err">초과 ${b.over}</span>` : ''}<span class="ct">${b.open}<small class="mut" style="font-size:12px;font-weight:600"> 미조치</small></span></li>`).join('')}</ul></div>`;
   const O = c.F.filter(f => !f.done).sort((a, b) => (a.due || '9') < (b.due || '9') ? -1 : 1).slice(0, 10);
-  h += `<div class="card"><h2>미조치 지적 <span class="sp"></span><span class="small mut">${c.open}건</span></h2>${O.length ? `<ul class="ml">${O.map(f => { const od = f.due && f.due < t0 ? days(f.due, t0) : 0;
+  h += `<div class="card" id="msec-open"><h2>미조치 지적 <span class="sp"></span><span class="small mut">${c.open}건</span></h2>${O.length ? `<ul class="ml">${O.map(f => { const od = f.due && f.due < t0 ? days(f.due, t0) : 0;
     return `<li data-go="${esc(f.r.id)}"><span class="nm">${esc(f.ship)} · ${f.item ? `<span class="no">${esc(f.item)}</span>${esc(f.it)}` : esc(f.title || '')}<small>${esc(f.title || f.desc || '')}</small></span>${od ? `<span class="tag err">+${od}일</span>` : `<span class="small mut">${f.due ? dot(f.due).slice(5) : ''}</span>`}</li>`; }).join('')}</ul>` : '<div class="empty">미조치 지적이 없습니다 👍</div>'}</div>`;
   return h + `<div class="pcnote">그래프·전체 표·엑셀·출력은 PC에서 볼 수 있습니다</div>`; }
 function viewAllm() { const R = reps(), L = byShip(R).map(b => { const cp = compliance(b.ship, R), okr = b.rate == null ? null : 100 - b.rate, parts = [[cp.p, 0.3], [okr, 0.3], [b.ontime, 0.4]].filter(x => x[0] != null), w = parts.reduce((a, x) => a + x[1], 0), sc = b.nRep && w ? Math.round(parts.reduce((a, x) => a + x[0] * x[1], 0) / w) : null; return { b, cp, sc }; }).sort((a, b) => (b.sc == null ? -1 : b.sc) - (a.sc == null ? -1 : a.sc));
@@ -219,22 +219,22 @@ function viewAllm() { const R = reps(), L = byShip(R).map(b => { const cp = comp
 function viewNC() { const R = reps(), c = calc(R), F = c.F, M = months();
   if (!R.length) return prHead('방선 부적합 통계') + `<div class="card empty">이 기간·조건에 방선 보고서가 없습니다.<br><span class="small">기간을 늘리거나 구분·선박을 바꿔 보세요.</span></div>`;
   let h = prHead('방선 부적합 통계 · Visit findings');
-  h += `<div class="kpi">${kp('방선 보고서', c.nRep + '<small>건</small>', `완료 ${c.nDone} · 진행 ${c.nRep - c.nDone}`)}${kp('점검 판정 부적합률', fmtP(c.rate), `부적합 ${c.n} / 판정 ${c.y + c.n} (해당없음 제외)`)}${kp('지적사항', c.nF + '<small>건</small>', `방선 1회당 ${c.nRep ? Math.round(c.nF / c.nRep * 10) / 10 : 0}건`)}
-    ${kp('미조치', c.open + '<small>건</small>', c.over ? `기한 초과 ${c.over}건` : '기한 초과 없음', c.over ? 'err' : '')}${kp('평균 조치 기간', c.avg == null ? '—' : c.avg + '<small>일</small>', `조치 완료 ${c.nDoneF}건 기준 (방선일→조치완료일)`)}${kp('기한 내 조치율', fmtP(c.ontime), '기한 안에 완료 ÷ (완료 + 기한 초과 미조치)', c.ontime != null && c.ontime >= 90 ? 'ok' : '')}</div>`;
+  h += `<div class="kpi">${kp('방선 보고서', c.nRep + '<small>건</small>', `완료 ${c.nDone} · 진행 ${c.nRep - c.nDone}`, '', 'sec-ship')}${kp('점검 판정 부적합률', fmtP(c.rate), `부적합 ${c.n} / 판정 ${c.y + c.n} (해당없음 제외)`, '', 'sec-team')}${kp('지적사항', c.nF + '<small>건</small>', `방선 1회당 ${c.nRep ? Math.round(c.nF / c.nRep * 10) / 10 : 0}건`, '', 'sec-rep')}
+    ${kp('미조치', c.open + '<small>건</small>', c.over ? `기한 초과 ${c.over}건` : '기한 초과 없음', c.over ? 'err' : '', 'sec-open')}${kp('평균 조치 기간', c.avg == null ? '—' : c.avg + '<small>일</small>', `조치 완료 ${c.nDoneF}건 기준 (방선일→조치완료일)`, '', 'sec-ship')}${kp('기한 내 조치율', fmtP(c.ontime), '기한 안에 완료 ÷ (완료 + 기한 초과 미조치)', c.ontime != null && c.ontime >= 90 ? 'ok' : '', 'sec-ship')}</div>`;
   /* 추세 + 팀별 */
   const keys = ['S', 'T', 'M'].filter(k => S.kind !== 'f' || k !== 'M');
   const team = keys.map(k => { let y = 0, n = 0; R.forEach(r => r.parts.filter(p => p.k === k).forEach(p => { y += p.y; n += p.no; })); const Fk = F.filter(f => f.part === k); return { k, y, n, rate: pct(n, y + n), nF: Fk.length, open: Fk.filter(f => !f.done).length }; });
   const tmax = Math.max(1, ...team.map(t => t.nF));
-  h += `<div class="g2"><div class="card"><h2>월별 지적 건수 <span class="en">Findings by month</span></h2><p class="sub">방선일 기준 · 팀(파트)별 누적 · 막대에 손가락·마우스를 대면 숫자가 나옵니다</p>${trendSVG(F)}</div>
-    <div class="card"><h2>팀(파트)별 <span class="en">By team</span></h2><p class="sub">${S.kind === 'all' ? '외항선은 Marine = 안품, Technical = 공무로 합산' : S.kind === 'f' ? '외항선 Marine(안품) · Technical(공무)' : '내항선 안품·공무·해무'}</p>
+  h += `<div class="g2"><div class="card" id="sec-trend"><h2>월별 지적 건수 <span class="en">Findings by month</span></h2><p class="sub">방선일 기준 · 팀(파트)별 누적 · 막대에 손가락·마우스를 대면 숫자가 나옵니다</p>${trendSVG(F)}</div>
+    <div class="card" id="sec-team"><h2>팀(파트)별 <span class="en">By team</span></h2><p class="sub">${S.kind === 'all' ? '외항선은 Marine = 안품, Technical = 공무로 합산' : S.kind === 'f' ? '외항선 Marine(안품) · Technical(공무)' : '내항선 안품·공무·해무'}</p>
     <div class="tw"><table class="t sm"><tr><th>팀</th><th class="n">판정 부적합률</th><th>지적</th><th class="n">미조치</th></tr>${team.map(t => `<tr><td><span class="tag" style="background:none;padding:0"><i style="display:inline-block;width:10px;height:10px;border-radius:3px;background:${TEAM[t.k][2]};margin-right:5px"></i></span><b>${S.kind === 'f' ? TEAMF[t.k] : TEAM[t.k][0]}</b> <span class="mut small hide-s">${TEAM[t.k][1]}</span></td><td class="n">${fmtP(t.rate)} <span class="mut small">(${t.n}/${t.y + t.n})</span></td><td><div class="bx"><i style="width:${t.nF / tmax * 100}%;background:${TEAM[t.k][2]}"></i><span>${t.nF}</span></div></td><td class="n">${t.open || '<span class="mut">0</span>'}</td></tr>`).join('')}</table></div></div></div>`;
   /* 반복 지적 */
   const top = repeatTop(F).slice(0, 10), rmax = Math.max(1, ...top.map(t => t.n));
-  h += `<div class="card" style="margin-top:12px"><h2>반복 지적 Top 10 <span class="en">Recurring findings</span></h2><p class="sub">같은 점검항목(외항선은 항목·구역)에서 나온 지적 수 — 여러 선박에서 반복되면 선대 전파·교육 대상</p>
+  h += `<div class="card" id="sec-rep" style="margin-top:12px"><h2>반복 지적 Top 10 <span class="en">Recurring findings</span></h2><p class="sub">같은 점검항목(외항선은 항목·구역)에서 나온 지적 수 — 여러 선박에서 반복되면 선대 전파·교육 대상</p>
     ${top.length ? `<div class="tw"><table class="t"><tr><th>순위</th><th>점검항목</th><th>팀</th><th style="min-width:140px">지적</th><th class="n">선박 수</th><th class="hide-s">선박</th><th class="n">최근</th></tr>${top.map((t, i) => `<tr><td>${i + 1}</td><td><span class="no">${esc(t.item || '구역 ' + t.area)}</span>${t.fx ? '<span class="tag f">외항</span>' : ''}${esc(t.item ? t.nm : (t.nm || '').replace(/^구역 \d+ /, ''))}</td><td class="small">${t.part ? teamLabel(t.part, t.fx) : '—'}</td><td><div class="bx"><i style="width:${t.n / rmax * 100}%"></i><span>${t.n}건</span></div></td><td class="n">${t.ships.size}${t.ships.size >= 2 ? ' <span class="tag warn">반복</span>' : ''}</td><td class="small hide-s">${[...t.ships].map(esc).join(', ')}</td><td class="n small">${dot(t.last).slice(2)}</td></tr>`).join('')}</table></div>` : '<div class="empty">지적사항이 없습니다.</div>'}</div>`;
   /* 선박 비교 */
   const B = byShip(R), bmax = Math.max(1, ...B.map(b => b.nF));
-  h += `<div class="card"><h2>선박 비교 <span class="en">By vessel</span></h2><p class="sub">줄을 누르면 그 선박만 봅니다 · 판정 부적합률 = 부적합 ÷ (적합 + 부적합)</p><div class="tw"><table class="t"><tr><th>선박</th><th class="n">방선</th><th class="n">판정 부적합률</th><th style="min-width:130px">지적</th><th class="n">방선당</th><th class="n">미조치</th><th class="n">기한 초과</th><th class="n">평균 조치</th><th class="n">기한 내 조치율</th></tr>
+  h += `<div class="card" id="sec-ship"><h2>선박 비교 <span class="en">By vessel</span></h2><p class="sub">줄을 누르면 그 선박만 봅니다 · 판정 부적합률 = 부적합 ÷ (적합 + 부적합)</p><div class="tw"><table class="t"><tr><th>선박</th><th class="n">방선</th><th class="n">판정 부적합률</th><th style="min-width:130px">지적</th><th class="n">방선당</th><th class="n">미조치</th><th class="n">기한 초과</th><th class="n">평균 조치</th><th class="n">기한 내 조치율</th></tr>
     ${B.map(b => `<tr data-ship="${esc(b.ship)}" style="cursor:pointer"><td><b>${esc(b.ship)}</b> ${b.fx ? '<span class="tag f">외항</span>' : ''}</td><td class="n">${b.nRep ? `${b.nRep} <span class="mut small">(완료 ${b.nDone})</span>` : '<span class="mut">0</span>'}</td><td class="n">${fmtP(b.rate)}</td><td><div class="bx"><i style="width:${b.nF / bmax * 100}%"></i><span>${b.nF}</span></div></td><td class="n">${b.nRep ? Math.round(b.nF / b.nRep * 10) / 10 : '—'}</td><td class="n">${b.open ? `<b>${b.open}</b>` : '<span class="mut">0</span>'}</td><td class="n">${b.over ? `<span class="tag err">${b.over}</span>` : '<span class="mut">0</span>'}</td><td class="n">${b.avg == null ? '—' : b.avg + '일'}</td><td class="n">${fmtP(b.ontime)}</td></tr>`).join('')}</table></div></div>`;
   /* 외항선 */
   const FF = F.filter(f => f.fx), RF = R.filter(r => r.f);
@@ -248,7 +248,7 @@ function viewNC() { const R = reps(), c = calc(R), F = c.F, M = months();
       ${AL.length ? `<div class="tw"><table class="t sm"><tr><th>구역</th><th class="n">불량</th><th class="n">보통</th><th class="n">양호</th></tr>${AL.map(a => `<tr><td><span class="no">${a.n}</span>${esc(a.t)}</td><td class="n">${a.P ? `<span class="tag err">${a.P}</span>` : '0'}</td><td class="n">${a.F ? `<span class="tag warn">${a.F}</span>` : '0'}</td><td class="n mut">${a.G}</td></tr>`).join('')}</table></div>` : '<div class="empty">보통·불량 구역이 없습니다.</div>'}</div></div>`; }
   /* 미조치 목록 */
   const O = F.filter(f => !f.done).sort((a, b) => (a.due || '9') < (b.due || '9') ? -1 : 1), t0 = ymd();
-  h += `<div class="card ${RF.length ? '' : ''}" style="margin-top:12px"><h2>미조치 지적 <span class="en">Open findings</span><span class="sp"></span><span class="small mut">${O.length}건</span></h2><p class="sub">조치기한 순 · 줄을 누르면 방선 보고서가 열립니다 (D.P 승인된 연장기한 반영)</p>
+  h += `<div class="card" id="sec-open" style="margin-top:12px"><h2>미조치 지적 <span class="en">Open findings</span><span class="sp"></span><span class="small mut">${O.length}건</span></h2><p class="sub">조치기한 순 · 줄을 누르면 방선 보고서가 열립니다 (D.P 승인된 연장기한 반영)</p>
     ${O.length ? `<div class="tw"><table class="t"><tr><th>선박</th><th class="n">방선일</th><th>항목</th><th>지적 내용</th><th class="n">조치기한</th><th class="n">경과</th></tr>${O.slice(0, 60).map(f => { const od = f.due && f.due < t0 ? days(f.due, t0) : 0;
       return `<tr ${goRep(f.r.id)}><td><b>${esc(f.ship)}</b>${f.fx && f.ty ? ` <span class="tag ${f.ty === 'NC' ? 'err' : 'warn'}">${f.ty === 'NC' ? 'NC' : 'Defect'}</span>` : ''}</td><td class="n small">${dot(f.date).slice(2)}</td><td class="small">${f.item ? `<span class="no">${esc(f.item)}</span>${esc(f.it)}` : f.area ? `구역 ${esc(f.area)} ${esc(f.at)}` : '—'}</td><td class="small">${esc(f.title || f.desc || '').slice(0, 80)}</td><td class="n small">${f.due ? dot(f.due).slice(2) : '—'}</td><td class="n">${od ? `<span class="tag err">+${od}일</span>` : '<span class="mut small">기한 전</span>'}</td></tr>`; }).join('')}</table></div>${O.length > 60 ? `<p class="small mut">외 ${O.length - 60}건 — 엑셀로 전체 목록을 받으세요</p>` : ''}` : '<div class="empty">미조치 지적이 없습니다 👍</div>'}</div>`;
   return h; }
@@ -290,6 +290,7 @@ function bind() { $$('[data-tab]').forEach(b => b.onclick = () => { if (b.disabl
   const fk = $('#fkind'); if (fk) fk.onchange = () => { S.kind = fk.value; LS.set('sejul_stat_kind', S.kind); if (S.ship && S.kind !== 'all' && (S.kind === 'f') !== isFV(S.ship)) S.ship = ''; render(); };
   $$('[data-ship]').forEach(r => r.onclick = () => { S.ship = S.ship === r.dataset.ship ? '' : r.dataset.ship; render(); scrollTo(0, 0); });
   $$('[data-go]').forEach(r => r.onclick = () => { location.href = 'vst.html#/r/' + r.dataset.go; });
+  $$('[data-jump]').forEach(k => { const f = () => { const t = document.getElementById(k.dataset.jump); if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' }); }; k.onclick = f; k.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); f(); } }; });
   bindTrend(); }
 
 /* ---------- 엑셀 (저장 위치 고르기) ---------- */

@@ -567,7 +567,8 @@ async function viewPhoto(id, onDel) { const src = await photo(id); modal(`<h3>�
 
 /* =============================== 화면 =============================== */
 /* 메뉴에서 ?home=rep|sp 로 열면 그 목록으로 */
-try { const q = new URLSearchParams(location.search), hq = q.get('home'); if (q.get('sync')) { q.delete('sync'); history.replaceState(null, '', location.pathname + (q.toString() ? '?' + q : '') + location.hash); (function w(i) { const C = window.SJCLOUD; if (C && C.A) return syncNow(); if (i < 40) setTimeout(() => w(i + 1), 250); })(0); } if (hq === 'sp' || hq === 'rep' || hq === 'dp') { localStorage.setItem('sejul_vst_home', hq); q.delete('home'); history.replaceState(null, '', location.pathname + (q.toString() ? '?' + q : '') + location.hash); } } catch (e) { }
+try { const q = new URLSearchParams(location.search), hq = q.get('home'); if (q.get('sync')) { q.delete('sync'); history.replaceState(null, '', location.pathname + (q.toString() ? '?' + q : '') + location.hash); (function w(i) { const C = window.SJCLOUD; if (C && C.A) return syncNow(); if (i < 40) setTimeout(() => w(i + 1), 250); })(0); } if (!hq && !/[?&]statdata\b/.test(location.search) && !location.hash.replace(/^#\/?/, '')) localStorage.setItem('sejul_vst_home', 'rep');   /* 메뉴로 들어오면 항상 첫 화면(감독 방선 보고서) */
+  if (hq === 'sp' || hq === 'rep' || hq === 'dp') { localStorage.setItem('sejul_vst_home', hq); q.delete('home'); history.replaceState(null, '', location.pathname + (q.toString() ? '?' + q : '') + location.hash); } } catch (e) { }
 const LITE = () => { try { return !!(UI && UI.lite && UI.lite()); } catch (e) { return false; } };
 const S = { tab: null, home: (() => { try { return localStorage.getItem('sejul_vst_home') || 'rep'; } catch (e) { return 'rep'; } })() };
 function route() { const h = location.hash.replace(/^#\/?/, '').split('/'); return { v: h[0] || '', id: h[1] || '', tab: h[2] || '' }; }

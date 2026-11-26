@@ -432,6 +432,11 @@ html.sj-railmin .sjr .sj-vtg{display:none}html.sj-railmin .sjr .sj-flr{margin-to
 @media(min-width:900px){html body header.top #nav>button{min-height:0!important;height:auto!important}}
 /* 모든 도구 본문 가로 폭 통일: PC에서는 왼쪽 메뉴 옆 화면 폭을 다 씀 (도구마다 최대 폭이 달라 오른쪽에 흰 여백이 남던 것) */
 @media(min-width:900px){html body main#main,html body main.two,html body main#app,html body .sjh{max-width:none!important;margin-left:0!important;margin-right:0!important}}
+/* 누를 수 있는 카드·요약 칸: 마우스를 대면 살짝 떠오름 — 계획정비·위험성 홈의 요약 칸과 같은 효과 (방선 보고서·통계·분석도 같게) */
+:is(.card.rc,.card.spc,.vs:not(:disabled),.kp[data-jump]){transition:transform .12s ease,box-shadow .15s ease,border-color .15s ease,background-color .15s ease}
+@media(hover:hover){:is(.card.rc,.card.spc,.vs:not(:disabled),.kp[data-jump]){cursor:pointer}:is(.card.rc,.card.spc,.vs:not(:disabled),.kp[data-jump]):hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(20,36,74,.10);border-color:var(--sj-blu,#1F64B8)}
+ .tl{transition:background-color .15s ease}.tl:hover{background:var(--sj-sf2,#F7F9FC)}
+ .ml li[data-ship],.ml li[data-go]{cursor:pointer;transition:background-color .15s ease}.ml li[data-ship]:hover,.ml li[data-go]:hover{background:var(--sj-sf2,#F7F9FC)}}
 .sjtb-id.inv i{background:var(--sj-pur-bg,#F1ECFB)!important;color:var(--sj-pur-fg,#6A3FB5)!important}.sjtb-id.cert i{background:#FFF6D6!important;color:#8A6400!important}
 @media(min-width:900px){
  body .sjt-gap{display:block;flex:1 1 auto;min-width:8px}body .sjt-sw{display:inline-flex;flex:none;margin-left:auto;padding-left:6px}
