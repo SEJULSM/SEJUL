@@ -85,6 +85,7 @@ textarea.i{min-height:84px;resize:vertical}
 .yn button.y.on{background:var(--ok);border-color:var(--ok);color:#fff}
 .yn button.n.on{background:var(--err);border-color:var(--err);color:#fff}
 .yn button.x.on{background:var(--na);border-color:var(--na);color:#fff}
+.yn button.z.on{background:#8A94A6;border-color:#8A94A6;color:#fff}
 .yn button small{font-size:12px;font-weight:600;margin-left:3px}
 .act{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
 .th{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
@@ -373,7 +374,7 @@ const PARTSF = [
 const PARTF = Object.fromEntries(PARTSF.map(p => [p.k, p]));
 const ITEMF = {}; PARTSF.forEach(p => p.items.forEach(it => { it.part = p.k; ITEMF[it.no] = it; }));
 /* 구역 순회 확인: [번호, 구역, 영문, 담당 파트, 사진 필수] */
-const AREAF = [[1, "선교", "Bridge", "S", 1], [2, "화물구역·매니폴드", "Cargo area & manifold", "S", 1], [3, "계류 장소 (선수·선미)", "Mooring stations (fwd/aft)", "S", 1], [4, "페인트·샘플·화학품 창고", "Paint, sample & chemical lockers", "S", 0], [5, "거주구역·병실", "Accommodation & hospital", "S", 1], [6, "조리실·식품저장고", "Galley & provision stores", "S", 1], [7, "갑판·선수루·갑판창고", "Main deck, forecastle & stores", "T", 1], [8, "펌프룸", "Pump room", "T", 0], [9, "기관실·기관제어실", "Engine room & ECR", "T", 1], [10, "타기실", "Steering gear room", "T", 1], [11, "비상발전기실·비상소화펌프", "Emergency generator & fire pump", "T", 0], [12, "구명정·구명뗏목 장소", "Lifeboat & liferaft stations", "T", 0], [13, "CO2실·소방장구함", "CO2 room & fireman's outfit lockers", "T", 0], [14, "선체 외부 (보이는 범위)", "Hull exterior (visible parts)", "T", 0]].map(([n, t, te, k, ph]) => ({ n, t, te, k, ph }));
+const AREAF = [[1, "선교", "Bridge", "S", 1], [2, "화물구역·매니폴드", "Cargo area & manifold", "S", 1], [3, "계류 장소 (선수)", "Mooring stations (fwd)", "S", 1], [4, "선수 Thruster room", "Bow Thruster room", "S", 0], [5, "계류 장소 (선미)", "Mooring stations (aft)", "S", 1], [6, "선미 Thruster room", "Stern Thruster room", "S", 0], [7, "페인트·샘플·화학품 창고", "Paint, sample & chemical lockers", "S", 0], [8, "거주구역·병실", "Accommodation & hospital", "S", 1], [9, "조리실·식품저장고", "Galley & provision stores", "S", 1], [10, "갑판·선수루·갑판창고", "Main deck, forecastle & stores", "T", 1], [11, "펌프룸", "Pump room", "T", 0], [12, "기관실·기관제어실", "Engine room & ECR", "T", 1], [13, "타기실", "Steering gear room", "T", 1], [14, "비상발전기실·비상소화펌프", "Emergency generator & fire pump", "T", 0], [15, "구명정·구명뗏목 장소", "Lifeboat & liferaft stations", "T", 0], [16, "CO2실·소방장구함", "CO2 room & fireman's outfit lockers", "T", 0], [17, "선체 외부 (보이는 범위)", "Hull exterior (visible parts)", "T", 0]].map(([n, t, te, k, ph]) => ({ n, t, te, k, ph }));
 const COND = [['cargo', '하역', 'Cargo'], ['anch', '묘박', 'Anchoring'], ['nav', '항해', 'Navigation'], ['rep', '수리', 'Repair'], ['oth', '기타', 'Other']];
 const isF = r => !!(r && r.h && r.h.f);
 const PS = r => isF(r) ? PARTSF : PARTS;
@@ -457,6 +458,12 @@ function fmig(r) { if (!isF(r) || !r.parts) return r; const P = r.parts; P.S = P
   const M = P.M; if (M && !r.fv) Object.keys(M.items || {}).forEach(k => { const m = /^M(\d+)$/.exec(k); if (m) { const n = 'M' + (+m[1] + 27); mv['M' + m[1] + '#old'] = n; S0[n] = newer(S0[n], M.items[k]); } });
   if (M) { if (M.ar) { P.S.ar = P.S.ar || {}; Object.keys(M.ar).forEach(n => P.S.ar[n] = newer(P.S.ar[n], M.ar[n])); } if (!(P.S.v && P.S.v.date) && M.v && M.v.date) P.S.v = M.v; delete P.M; }
   if (!r.fv) { Object.values(r.fnd || {}).forEach(f => { if (!f || !f.item) return; const m = /^([SM])(\d+)$/.exec(f.item); if (m) f.item = 'M' + (+m[2] + (m[1] === 'M' ? 27 : 0)); }); r.fv = 2; }
+  /* v66: 구역 14개 → 17개 (계류 선수·선미 분리, Thruster room 추가) */
+  if (r.fv < 3) { const AM = { 1: 1, 2: 2, 3: 3, 4: 7, 5: 8, 6: 9, 7: 10, 8: 11, 9: 12, 10: 13, 11: 14, 12: 15, 13: 16, 14: 17 };
+    ['S', 'T'].forEach(k => { const P0 = P[k]; if (!P0 || !P0.ar) return; const o = P0.ar, nw = {}; Object.keys(o).forEach(n => { if (AM[n]) nw[AM[n]] = o[n]; }); if (o[3]) nw[5] = Object.assign({}, o[3]); P0.ar = nw; });
+    const S2 = P.S && P.S.ar, T2 = P.T && P.T.ar; if (T2) ['7', '8', '9'].forEach(n => { if (T2[n] && S2) { S2[n] = newer(S2[n], T2[n]); delete T2[n]; } });
+    if (S2) ['10', '11', '12', '13', '14', '15', '16', '17'].forEach(n => { if (S2[n]) { P.T = P.T || { items: {} }; P.T.ar = P.T.ar || {}; P.T.ar[n] = newer(P.T.ar[n], S2[n]); delete S2[n]; } });
+    Object.values(r.fnd || {}).forEach(f => { if (f && f.area && AM[f.area]) f.area = String(AM[f.area]); }); r.fv = 3; }
   return r; }
 function norm(r) { migr(r); fmig(r); r.parts = r.parts || {}; PS(r).forEach(p => { r.parts[p.k] = r.parts[p.k] || { items: {} }; r.parts[p.k].items = r.parts[p.k].items || {}; }); r.fnd = r.fnd || {}; r.ext = r.ext || {}; r.fin = r.fin || {}; r.h = r.h || {}; r.sp = r.sp || {}; r.sp.items = r.sp.items || {}; return r; }
 /* 합치기: u(고친 시각)가 있는 단위는 더 나중 것, 없는 묶음은 안쪽을 다시 합침 */
@@ -494,7 +501,7 @@ const itemPhotos = (r, no) => { const x = (r.parts[IT(r, no).part].items[no] || 
 function partIssues(r, k) { const P = r.parts[k], out = [], F = findings(r);
   itemsOf(r, k).forEach(it => { const x = P.items[it.no] || {}; if (!x.r) out.push(`${it.no} — 판정(Y/N/NA)이 없습니다`); else if (it.ph && x.r !== 'NA' && !itemPhotos(r, it.no).length) out.push(`${it.no} — 증빙사진이 필요합니다`);
     if (x.r === 'N' && !F.some(f => f.item === it.no)) out.push(`${it.no} — N(부적합)인데 지적사항이 없습니다`); });
-  areasOf(r, k).forEach(a => { const x = (P.ar || {})[a.n] || {}; if (!x.r) out.push(`구역 ${a.n} ${a.t} — 상태(양호·보통·불량)가 없습니다`); else if (a.ph && !(x.ph || []).length) out.push(`구역 ${a.n} ${a.t} — 사진이 필요합니다`); else if (x.r !== 'G' && !(x.m || '').trim()) out.push(`구역 ${a.n} ${a.t} — 보통·불량이면 비고(지적 No.)를 적어 주세요`); });
+  areasOf(r, k).forEach(a => { const x = (P.ar || {})[a.n] || {}; if (!x.r) out.push(`구역 ${a.n} ${a.t} — 상태(양호·보통·불량·해당없음)가 없습니다`); else if (x.r === 'N') { } else if (a.ph && !(x.ph || []).length) out.push(`구역 ${a.n} ${a.t} — 사진이 필요합니다`); else if (x.r !== 'G' && !(x.m || '').trim()) out.push(`구역 ${a.n} ${a.t} — 보통·불량이면 비고(지적 No.)를 적어 주세요`); });
   if (isF(r) && !((P.rev || {}).t || '').trim()) out.push('총평 — 본선 관리 상태 총평을 적어 주세요');
   if (!pv(r, k)) out.unshift('방선 일자·항구 — 우리 팀이 방선한 날짜를 적어 주세요 (맨 위)');
   return out; }
@@ -1251,10 +1258,10 @@ function areaBlock(r, k, locked) { const A = areasOf(r, k), P = r.parts[k], AR =
   return `<div class="qh">구역 순회 확인<small>Area round – condition of all operational and accessible areas</small></div>
     <div class="muted" style="font-size:13px;margin:-2px 2px 8px">우리 팀 담당 구역을 직접 돌아보고 상태를 고릅니다. 보통·불량은 비고에 지적 No.를 적습니다.</div>
     ${A.map(a => { const x = AR[a.n] || {}, n = (x.ph || []).length, need = a.ph && x.r && !n;
-      return `<div class="it ar ${x.r === 'G' ? 'done' : x.r === 'P' ? 'bad' : x.r === 'F' ? 'na' : ''}" data-an="${a.n}">
+      return `<div class="it ar ${x.r === 'G' ? 'done' : x.r === 'P' ? 'bad' : x.r === 'F' || x.r === 'N' ? 'na' : ''}" data-an="${a.n}">
         <div class="nh"><span class="no">구역 ${a.n}</span><div class="tx"><b style="font-weight:600">${esc(a.t)}</b><div class="pe">${esc(a.te)}</div>
           <div class="tags">${a.ph ? `<span class="tag ${need ? 'miss' : 'ph'}">● 사진 필수${need ? ' — 미첨부' : ''}</span>` : ''}</div></div></div>
-        <div class="yn">${bt(x, 'G', 'y', '양호', 'Good')}${bt(x, 'F', 'x', '보통', 'Fair')}${bt(x, 'P', 'n', '불량', 'Poor')}</div>
+        <div class="yn" style="grid-template-columns:repeat(4,1fr)">${bt(x, 'G', 'y', '양호', 'Good')}${bt(x, 'F', 'x', '보통', 'Fair')}${bt(x, 'P', 'n', '불량', 'Poor')}${bt(x, 'N', 'z', '해당없음', 'N/A')}</div>
         ${x.m ? `<div class="memo">📝 ${esc(x.m)}</div>` : ''}
         ${n ? `<div class="th">${x.ph.map(id => thumb(id, !locked)).join('')}</div>` : ''}
         ${locked ? '' : `<div class="act"><button class="btn s" data-aa="cam">📷 촬영</button><button class="btn s" data-aa="alb">🖼 앨범</button><button class="btn s" data-aa="memo">📝 비고</button>${x.r === 'P' || x.r === 'F' ? '<button class="btn s r" data-aa="fnd">＋ 지적사항</button>' : ''}</div>`}</div>`; }).join('')}`; }
@@ -1562,9 +1569,9 @@ async function docF(r) { const ph = {}; for (const id of photoIds(r)) ph[id] = a
   /* 4. 구역 순회 */
   pages.push(pg(`<div class="sh">4. 구역 순회 확인 <span class="e">Area round – condition of all operational and accessible areas</span></div>
     <div class="g" style="margin-bottom:4px">각 팀은 담당 구역을 직접 돌아보고 상태를 표시한다. 보통·불량은 비고에 지적 No.를 적는다. Each team walks its areas and marks the condition; give the finding No. for Fair/Poor.</div>
-    <table><colgroup><col style="width:6%"><col style="width:34%"><col style="width:9%"><col style="width:7%"><col style="width:7%"><col style="width:7%"><col style="width:7%"><col style="width:23%"></colgroup>
-    <tr><th>No.</th><th>구역 <small style="display:inline">Area</small></th><th>담당<small>Team</small></th><th>양호<small>Good</small></th><th>보통<small>Fair</small></th><th>불량<small>Poor</small></th><th>사진<small>Photo</small></th><th>비고 (지적 No.)<small>Remark</small></th></tr>
-    ${AREAF.map(a => { const x = ((r.parts[a.k].ar || {})[a.n]) || {}; return `<tr style="height:11mm"><td class="c">${a.n}</td><td>${esc(a.t)}<br><span class="g">${esc(a.te)}</span></td><td class="c">${TCODE[a.k]}</td><td class="c">${box(x.r === 'G')}</td><td class="c">${box(x.r === 'F')}</td><td class="c">${box(x.r === 'P')}</td><td class="c">${a.ph ? '●' : ''}</td><td style="font-size:10pt">${esc(x.m || '')}</td></tr>`; }).join('')}</table>`));
+    <table><colgroup><col style="width:5%"><col style="width:32%"><col style="width:8%"><col style="width:7%"><col style="width:7%"><col style="width:7%"><col style="width:10%"><col style="width:6%"><col style="width:18%"></colgroup>
+    <tr><th>No.</th><th>구역 <small style="display:inline">Area</small></th><th>담당<small>Team</small></th><th>양호<small>Good</small></th><th>보통<small>Fair</small></th><th>불량<small>Poor</small></th><th style="white-space:nowrap">해당없음<small>N/A</small></th><th>사진<small>Photo</small></th><th>비고<small>Remark</small></th></tr>
+    ${AREAF.map(a => { const x = ((r.parts[a.k].ar || {})[a.n]) || {}; return `<tr style="height:10.5mm"><td class="c">${a.n}</td><td>${esc(a.t)}<br><span class="g">${esc(a.te)}</span></td><td class="c">${TCODE[a.k]}</td><td class="c">${box(x.r === 'G')}</td><td class="c">${box(x.r === 'F')}</td><td class="c">${box(x.r === 'P')}</td><td class="c">${box(x.r === 'N')}</td><td class="c">${a.ph ? '●' : ''}</td><td style="font-size:10pt">${esc(x.m || '')}</td></tr>`; }).join('')}</table>`));
   /* 5. 지적사항 + 6. 확인 */
   const fRow = (f, i) => `<tr style="height:16mm"><td class="c">${i + 1}</td><td style="font-size:10pt">${box(f && f.ty === 'NC')} 절차 부적합 NC<br>${box(f && f.ty === 'DF')} 설비 결함 Defect</td><td style="font-size:10pt">${f ? esc(f.desc || '') : ''}</td><td class="c" style="font-size:10pt">${f ? esc(f.item || (f.area ? '구역 ' + f.area : '')) : ''}</td><td class="c" style="font-size:10pt">${f ? esc(f.rno || '') : ''}</td><td class="c" style="font-size:10pt">${f && f.due ? dot(f.due) : ''}</td><td class="c" style="font-size:10pt">${f && f.done ? dot(f.done) : ''}</td><td class="c" style="font-size:10pt">${f && f.ver ? dot(f.ver) : ''}</td></tr>`;
   const fHead = `<table><colgroup><col style="width:5%"><col style="width:17%"><col style="width:32%"><col style="width:7%"><col style="width:12%"><col style="width:9%"><col style="width:9%"><col style="width:9%"></colgroup>
@@ -1586,7 +1593,7 @@ async function docF(r) { const ph = {}; for (const id of photoIds(r)) ph[id] = a
     if (last && lastRows > 7) pages.push(pg(conf)); }
   /* 별지 1: ● 항목 + 사진 있는 항목·구역 */
   const g1 = []; PARTSF.forEach(p => p.items.forEach(it => { const ids = itemPhotos(r, it.no).filter(i => ph[i]); if (!it.ph && !ids.length) return; g1.push({ cap: `${it.no} ${it.sh}`, srcs: ids.map(i => ph[i]) }); }));
-  AREAF.forEach(a => { const ids = ((((r.parts[a.k].ar || {})[a.n]) || {}).ph || []).filter(i => ph[i]); if (!a.ph && !ids.length) return; g1.push({ cap: `구역 ${a.n} ${a.t}`, srcs: ids.map(i => ph[i]) }); });
+  AREAF.forEach(a => { const ax = ((r.parts[a.k].ar || {})[a.n]) || {}, ids = (ax.ph || []).filter(i => ph[i]); if ((!a.ph || ax.r === 'N') && !ids.length) return; g1.push({ cap: `구역 ${a.n} ${a.t}`, srcs: ids.map(i => ph[i]) }); });
   (await photoAnnex('별지 1 – 점검항목 증빙사진 (● 항목) <span class="e">Annex 1 – Photo evidence for check items marked ●</span>', g1, { hMax: 56, hMin: 38 })).forEach(c => pages.push(pg(c)));
   /* 별지 2: 조치 전·후 */
   const g2 = []; F.forEach((f, i) => { const a = (f.ph || []).filter(id => ph[id]).map(id => ph[id]), b = (f.cph || []).filter(id => ph[id]).map(id => ph[id]);
